@@ -1,0 +1,400 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>C#のLINQでJSONを編集してみる - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="最近学校の制作でちょっとマイブームのC# 今回はWebからjsonを取得して、それをLINQを使って参照したり編集したり、してみます。 LINQとは LINQの概要 -MSDN-
+LINQとは -未確認飛行物体 c-
+C#3.0から追加
+RDBやXMLへの操作をプログラミング言語の構文でサポート（ &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/10/17/wordpress70">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">C#のLINQでJSONを編集してみる</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-17T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>最近学校の制作でちょっとマイブームのC#</p>
+
+<p>今回はWebからjsonを取得して、それをLINQを使って参照したり編集したり、してみます。</p>
+
+<h3>LINQとは</h3>
+
+<ul>
+<li><a href="http://msdn.microsoft.com/ja-jp/library/vstudio/bb397933.aspx">LINQの概要 -MSDN-</a></li>
+<li><p><a href="http://ufcpp.net/study/csharp/sp3_linq.html">LINQとは -未確認飛行物体 c-</a></p></li>
+<li><p>C#3.0から追加</p></li>
+<li>RDBやXMLへの操作をプログラミング言語の構文でサポート（ちょっと言い方間違ってるかも）</li>
+<li>select from whereなど、SQL文のような書き方ができる。</li>
+</ul>
+
+
+<p>そんな感じ。わざわざ今更ブログに取り上げるような新機能ではないかもしれませんが、 僕は初めて利用したのでメモしておきます。</p>
+
+<h3>JSONをC#で扱う</h3>
+
+<ul>
+<li><a href="http://json.codeplex.com/">JSON.NET codeplex</a></li>
+<li><a href="http://james.newtonking.com/json">JSON.NET 公式？？</a></li>
+<li><a href="http://www.nuget.org/packages/newtonsoft.json/">JSON.NET NuGet install</a></li>
+</ul>
+
+
+<p>多分様々な方法があると思いますが、今回はぐぐって一番最初に出てきたJSON.NETという外部ライブラリを 利用します。</p>
+
+<p>公式ホームページからダウンロードして、参照追加しても良し、NuGet（.NETのライブラリマネージャ、rubyでいうgemとbundleみたいな） でインストールしてもよしです。</p>
+
+<h3>なにをするか</h3>
+
+<ol>
+<li><a href="http://express.heartrails.com/api.html">HeartRails Express</a>で無料公開されているAPIから山手線の情報を取得</li>
+<li>JSON.NETを利用して取得した文字列をjsonとしてパースし、オブジェクトに代入</li>
+<li>オブジェクトに対してLINQを使って、絞り込んだり、追加したりする</li>
+</ol>
+
+
+<p>これだけです。環境は</p>
+
+<ul>
+<li>C#5.0</li>
+<li>JSON.NET 4.5</li>
+</ul>
+
+
+<h3>第一段階　APIにHTTP.GETリクエストを送ってレスポンスを取得する</h3>
+
+<ul>
+<li>using System.NET;</li>
+<li>using System.IO;</li>
+</ul>
+
+
+<p>が必要です。</p>
+
+<pre>String url = "http://express.heartrails.com/api/json?method=getStations&#038;line=JR%E5%B1%B1%E6%89%8B%E7%B7%9A";
+WebRequest request = WebRequest.Create(url);
+Stream response_stream = request.GetResponse().GetResponseStream();
+StreamReader reader = new StreamReader(response_stream);
+Console.WriteLine(reader.ReadToEnd());
+</pre>
+
+
+<p>これで標準出力に取得したjsonがString型として出力されています。 もっと簡単な方法ないかな・・・</p>
+
+<h3>第二段階　取得した結果をjsonとしてパースする</h3>
+
+<p>JSON.NETのインストールが済んだうえで</p>
+
+<ul>
+<li>using Newtonsoft.Json;</li>
+<li>using Newtonsoft.Json.Linq;</li>
+</ul>
+
+
+<p>が必要です。</p>
+
+<pre>var obj_from_json = JObject.Parse(reader.ReadToEnd());
+</pre>
+
+
+<p>プログラム自体は１行だけ。文字列をjsonとしてパースしてオブジェクトにして返してくれます。</p>
+
+<h3>第三段階　オブジェクトに対してLINQを利用してなんかする</h3>
+
+<p>最後はLINQを使っていきます。リファレンスには色々書いてあって、多機能で怖い感じも しますが、基本はSQLライクな構文。</p>
+
+<p>今回は取得したjsonの中から、駅名に『町』の文字が含まれる駅データだけを抽出してみます。</p>
+
+<pre>var search_result = from  foo in obj_from_json["response"]["station"] where ((String)foo["name"]).Contains("町") select foo
+</pre>
+
+
+<p>selectやfromなど、SQLを知っていれば、登場する順番は違いますが、 キーワード自体は馴染みのあるものが多いと思います。</p>
+
+<p>個人的に『んー、ほしいなぁ』とおもったのはlikeですね。これはこのサンプルでは String型のContainsメソッドで実現していますが、where句はbool値を返す処理なら なんでも良さそうなので、独自でフィルターを定義することも簡単そうです。</p>
+
+<p>あとは出力してみる</p>
+
+<pre>foreach(var r in search_result){
+    Console.WriteLine(r["name"]);
+}
+</pre>
+
+
+<p>連想配列になっているので、あとは簡単。御徒町、有楽町、浜松町、田町 が出力されてると思います。</p>
+
+<h3>サンプル全景</h3>
+
+<pre>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Net;
+using System.Web;
+using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+namespace LINQとか使ってみる
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            String url = "http://express.heartrails.com/api/json?method=getStations&#038;line=JR%E5%B1%B1%E6%89%8B%E7%B7%9A";
+            WebRequest request = WebRequest.Create(url);
+            Stream response_stream = request.GetResponse().GetResponseStream();
+
+            if (!response_stream.Equals(null)) {
+                StreamReader reader = new StreamReader(response_stream);
+                String str = reader.ReadToEnd();
+                var obj_from_json = JObject.Parse(str);
+                var search_result = from  foo in obj_from_json["response"]["station"] where ((String)foo["name"]).Contains("町") select foo;
+
+                foreach(var r in search_result){
+                    Console.WriteLine(r["name"]);
+                }
+
+                Console.ReadLine();
+            }
+        }
+    }
+}
+</pre>
+
+
+<p>おわりです。</p>
+
+<h3>ついでにdynamic</h3>
+
+<p>※この項は補足です、タイトルには直接関係ありません。型推論のvarを調べてたら見つけたのでメモ</p>
+
+<ul>
+<li><a href="http://ja.wikipedia.org/wiki/%E5%8B%95%E7%9A%84%E5%9E%8B%E4%BB%98%E3%81%91">動的型付け -wikipedia-</a></li>
+<li><p><a href="http://ufcpp.net/study/csharp/sp4_dynamic.html">dynamic -未確認飛行物体 c-</a></p></li>
+<li><p>C#4.0で追加</p></li>
+<li>動的型付け変数が利用できる、ってこと。(pythonやphpの変数みたいに、実行時に変数の型が決まる変数)</li>
+<li>型推論であるvarキーワード(C#3.0 で追加)とは別</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-17T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/10/17/wordpress70/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/10/17/wordpress70/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/10/11/wordpress69/" title="Previous Post: OpenCVの練習で笑い男っぽいやつを作ってみた">&laquo; OpenCVの練習で笑い男っぽいやつを作ってみた</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/10/28/wordpress71/" title="Next Post: xv6のソースコードとテキストを読んでみる 0">xv6のソースコードとテキストを読んでみる 0 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

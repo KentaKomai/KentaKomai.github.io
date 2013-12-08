@@ -1,0 +1,439 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Markdown投稿テストとちょっとした紹介 - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="ブログの投稿のフォーマットをMarkdownn + pretty syntax highloghterに変更しました。Githubやtracのドキュメントに利用されている、軽量マークアップ言語です。今まで必要に迫られたときに限ってGoogle検索しながら、ちまちまと書いていましたが、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/06/17/wordpress47">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">Markdown投稿テストとちょっとした紹介</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-17T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>ブログの投稿のフォーマットをMarkdownn + pretty syntax highloghterに変更しました。Githubやtracのドキュメントに利用されている、軽量マークアップ言語です。今まで必要に迫られたときに限ってGoogle検索しながら、ちまちまと書いていましたが、ちゃんと覚えたいので自鯖のwordpressにプラグインを入れました。</p>
+
+<p><a href="http://ja.wikipedia.org/wiki/Markdown">markdown -wikipedia-</a></p>
+
+<p>復習と動作確認のために、ひと通り文法を紹介したいと思います。</p>
+
+<h2>●段落</h2>
+
+<p>段落は空行を挿入するだけでわけられます。 (以下サンプル)</p>
+
+<p>この段落は１つめの段落です。この段落は１つめの段落です。この段落は１つめの段落です。この段落は１つめの段落です。この段落は１つめの段落です。この段落は１つめの段落です。この段落は１つめの段落です。</p>
+
+<p>この段落は２つめの段落です。この段落は２つめの段落です。この段落は２つめの段落です。この段落は２つめの段落です。この段落は２つめの段落です。この段落は２つめの段落です。この段落は２つめの段落です。</p>
+
+<h2>●見出し</h2>
+
+<p>HTMLタグでいうh1やh2のように、見出しを表示したいときに利用します。<br/>
+(以下サンプル)</p>
+
+<h1>A</h1>
+
+<h2>B</h2>
+
+<h3>C</h3>
+
+<h4>D</h4>
+
+<h5>E</h5>
+
+<pre># A  
+## B  
+### C  
+#### D  
+##### E
+
+</pre>
+
+
+<h1>H1TITLE</h1>
+
+<h2>H2TITLE</h2>
+
+<pre>//h1とh2は以下のようにしても表現できます。
+//個人的には、こちらのほうがマークアップしたときに見やすいのでおすすめ
+H1TITLE
+=======
+H2TITLE
+-------
+</pre>
+
+
+<h2>●テキストの強調</h2>
+
+<p>文章中に強調して表示したい箇所に利用します。 （以下サンプル）</p>
+
+<p>僕はカメラが<em>大好き</em>です</p>
+
+<p>僕は佐々木希が<strong>大好き</strong>です</p>
+
+<p>わかりづらいですが、カメラのほうは「大好き」が斜体で表示されています。 強調にも二段階あって、斜体->太字、というようになっています。</p>
+
+<pre>僕はカメラが_大好き_です
+
+僕は佐々木希が__大好き__です
+</pre>
+
+
+<h2>リスト</h2>
+
+<p>リストにはHTMLと同じく、インデックス有りと無しの二種類があります。</p>
+
+<ul>
+<li>C言語</li>
+<li>Java</li>
+<li>Ruby</li>
+<li>Python</li>
+<li>Javascript
+
+<ul>
+<li>Coffee script</li>
+<li>Type Script</li>
+</ul>
+</li>
+</ul>
+
+
+<pre>* C言語
+* Java
+* Ruby
+* Python
+* Javascript
+    * Coffee script
+    * Type Script
+//子要素を配置したいときは、４つのスペース、またはインデントで可能
+</pre>
+
+
+<ol>
+<li>Facebook</li>
+<li>twitter</li>
+<li>Google+</li>
+<li>mixi</li>
+</ol>
+
+
+<pre>1. Facebook
+2. twitter
+3. Google+
+4. mixi
+</pre>
+
+
+<h2>引用</h2>
+
+<p>どこか他の場所から文章を引用したときなんかに利用します。 (以下サンプル)</p>
+
+<blockquote><p>&#8220;本機はPlayStation 3 (PS3) の次世代機となる、第8世代に属する家庭用ゲーム機である。 この開発にあたっては、性能向上と引き換えにソフト開発を困難にさせていた[2][3]前世代機のPS3から一転、ゲーム開発者の力を活かすことが最優先とされた<a href="http://codedehitokoto.blogspot.jp/2012/04/sublimetext2markdown.html">4</a>。メインプロセッサーには、PS2のEmotion Engine、PS3のCellと、新開発のCPUを採用していたこれまでの流れから変わって、本機では既成CPUのカスタム品が用いられている。そのアーキテクチャーには、PCにおいて一般的に使用され普及している事から、開発者にとって親和性が高いx86-64が採用され、開発を比較的容易にしているとされる[5]。&#8221;</p></blockquote>
+
+<p>これはwikipediaからplaystation4の記事を引用した例です。</p>
+
+<pre>>"本機はPlayStation 3 (PS3) の次世代機となる、第8世代に属する家庭用ゲーム機である。
+この開発にあたっては、性能向上と引き換えにソフト開発を困難にさせていた[2][3]前世代機のPS3から一転、ゲーム開発者の力を活かすことが最優先とされた[4]。メインプロセッサーには、PS2のEmotion Engine、PS3のCellと、新開発のCPUを採用していたこれまでの流れから変わって、本機では既成CPUのカスタム品が用いられている。そのアーキテクチャーには、PCにおいて一般的に使用され普及している事から、開発者にとって親和性が高いx86-64が採用され、開発を比較的容易にしているとされる[5]。"
+</pre>
+
+
+<h2>リンク</h2>
+
+<p>文章中にハイパーリンクを挿入したいときに利用します。これにはいくつかの記法がありますが、一番簡単なものをここでおさらいします。 (以下サンプル)</p>
+
+<p><a href="http://ja.wikipedia.org/wiki/X86">x86 -wikipedia-</a> <a href="http://ja.wikipedia.org/wiki/ARM%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3">ARMアーキテクチャ -wikipedia-</a></p>
+
+<pre>/*
+ * []内がリンクテキスト
+ * ()内がURL
+ */
+[x86 -wikipedia-](http://ja.wikipedia.org/wiki/X86)
+[ARMアーキテクチャ -wikipedia-](http://ja.wikipedia.org/wiki/ARM%E3%82%A2%E3%83%BC%E3%82%AD%E3%83%86%E3%82%AF%E3%83%81%E3%83%A3)
+</pre>
+
+
+<h2>水平線</h2>
+
+<p>文章中に水平線を挿入します。</p>
+
+<blockquote><p>&#8220;1行の中に、3つ以上のハイフンやアスタリスク・アンダースコアだけを並べると水平線が作られる。ハイフンやアスタリスクのあいだには空白を入れてもよい。以下の行はすべて水平線を生成する:&#8221;</p></blockquote>
+
+<p>ということらしいです。(以下サンプル)</p>
+
+<hr />
+
+<hr />
+
+<hr />
+
+<hr />
+
+<p>４つの水平線が表示されていますね。</p>
+
+<pre>-------------------
+
+- - - - - - - - - -
+
+****
+
+* * * * *
+</pre>
+
+
+<h2>最後に僕の課題</h2>
+
+<p>ひと通り基本的な文法を押さえたうえでWordpressに内蔵されているエディタで書いてみたんですが、とにかく<strong>面倒くさい！！</strong></p>
+
+<p>WEBフォーム上で、Markdown記法でブログを書くのは、ちょっと骨が折れますね・・・</p>
+
+<p>原因として考えられるのは以下</p>
+
+<ol>
+<li>インデントがTabキーでできない</li>
+<li>表示領域が限られている(Markdownに限ったことではないですが)</li>
+<li>リンクの挿入したいときに、[]や()などを書くのが面倒くさい(コーディングに利用しているエディタとくらべて、という意味で)</li>
+<li>まだ考える前にタイピングできるほどMarkdownの記法が馴染んでない。</li>
+</ol>
+
+
+<p>ということだと思います。</p>
+
+<p>ここで考えたのが、いつもコーディングに利用しているSublimetext2を使い、Markdownでブログ記事を記述。それをWordpressでインポートすれば、問題が解決できるのではないか、と思いました。</p>
+
+<p>プラグインを探してみたらすぐに見つかりました。</p>
+
+<p><a href="http://codedehitokoto.blogspot.jp/2012/04/sublimetext2markdown.html">sublimetext markdown preview</a></p>
+
+<p>これを利用してみます。インストール方法などは記事がいくつもあるので参照してみてください。</p>
+
+<p>デフォルトのキーバインドはcommand + option + o(英小文字のオー)らしいのですが、僕は既存のキーバインドと衝突があるので、alt + m　に変更しました。(変更はkey Binding の Userで)</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/06/Screen-Shot-2013-06-17-at-11.44.11.png" rel="image_group"><img src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/06/Screen-Shot-2013-06-17-at-11.44.11.png?resize=955%2C331" alt="Screen Shot 2013-06-17 at 11.44.11" class="alignnone size-large wp-image-588" data-recalc-dims="1" /></a></p>
+
+<p>こんな感じでマークアップしたものを alt + m　を押すことで、ブラウザが起動し、</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/06/Screen-Shot-2013-06-17-at-11.45.04.png" rel="image_group"><img src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/06/Screen-Shot-2013-06-17-at-11.45.04.png?resize=955%2C396" alt="Screen Shot 2013-06-17 at 11.45.04" class="alignnone size-large wp-image-589" data-recalc-dims="1" /></a></p>
+
+<p>このようにプレビューが表示されます。ブログも使い慣れているエディタで書けるようになりました。 ばっちり！！</p>
+
+<p>GithubのREADME.mdは全てこの機能を内包し、少しの独自機能が加わったものです。わからない書き方があれば、GithubにあるREADME.mdのソースを見るのもいいと思います。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-17T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/06/17/wordpress47/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/06/17/wordpress47/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/06/13/wordpress46/" title="Previous Post: 『新版暗号技術入門――秘密の国のアリス』読み終わりました">&laquo; 『新版暗号技術入門――秘密の国のアリス』読み終わりました</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/06/26/wordpress48/" title="Next Post: 使ってるだいたいの環境でvimキーバインドを使う">使ってるだいたいの環境でvimキーバインドを使う &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

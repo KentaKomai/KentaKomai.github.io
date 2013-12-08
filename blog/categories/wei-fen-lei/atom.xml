@@ -1,0 +1,948 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 未分類 | KentaKomai's BLOG]]></title>
+  <link href="http://KentaKomai.github.io/blog/categories/wei-fen-lei/atom.xml" rel="self"/>
+  <link href="http://KentaKomai.github.io/"/>
+  <updated>2013-12-08T19:42:44+09:00</updated>
+  <id>http://KentaKomai.github.io/</id>
+  <author>
+    <name><![CDATA[Kenta Komai]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[簡易プロセス死活監視プログラムをc#で]]></title>
+    <link href="http://KentaKomai.github.io/blog/2013/11/28/wordpress77/"/>
+    <updated>2013-11-28T00:00:00+09:00</updated>
+    <id>http://KentaKomai.github.io/blog/2013/11/28/wordpress77</id>
+    <content type="html"><![CDATA[<p>わざわざブログ記事にまとめるほど内容があるわけではないんですが、 調べてみたら、すんごく簡単にできて便利だったので書き残しておきます。</p>
+
+<p>プロセス死活監視というのもおこがましいかもしれない（笑）</p>
+
+<h3>やりたいこと</h3>
+
+<ol>
+<li>特定のプログラムが動作しているかをチェック</li>
+<li>特定のプログラムが動作していて、尚且フリーズしていないか(反応があるか)</li>
+<li>対象プログラムがフリーズしていれば再起動</li>
+<li>対象プログラムが動作していなければ起動</li>
+</ol>
+
+
+<p>これが最低限。ログ取ったり、何かしらで遠隔にアラート出せたらもっと便利だと思います。</p>
+
+<h3>きっかけ</h3>
+
+<p>僕は詳しいこと知らないんですが、おそらくちゃんと監視したいなら、NagiosとかZabbix とか導入するべきなんでしょうけど、とにかく時間も知識もなく、本当に簡易的なもので も、どうにか用意する必要があったので調べてみたことがきっかけです。</p>
+
+<p>結果的に、30分もしないで書けたのでよかった。 NagiosとかZabbixは本格的に導入する必要が出たときに、改めて検討します。</p>
+
+<h3>ソースコード</h3>
+
+<p>え、これだけ？って思う人ほとんどだけだと思うけど、これだけです。 5秒ごとに、指定プログラム（このサンプルではメモ帳）のプロセスの有無と反応をチェックして、条件を満たしていなければ 起動するだけ。</p>
+
+<p>本来であれば、Thread.Sleep()ではなくTimerコントロールとか使うといいかもしれません</p>
+
+<pre>using System.Diagnostics;
+using System.Threading;
+
+public void main(){
+    while (true)
+    {
+        bool flg = false;
+        Process[] processList = Process.GetProcesses();
+        foreach (Process p in processList){
+            if(p.ProcessName == "notepad"){
+                flg = true;
+                if (p.Responding){
+                    Console.WriteLine("OK");
+                    break;
+                }else{
+                    p.CloseMainWindow();
+                    RunApp();
+                }
+            }
+        }
+        if (!flg){
+            RunApp();
+        }
+        System.Threading.Thread.Sleep(5000);
+    }
+}
+
+private void RunApp(){
+    Process myProcess = new Process();
+    myProcess.StartInfo.FileName = "Notepad";
+    myProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+    myProcess.Start();
+}
+</pre>
+
+
+<h3>最後に</h3>
+
+<p>一番最初がーーーーーっと一気に書いて動かしてみたときに、条件分岐の判定を 間違えて、すごい勢いでメモ帳がいくつも起動して焦りました（笑）</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[xv6のソースコードとテキストを読んでみる1_chapter0_2]]></title>
+    <link href="http://KentaKomai.github.io/blog/2013/11/25/wordpress76/"/>
+    <updated>2013-11-25T00:00:00+09:00</updated>
+    <id>http://KentaKomai.github.io/blog/2013/11/25/wordpress76</id>
+    <content type="html"><![CDATA[<p><a href="http://komaken.me/blog/2013/11/10/xv6%E3%81%AE%E3%82%BD%E3%83%BC%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%89%E3%81%A8%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88%E3%82%92%E8%AA%AD%E3%82%93%E3%81%A7%E3%81%BF%E3%82%8B1_chapter0_1-2/">前回</a>に書いたとおり、 Unix v6の移植版xv6のソースコードと、 テキストを読んでいこうと思います。</p>
+
+<p>翻訳ははっきりいってかなりお粗末なもので、 僕が独自に解釈したものが多く含まれています。</p>
+
+<p>あまりにも間違った内容が載っている可能性もあります。ご注意ください。 (※お気づきの方いらっしゃいましたら、教えてくれるととてもありがたいです。)</p>
+
+<h2>Chapter0</h2>
+
+<h3>プロセスとメモリ</h3>
+
+<p>xv6ののメモリは、命令例、変数、スタックが入ったユーザ空間と プロセスごとにプライベートなカーネル空間で構成されています。 xv6はプロセスが実行待機しているプロセスの中からCPU資源を割り当てる タイムシェアリングという仕組みを提供しています。</p>
+
+<p>プロセスが実行されていないとき、xv6はプロセスのCPUレジスタを保存し、次に そのプロセスが実行されるときにリストアします。カーネルはそれぞれのプロセスに プロセス識別子、またはpidを割り当てます。</p>
+
+<p>プロセスが新しいプロセスを作成するときはforkシステムコールを呼び出します。 forkは呼び出しプロセス(親プロセス)と同じメモリ情報を持った新しいプロセス （子プロセスと呼ばれます）を作成します。</p>
+
+<p>親プロセスで呼び出されたforkは子プロセスのpidを返し、子プロセス内のforkはゼロを 返します。下記にサンプルコードを示します。</p>
+
+<pre>int pid;
+pid = fork();
+if(pid > 0){
+    printf("parent: child=%d\n", pid);
+    pid = wait();
+    printf("child %d is done\n", pid);
+} else if(pid == 0){
+    printf("child: exiting\n");
+    exit();
+} else {
+    printf("fork error\n");
+}
+</pre>
+
+
+<p>exitシステムコールは、呼び出しプロセスの実行を止め、メモリやオープンしたファイルなどの リソースの解放を行います。</p>
+
+<p>waitシステムコールは、現在実行しているプロセスの子プロセスが終了するまで待ち、 終了したときに子プロセスのpidを返します。例えば</p>
+
+<pre>parent: child=1234
+child: exiting
+</pre>
+
+
+<p>このような出力をしたプログラムがあるとして（&#8221;parent: child=1234&#8243;は親プロセスが &#8220;child: exiting&#8221;は子プロセスが出力したとします。親プロセスと子プロセス、どちらの printfが先に呼ばれたか、は上記の通り出ない場合もあります。）</p>
+
+<p>この二つの出力の後、子プロセスは終了し、親プロセスはwaitシステムコールから 処理が帰ってくることになります。</p>
+
+<p>そして、さらに以下を出力します。</p>
+
+<pre>parent: child 1234 is done
+</pre>
+
+
+<p>親と子、それぞれのプロセスは、それぞれ別のメモリ空間とレジスタ上で 実行されていることに注意してください。一方で変数の中身を変えたとしても 他方に影響はありません。</p>
+
+<p>execシステムコールは呼び出しプロセスのメモリを、ファイルから読み込んだ 新しいメモリイメージで置換えます。ファイルは、命令、データ、そしてどこから 処理を開始するか、などの情報を保持した特定のフォーマットに従ったもので なければなりません。xv6において、そのフォーマットはELFと呼ばれるものを使用します。 ELFに関する詳細はchpater2で説明していきます。</p>
+
+<p>execが成功すると、呼び出しプログラムへ処理は戻らず、ロードしたファイル内のELFヘッダ に定義されているエントリーポイント(処理がスタートする箇所)から、読み込んだプログラムの 実行をスタートします。</p>
+
+<p>execの実行には引数が２つ必要です。ひとつは実行可能ファイルの名前（パス）で、 もう一方は、読み込むファイル（プログラム）に対する引数群です。以下はサンプルコードです。</p>
+
+<pre>char *argv[3];
+argv[0] = "echo";
+argv[1] = "hello";
+argv[2] = 0;
+exec("/bin/echo", argv);
+printf("exec error\n");
+</pre>
+
+
+<p>上記の例では、execを呼び出したプログラムが &#8220;/bin/echo&#8221;と引数&#8221;echo&#8221;と&#8221;hello&#8221;に置換えられる例です。</p>
+
+<p>ほとんどのプログラムで最初の引数は慣例的にプログラムの名前自身で、それを無視します。</p>
+
+<p>xv6のシェルでは上記のようにして、ユーザの代わりにプログラムを実行します。 シェルの基本的な構造はとてもシンプルです。ソースコードテキストの8001行目で確認できます。</p>
+
+<p>メインのループでは、getcmdを用いて、コマンドラインから入力を受け付けています。 forkが呼ばれるときに、シェルプロセスのコピーが作成されます。親プロセスのシェルは 子プロセスのコマンドが実行されている間、waitシステムコールを呼び出しています。</p>
+
+<pre>int
+main(void)
+{
+    static char buf[100];
+    int fd;
+
+    // Assumes three file descriptors open.
+    while((fd = open("console", O_RDWR)) >= 0){
+        if(fd >= 3){
+            close(fd);
+            break;
+        }
+    }
+
+    // Read and run input commands.
+    while(getcmd(buf, sizeof(buf)) >= 0){
+        if(buf[0] == ’c’ &#038;&#038; buf[1] == ’d’ &#038;&#038; buf[2] == ’ ’){
+            // Clumsy but will have to do for now.
+            // Chdir has no effect on the parent if run in the child.
+            buf[strlen(buf)−1] = 0; // chop \n
+            if(chdir(buf+3) &lt; 0)
+                printf(2, "cannot cd %s\n", buf+3);
+            continue;
+        }
+        if(fork1() == 0)
+            runcmd(parsecmd(buf));
+        wait();
+    }
+    exit();
+}
+</pre>
+
+
+<p>例えば、ユーザが"echo hello"とコマンドラインに入力すると、 &ldquo;echo hello"を引数として、runcmd()が呼び出されます。</p>
+
+<p>runcmd(7906行目)は引数に渡されたコマンドを実行します。"echo hello"が入力された場合、 runcmdの内部ではexec(7926行目)が呼び出されす。execの実行が成功すると、runcmdから 読み込まれた命令を実行します。</p>
+
+<p></pre></p>
+
+<pre>void
+runcmd(struct cmd *cmd)
+{
+  int p[2];
+  struct backcmd *bcmd;
+  struct execcmd *ecmd;
+  struct listcmd *lcmd;
+  struct pipecmd *pcmd;
+  struct redircmd *rcmd;
+ 
+  if(cmd == 0)
+    exit();
+   
+  switch(cmd->type){
+  default:
+    panic("runcmd");
+ 
+  case EXEC:
+    ecmd = (struct execcmd*)cmd;
+    if(ecmd->argv[0] == 0)
+      exit();
+    exec(ecmd->argv[0], ecmd->argv);
+    printf(2, "exec %s failed\n", ecmd->argv[0]);
+    break;
+ 
+  case REDIR:
+    rcmd = (struct redircmd*)cmd;
+    close(rcmd->fd);
+    if(open(rcmd->file, rcmd->mode) &lt; 0){
+      printf(2, "open %s failed\n", rcmd->file);
+      exit();
+    }
+    runcmd(rcmd->cmd);
+    break;
+ 
+  case LIST:
+    lcmd = (struct listcmd*)cmd;
+    if(fork1() == 0)
+      runcmd(lcmd->left);
+    wait();
+    runcmd(lcmd->right);
+    break;
+ 
+  case PIPE:
+    pcmd = (struct pipecmd*)cmd;
+    if(pipe(p) &lt; 0)
+      panic("pipe");
+    if(fork1() == 0){
+      close(1);
+      dup(p[1]);
+      close(p[0]);
+      close(p[1]);
+      runcmd(pcmd->left);
+    }
+    if(fork1() == 0){
+      close(0);
+      dup(p[0]);
+      close(p[0]);
+      close(p[1]);
+      runcmd(pcmd->right);
+    }
+    close(p[0]);
+    close(p[1]);
+    wait();
+    wait();
+    break;
+     
+  case BACK:
+    bcmd = (struct backcmd*)cmd;
+    if(fork1() == 0)
+      runcmd(bcmd->cmd);
+    break;
+  }
+  exit();
+}
+</pre>
+
+
+<p>いずれ、runcmdから読み込まれたファイルは処理を終え、exitを呼び出します。 そうると、親プロセスのwait呼び出し箇所に、処理が戻ります。</p>
+
+<p>forkとexecがひとつの命令でなく、分かれていることを不思議に思うかもしれません。 なぜ、プロセスを生成するforkと、プログラムをロードするexecが別々に定義されているかは、 後ほど解説していきます。それがとても秀逸なデザインであることがわかると思います。</p>
+
+<p>xv6は暗黙的にほとんどのユーザ空間メモリを割り当てます。forkは親プロセスのメモリをコピーし 子プロセスに割り当て、それからexecは実行ファイルを保持するのに十分なメモリを 割り当てます。プロセスが実行中に更にメモリを必要とした場合(mallocなど)には、 sbrk(n)をコールすることで、データ領域をnバイト拡張することができます。 sbrkは新しいメモリ領域のアドレスを返します。</p>
+
+<p>xv6はユーザという概念を提供しておらず、他のユーザからあるユーザを守る、といった 機能はありません。Unixでいえば、xv6のプロセスは全てrootで動作する、と言えます。</p>
+
+<h3>原文</h3>
+
+<p>An xv6 process consists of user-space memory (instructions, data, and stack) and per-process state private to the kernel. Xv6 provides time-sharing: it transparently switches the available CPUs among the set of processes waiting to execute. When a process is not executing, xv6 saves its CPU registers, restoring them when it next runs the process. The kernel associates a process identifier, or pid, with each process.</p>
+
+<p>A process may create a new process using the fork system call. Fork creates a new process, called the child process, with exactly the same memory contents as the calling process, called the parent process. Fork returns in both the parent and the child. In the parent, fork returns the child’s pid; in the child, it returns zero. For example, consider the following program fragment:</p>
+
+<p>[::source code::]</p>
+
+<p>The exit system call causes the calling process to stop executing and to release resources such as memory and open files. The wait system call returns the pid of an exited child of the current process; if none of the caller’s children has exited, wait waits for one to do so. In the example, the output lines</p>
+
+<p>[::source code::]</p>
+
+<p>might come out in either order, depending on whether the parent or child gets to its printf call first. After the child exits the parent’s wait returns, causing the parent to print</p>
+
+<p>[::source code::]</p>
+
+<p>Note that the parent and child were executing with different memory and different registers: changing a variable in one does not affect the other.</p>
+
+<p>The exec system call replaces the calling process’s memory with a new memory image loaded from a file stored in the file system. The file must have a particular format, which specifies which part of the file holds instructions, which part is data, at which instruction to start, etc.</p>
+
+<p>xv6 uses the ELF format, which Chapter 2 discusses in more detail. When exec succeeds, it does not return to the calling program; instead, the instructions loaded from the file start executing at the entry point declared in the ELF header.</p>
+
+<p>Exec takes two arguments: the name of the file containing the executable and an array of string arguments.</p>
+
+<p>This fragment replaces the calling program with an instance of the program /bin/echo running with the argument list echo hello. Most programs ignore the first argument, which is conventionally the name of the program.</p>
+
+<p>The xv6 shell uses the above calls to run programs on behalf of users. The main structure of the shell is simple; see main (8001).</p>
+
+<p>The main loop reads the input on the command line using getcmd. Then it calls fork, which creates a copy of the shell process. The parent shell calls wait, while the child process runs the command.</p>
+
+<p>For example, if the user had typed ‘‘echo hello’’ at the prompt, runcmd would have been called with ‘‘echo hello’’ as the argument.</p>
+
+<p>runcmd (7906) runs the actual command. For ‘‘echo hello’’, it would call exec (7926). If exec succeeds then the child will execute instructions from echo instead of runcmd.</p>
+
+<p>At some point echo will call exit, which will cause the parent to return from wait in main (8001).</p>
+
+<p>You might wonder why fork and exec are not combined in a single call; we will see later that separate calls for creating a process and loading a program is a clever design.</p>
+
+<p>Xv6 allocates most user-space memory implicitly: fork allocates the memory required for the child’s copy of the parent’s memory, and exec allocates enough memory to hold the executable file. A process that needs more memory at run-time (perhaps for malloc) can call sbrk(n) to grow its data memory by n bytes; sbrk returns the location of the new memory.</p>
+
+<p>Xv6 does not provide a notion of users or of protecting one user from another; in Unix terms, all xv6 processes run as root.</p>
+
+<h3>感想</h3>
+
+<p>とりあえずは基本的な導入部分が続きます。 ソースコードを見ていると、当たり前のことだけど、OSも 人間がプログラミングしたものだ、と感じるることができて なかなか感慨深いです。</p>
+
+<p>並行してunix v6のソースコードも実はゆっくり読んでるんですが やはりソースコードの可読性やx86上で動作するということもあって 個人的には、xv6のほうが入りやすいかな、と感じています。</p>
+
+<p>個人的に読むために、既に結構先まで翻訳してある(翻訳というのもおこがましい ようなもの)のですが、なかなかブログにまとめることができずに、ようやく ２回目です。</p>
+
+<p>一応目標としては、卒業するまでに全編、理解も含めて読み終えることです。 頑張ります。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた]]></title>
+    <link href="http://KentaKomai.github.io/blog/2013/11/19/wordpress75/"/>
+    <updated>2013-11-19T00:00:00+09:00</updated>
+    <id>http://KentaKomai.github.io/blog/2013/11/19/wordpress75</id>
+    <content type="html"><![CDATA[<h3>注意</h3>
+
+<p>この記事はwriteup記事ではありません。 僕が出場しているときに、解くことができなかったので、公開されている writeupを読んで反省しよう、という内容です。</p>
+
+<p>writeupを読みたい、という方はGoogle検索するといくつか 記事が公開されているので、そちらをどうぞ</p>
+
+<p>今回読ませていただいたのは<a href="http://hacktracking.blogspot.jp/2013/11/cscamp-ctf-quals-2k13-forensics.html">こちら</a>のwriteupです。</p>
+
+<h3>問題の概要（すごくザックリ）</h3>
+
+<h4>本文</h4>
+
+<pre><code>Databases are very critical. Thats why there is an always backup of the database.
+Our database admin, John, had an attack and he lost all information in his database, 
+thats why had to use the backup.Unfortunately, the back up was tampered by some 
+script kiddie. The attacker added some fake users to the database. John is asking 
+you if you can get the name of these users.
+Flag is in this form: flag=md5("user1,user2,usern,...")
+</code></pre>
+
+<p>ハッキングされてデータベースの中身が消えちゃったので、バックアップファイル から復元しないといけないんだけど、バックアップファイルが改ざんされて、不正ユーザ が紛れ込んでしまいました。不正に追加されたユーザは誰ですか？ 全員の名前をカンマ区切りでmd5したものがフラグです。</p>
+
+<p>といった問題</p>
+
+<p>問題ファイルとして配布されていたのは、rarで圧縮されたファイルで 中身は以下のsqlファイル</p>
+
+<pre>DROP TABLE `myTable`;
+
+CREATE TABLE `myTable` (
+  `id` mediumint(8) unsigned NOT NULL auto_increment,
+  `name` varchar(255) default NULL,
+  `password` varchar(255),
+  `permission` mediumint default NULL,
+  `score` varchar(100) default NULL,
+  PRIMARY KEY (`id`)
+) AUTO_INCREMENT=1;
+
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Riley Holman","4BA964803B710605F6F7BBFF2CE81BF6",421,"77.88");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Maxine Austin","DE8E13534B39BA8354247F3F1EF85A82",428,"19.88");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Aretha Ball","A46E8222DCB12F466396586DD05F9604",436,"71.37");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Iliana Combs","4956611731BA8F4F4C52A67A0EA4917D",433,"18.58");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Sacha Evans","1F69275D041F9E5C8B43C2D0CF8A95FB",415,"23.13");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Gabriel Floyd","7DA5DF7C8615FD929CFA8F339924E896",416,"15.65");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Cole Pierce","223FB9108E9A85A2E9622F57DD0324F5",421,"70.29");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Carolyn Evans","2B5234CEC28F0253448C25D6816D782A",414,"90.68");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Jelani Rodgers","8B867BE7B0CF51723DFA50038852DDF5",428,"83.10");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Josephine Ratliff","02A7EB4D15539223833CBB2E9FDE85A9",426,"3.45");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Ginger Brooks","71653BA64D976CA38656F54EE9981F99",401,"53.71");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Yuri Suarez","3B8AF637C01F98508A479E010FA90A73",418,"18.35");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Ainsley Stone","562C32E3C78C0317CF7D0789731A918F",425,"35.04");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Molly Powell","BDAE91761A79770577E1F129B32ABD67",436,"32.12");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Alyssa Gregory","52CB473DFBE43624547FFB29700EB040",410,"22.62");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("August Rodgers","78057B4CFAE303BF262CD2CCDD0E01A8",433,"0.75");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Neville Todd","272E6DDAD05D3BFF92C5FA6EB7932424",436,"23.56");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Evan Cohen","120C001D3DD3700C0A2E5A79CBB07039",410,"59.59");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Deborah Garner","346184FCBFC7F7ADD557113284517A7A",447,"99.64");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Steel Richmond","72B3DA05A80855DD6F0874E9C8077E3E",402,"78.22");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Vielka Chambers","E9334B3C18AEF9F8136A0FB76AA5B989",412,"32.31");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Oleg Sherman","871589F79961AA75A701EBC466C0A8E2",448,"15.53");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Wyatt Humphrey","796E2F53AFBF930B1B762D237A1AA112",433,"65.41");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Kay Benson","D86025C1F02A1E270FA47552F6311B2E",413,"77.40");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Lacy West","6EC8DCB8E9A69A0E26446B78C3AA73AE",408,"29.38");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Hiram Hurst","02280B275C73EE7342ACFE7A6B44DBCE",444,"81.44");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Thaddeus Higgins","F996F6E35CA80D3DD14770CBE77C6635",401,"39.35");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Randall Pearson","F29286D07B348490C9D87503B66063C6",420,"72.95");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Grace Mckenzie","EB7F2337B70C4AAC1FC5B2CC9F805D94",431,"29.35");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Aurora Davis","C4640E4D2E7E07B52D1E7167641BE2EB",422,"12.14");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Geraldine Watts","743462B522085EA36BAD2EEDD1C8827F",421,"38.31");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Norman Durham","DEF31249723B8F56245F16C9FF1F5C33",435,"63.53");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Colorado Hess","C6A5DD9969ECB22B498E87F8DCB07F73",417,"37.14");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Cade Mcintyre","3F3C6CA38D531EBF73FF0BB13B870A03",434,"71.96");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Dillon Yang","10A498AC98890B90B5CD8750700BB5BC",419,"89.23");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Haley Branch","FEBB74414FA5BF1888E80F9BAE774D93",435,"51.42");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Finn Woods","2934E3E3EE577D5FD5890708BD1F86FB",400,"47.24");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Craig York","E6E25D7D443428CC84C00A1F28FE83E7",432,"73.24");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Rudyard Mejia","FA1DF603880504104B24EA3C37AA1741",408,"90.53");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Grace Todd","1CE546597AB7E7A254628DC2F4707DE9",429,"12.74");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Sasha Velez","E448BE33DADF0262A4FD3453B225BF49",413,"47.03");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Kieran Bryant","F753400403B3EF3C37173399F9D9E6BD",443,"45.67");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Alfreda Beach","20161525318F501C456D40AEE19CE9D0",433,"62.25");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Vernon Joyce","C4917BA71B8EFE4D358149A074D8EC0B",402,"65.50");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Maryam Sandoval","867F728527AFAF7B30648A219F150C28",407,"57.94");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Lila Lindsey","AC1FE8AD294ED542DF4E930E4C0CEA58",419,"42.03");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Ifeoma Larsen","4F211C6FAB4C9417D58B94C626BBC231",403,"80.25");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Hermione Craig","2292D579EBA69FE5821E58A15C56DBA0",446,"8.18");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("David Crane","B9A586FFFFD480676E183EDAB94C78F3",406,"91.12");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Mercedes Lott","A089077408B7E996D7483DC055097A21",437,"18.61");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Melodie Patton","C2212ACA95303B5BE38E9DE249455F11",406,"52.03");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Denise Cardenas","4FEF84297DF3C2BBB89EC332824948B9",423,"63.72");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Martha Livingston","0EB9689A5B506DA5AD8D5B1FF9B90521",413,"88.61");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Sarah Owen","B645BFAB686B33309F28FC38D9AED798",445,"73.31");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Selma Simon","9C8530BE4F25827013490D4EAB83A503",408,"75.45");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Kylan Mcfadden","5954E473C9BDBE24FF8EA46DECE2F7C5",403,"13.68");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Avram Miranda","F5132BE06D2BC14BC8297E7ADF6307DF",442,"8.17");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Wanda Chambers","FB002E2DA3160A89271C50380A508428",400,"12.05");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Courtney Le","21AFCE12ECB8E29B8AE0B96B2BDAB12D",410,"83.37");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Shay Short","FCF2ABE3A0D5974A2E1D0CBA8DD60B30",424,"63.03");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Chanda Clarke","2E05813EBA25D06B137CC4A25565D980",423,"29.56");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Leroy Haney","FB9D640C103D264E2985EDB4B4DBC61C",406,"7.14");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Nadine Michael","8FA40B7DDE2B1C36B12FD7D834A065AF",415,"41.12");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Drew Donaldson","5FB3DA68B2C2DE5DBDA41EF155B4AF7F",449,"15.88");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Daniel Crane","CE95AB2D9026CF010F1146D80C00C438",408,"67.83");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Ross Stuart","C80920C8DC9EC9FED6B668764BADE7BB",401,"78.26");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Octavius Gamble","2C1B9D48AD88BE425C9C146E3E9EE531",405,"43.60");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Fredericka Rice","B303DEC6AAAC075C8A37D21C06F185E3",426,"71.67");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Vance Huff","5D3C7E74FFAB75FF210F27F4F422C1A2",446,"45.38");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Shaine Ward","6C6AB557DA6CD8DCA4BF3016C20F0EE7",432,"69.75");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Ezekiel Bush","5A7C8125EB2A6665A66038129F00952E",401,"3.46");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Lewis Nguyen","8ADD9803F69410A13335C26CCCFAD855",410,"31.50");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Catherine Daniel","CB30AAAEBA9DDC0383A5F74A4DFA02DD",443,"16.57");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Barry Shepherd","8B7772040D5358EB85F2AD14D32B1389",449,"82.82");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Adrienne Benton","621B2E06494F1AF44C58A9A5BEE5EE64",403,"50.67");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Jillian Alston","3609AAEAC8A0C7652008BE60C5616E1A",415,"52.98");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Chanda Dickson","FD2A9A4A7C0CE0C6CADC723991B36E76",437,"56.76");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Lara Benson","535FA2060136DE4A56DFFFB369AD53EA",422,"0.21");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Deborah Moreno","16A86BBD8913F80F80AB7354982306D1",440,"70.72");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Keaton Navarro","3360C02FFA0F219D8C3D5C09C67E3087",413,"97.27");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Wanda Justice","0F90F41E6374B479A49400BE4B7B0630",419,"5.66");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Sacha Briggs","513386AC2F4B995D9598A5055686C582",423,"33.26");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Nevada Gordon","F10C3F1F9A46490C35D9B3210893F58F",420,"28.47");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Leilani Rivas","A9E928D9D79ABF74AB6CCF6FEB8E21AC",434,"98.00");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Kylie Green","D136FAF95F0AAB1770E7F9FDC189B1E8",411,"10.19");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Brian Welch","2CFC1ECC98D00DE7D87B484E46CD9ECC",435,"11.88");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Orson Livingston","DA593D64D4251BCC040E86B50A1C5D52",426,"3.11");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Mikayla Ratliff","C820573A8E75FB5D3C99D3BA99FB1A7D",408,"38.26");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Mechelle Stout","8113A0AFF55D9262FAD9378E8365514E",409,"49.53");
+INSERT INTO `myTable` (`name`,`password`,`permission`,`score`) VALUES ("Gay Buck","D5CC5123B49E33CC7356B8C1EE5D1AEE",402,"77.25");
+
+</pre>
+
+
+<p>これをmysqlに実際に作成して、色々ソートしたり、名前をひとつひとつググってみたり したけど、特にアテはありませんでした・・・。 (名前はどれをGoogle検索してもFacebookやYoutubeが出てくる、いわゆるよくある名前っぽい)</p>
+
+<p>permissionの値が400-449の範囲だったので、もしかしたらこの数字は Linuxなどで用いられるファイル権限の数字ではないか、と思って 408やら449やらの、変なpermissionの値を持ったユーザを抽出してみたりしたけど、 これもダメでした。</p>
+
+<p>そこで競技終了後に参加者の方が公開してくださったwriteupを拝見させていただきました。 <a href="http://hacktracking.blogspot.jp/2013/11/cscamp-ctf-quals-2k13-forensics.html">こちら</a></p>
+
+<pre># names=$(while read line; do hex=`echo "$line" | xxd -p | tr -d '\n'`; if [ "`echo $hex | grep 0d`" != "" ]; then echo "`grep -A 1 "$line" dataNov-8-2013.sql | tail -n 1 | awk -F '"' '{print $2}'`"; fi; done &lt; dataNov-8-2013.sql | tr '\n' ',')
+# echo -n ${names:0:-1} | md5sum
+</pre>
+
+
+<p>これでフラグが出ています。すげー！ ちょっとパッと見何をしているかわからなかったので 読みやすく直してみる</p>
+
+<p></pre></p>
+
+<pre># names=$(
+    while read line;    #dataNov-8-2013.sqlを１行ずつ読み込んで$lineに格納
+    do
+        hex=`echo "$line" | xxd -p | tr -d '\n'`;   # $lineを16進数に変換し、改行文字を削除し$hexに格納
+        if [ "`echo $hex | grep 0d`" != "" ];       # $hexの中に0dが含まれていればtrue
+        then
+            # $lineの後ろ１行だけを抜き出し、その行を " で区切り二つめをprintする(つまり名前)
+            echo "`grep -A 1 "$line" dataNov-8-2013.sql | tail -n 1 | awk -F '"' '{print $2}'`"; 
+        fi;
+    done
+    &lt; dataNov-8-2013.sql | tr '\n' ',') # 最後に抽出した名前一覧の改行をカンマに変換して$nameに格納
+# echo -n ${names:0:-1} | md5sum # # namesの最初から最後まで全て出力し、md5にする
+</pre>
+
+
+<p>つまりポイントは0x0dで、これが含まれる行の次の行に含まれるユーザが不正に追加されたユーザである という内容のスクリプトでした。</p>
+
+<p>これはどういうことか、というと、0x0dはキーボードでいう「Enter」キーのコード。 ここでキーボードのEnterが押されて、次の行が挿入された可能性がある、ということ だと思います。</p>
+
+<p>この発想はなかった・・・orz</p>
+
+<p>これに関して、以下の記事が非常に参考になりました。ありがとうございました。</p>
+
+<p><a href="http://ash.jp/code/return.htm">改行コードの話</a></p>
+
+<p>hexdump -C したものをファイルに出力してvimで見てみました。</p>
+
+<p><a href="http://i1.wp.com/komaken.me/blog/wp-content/uploads/2013/11/Screen-Shot-2013-11-19-at-0.38.59.png" rel="image_group"><img src="http://i0.wp.com/komaken.me/blog/wp-content/uploads/2013/11/Screen-Shot-2013-11-19-at-0.38.59-1024x524.png?fit=955%2C488" alt="Screen Shot 2013-11-19 at 0.38.59" class="alignnone size-large wp-image-936" data-recalc-dims="1" /></a></p>
+
+<p>うわ・・・確かに正規に追加されたと思われる0x0a(LF)とは別に0x0d(CR)が含まれている 行が５行だけある・・・一度バイナリエディタで中身みたのに・・・うぅ・・・</p>
+
+<p>というわけで不正ユーザは Aurora Davis,Melodie Patton,Octavius Gamble,Lara Benson,Leilani Rivas の５人でした。</p>
+
+<p>とても勉強になりました。</p>
+
+<p>CSCamp CTFの運営のみなさん、一緒に参加してくれたよかろうもんのメンバーのみなさん、writeupを公開してくれている他の参加者の方々 ありがとうございました。</pre></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Vagrant + Chef solo + Berkshelfを試してみたのでまとめ]]></title>
+    <link href="http://KentaKomai.github.io/blog/2013/11/18/wordpress74/"/>
+    <updated>2013-11-18T00:00:00+09:00</updated>
+    <id>http://KentaKomai.github.io/blog/2013/11/18/wordpress74</id>
+    <content type="html"><![CDATA[<p>xv6ソースコードの読解とテキスト翻訳はどうした、と言われそうですが、 なかなかまとまった時間じゃないと作業進まなくて、ちょっとしたスキマ時間 では、溜まってた試してみたいことなんかをやっています。</p>
+
+<p>今回はVargrant + chef solo + Berkshelfという構成に関してです (本筋のxv6に関してもちゃんと進めてます、ゆっくりですが・・・)</p>
+
+<h2>目的</h2>
+
+<p>例えばチームで開発を行うときに、開発されているソースコードを 実行する環境は、プログラマ、デザイナー、テスターでそれぞれ ローカルに用意することが多いですが</p>
+
+<p>その場合、往々にして発生する問題が「僕のところでは動いているのに、 他の人の環境になると動かない・・・」という問題。プログラマはUbuntu、デザイナーは Mac、テスターはwindowsなんてよくありそう。</p>
+
+<p>その原因はOSだったりインストールされている他のモジュールのバージョンが 違っていたりと、挙げるとキリがないほどあります。並行作業してる 他のプロジェクトで行った設定が原因で動かない、なんてことがあると、 どうしようもなくなります。</p>
+
+<p>それらを解決してくれるのが今回のVagrantと、併せて利用する ツール群</p>
+
+<p>「ある目的を実現するための環境や設定を専用に用意し、 チーム（または個人）共通のものとして構築する」などの目的で利用すると便利 です。</p>
+
+<p>WEB開発を複数プロジェクト進めていくとVirtualHost設定がどんどん膨れ上がったりしていく のは僕にも経験があります。いちいちVirtualHost設定じゃなくて、専用の環境があったら （しかも簡単に構築できたら）ありがたいですよね。</p>
+
+<h2>概要</h2>
+
+<p>この記事ではopscodeからcookbookのひな形を ダウンロードし、仮想環境でそれらをそのまま実行するまでを 紹介します。（とりあえず使ってみたい人向け）</p>
+
+<p>それぞれのソフトウェアやOSの細かい設定などは取り扱ってません。 僕が必要になれば別途記事にまとめるかもしれません。</p>
+
+<h3>1. Vagrant</h3>
+
+<p>異なる環境に簡単に以降できる開発環境を構築・管理して配布したり することができる環境構築ツール。</p>
+
+<p>環境に関する設定ファイル(VagrantFile)を ヴァージョン管理すれば、環境が変わっても、コマンド一発で環境を消して また再構築するだけで済みます。デフォルトでフォルダ共有設定も行ってくれます。</p>
+
+<h3>2. Chef solo</h3>
+
+<p>サーバ構成を管理するためのツール。本来はサーバとクライアントを用意して サーバをクライアントから確認することで、サーバ構成を共通にするツール(Chef serverとChef client) ですが、それをCookbookと呼ばれる構築手順が記述されたファイルに添って クライアント/サーバモデルでなく、１台でも構成を管理できるようにしたものが chef solo(であってますよね・・・？)</p>
+
+<p>こちらもchef soloに関する専用のディレクトリをチーム間でバージョン管理すれば すぐに、サーバに設定変更を反映させることができます。</p>
+
+<p>イメージ的には</p>
+
+<ul>
+<li>VagrantはVMそのものを作成するためのツール</li>
+<li>Chef soloはVagrantで作成したVM（仮想環境）に指定したツールのインストールや設定を自動で行うツール</li>
+</ul>
+
+
+<p>という感じです。</p>
+
+<h3>3. Berkshelf</h3>
+
+<p>Vagrant + Chef Soloでも１から仮想環境を構築(設定も含む)することに比べたら、 かなり自動化が進むのですが、さらにBerkshelfを利用することで、 Chef soloで用いるcookbook（インストールしたいソフトウェアと、 その設定などが記述されたファイル）のひな形を自動で取得・生成することが可能になります。</p>
+
+<p>ここまで来ると、手作業でするのは、いよいよ環境独自に必要な細かい設定だけになります。 インストールするだけならひな形だけでも問題ないので、コマンド入力以外の手作業を、 ほぼ全部省略して環境構築が終わります。</p>
+
+<hr />
+
+<p>今回利用するツールは以上３つです。</p>
+
+<h2>インストール</h2>
+
+<p>僕はMacOSC 10.9 Mervericks上で動作を確認しています。</p>
+
+<h3>Vagrantのインストール</h3>
+
+<p><a href="http://www.vagrantup.com/">Vagrant公式サイト</a>から.dmgファイルをダウンロードして インストールするだけ。</p>
+
+<p>インストールができているかの確認は</p>
+
+<pre>$ vagrant --version
+</pre>
+
+
+<p>で表示されればOKです。僕の環境では1.3.5です。</p>
+
+<h3>Chef solo, Berkshelfのインストール</h3>
+
+<pre>$ gem i chef --no-ri --no-rdoc          //chefのインストール
+$ gem i knife-solo --no-ri --no-rdoc    //knifeのプラグインknife soloのインストール
+$ gem i berkshelf --no-ri --no-rdoc     //berkshelfのインストール
+</pre>
+
+
+<p>※gemコマンドにはrubyが必要です。まずはgemがインストールされているかチェックしてください</p>
+
+<h2>超ざっくり使い方手順</h2>
+
+<p>※インストールまでは終わってる状態です。</p>
+
+<h3>1. [Vagrant編] ひな形のOSイメージをインストールする</h3>
+
+<p>URLはboxファイルが存在するパスかURLを指定してあげます。</p>
+
+<p><a href="http://www.vagrantbox.es/">ここ(Vagrant.es)</a> に有志で配布されている様々な環境のboxが公開されています。 ※あくまで有志なのでリンクが切れていたり、チュートリアルがスムーズに 進まない場合があるboxも含まれているので注意してください。</p>
+
+<p>チュートリアルでは<a href="http://files.vagrantup.com/precise32.box">http://files.vagrantup.com/precise32.box</a> が利用されている場合が多いです。</p>
+
+<pre>$ vagrant box add [box名(任意)] [Path or URL]
+</pre>
+
+
+<h3>2. [Vagrant編] VMを作成する</h3>
+
+<p>カレントディレクトリに設定ファイルが作成されるため 可能であれば、専用のディレクトリを作成することをオススメします。</p>
+
+<pre>$ mkdir vagrantSmaple; cd vagrantSampe //専用フォルダを作成し移動
+$ vagrant init [box名]               //インストールされているboxを元に設定ファイルを作成
+</pre>
+
+
+<p>これを終えた段階でカレントディレクトリにVagrantFileという 環境設定のためのファイルが作成されます。</p>
+
+<p>必要があれば、こちらを編集することでVMの設定を変更することができます。</p>
+
+<pre>config.vm.network :private_network, ip: "192.168.33.10"$
+</pre>
+
+
+<p>例えば、コメントアウトされている上記の行をアンコメントすることで 仮想環境に固定IPアドレスが割り当てられます。</p>
+
+<h3>3. [Vagrant編] VMを起動する</h3>
+
+<pre>$ vagrant up
+</pre>
+
+
+<p>初回起動時のみ、boxからVMを構築するため若干時間がかかります。 プロビジョニング(chefなどで環境設定を行う処理)も初回起動時のみ 動作します（Vagrant 1.3.0以降）</p>
+
+<p>あとは</p>
+
+<pre>vagrant ssh
+</pre>
+
+
+<p>で環境にsshログインができます。 ちなみに、sshログインは公開鍵暗号で行われており~/.vagrant.d/insecure_private_keyが 秘密鍵になっています。</p>
+
+<p>ssh設定を確認したいときは</p>
+
+<pre>$ vagrant ssh-config --host [host名(省略した場合はdefault)]
+</pre>
+
+
+<p>で表示することができるので</p>
+
+<pre>$ vagrant ssh-config --host [host名] >> ~/.ssh/config
+</pre>
+
+
+<p>することで自分の環境から簡単にログインできるようになります。</p>
+
+<h3>番外 [Vagrant編] プラグインとコマンド補足</h3>
+
+<p>その他、よく使いそうなコマンド集</p>
+
+<pre>$ vagrant box list      //boxの一覧
+$ vagrant box remove    //boxの削除
+$ vagrant halt          //VMの終了
+$ vagrant reload        //VMの再起動
+$ vagrant status        //現在の全VMの状態
+</pre>
+
+
+<p>いろんな人がすすめてるプラグイン</p>
+
+<pre>$ vagrant plugin install vagrant-berkshelf  //berkshelf使うためのプラグイン
+$ vagrant plugin install vagrant-omnibus    //VMにchefがインストールされているかチェックしてくれる
+$ vagrant plugin install sahara             //VMのロールバックをできるようにしてくれる
+</pre>
+
+
+<p>これらの解説はこの記事ではしていません。 もし必要であればぐぐってみてください。(この記事でやってることは 多分なくてもできると思う)</p>
+
+<h3>1. [Chef solo + Berkshelf編] Chefの設定ファイルなどを格納する専用ディレクトリのひな形を作成する</h3>
+
+<p>VagrantFileが作成されたディレクトリで</p>
+
+<pre>$ Knife solo init [ディレクトリ名（任意）]
+</pre>
+
+
+<p>を実行することで、ひな形が作成されます。chef-repoというディレクトリ名が つけられるケースを、ぐぐった限りではよく見かけました。</p>
+
+<h3>2. [Chef solo + Berkshelf編] Berkshelfでダウンロードしたいcookbookのひな形を決定する</h3>
+
+<p>前述の手順でchef専用ディレクトリを作成すると、そのディレクトリの中に BerksFileというファイルが作成されます。(chef-repoという名前をつけたことにします。)</p>
+
+<p>このファイルで、どのひな形を入手するかを 記述します。(なければ自作してOKです。)</p>
+
+<pre>site :opscode
+cookbook 'python'
+cookbook 'nginx'
+cookbook 'git'
+</pre>
+
+
+<p>とりあえず上記がサンプル。</p>
+
+<p>opscodeというcookbookを公開している場所からpythonとnginxとgitの cookbookをダウンロードすることを意味しています。</p>
+
+<p>ちなみにopscodeのcookbookは<a href="https://github.com/opscode-cookbooks">こちら</a></p>
+
+<p>この中にあるものであれば、誰でも好きに利用できるようです。</p>
+
+<p>編集が終わったら</p>
+
+<pre>$ berks install --path cookbooks/
+</pre>
+
+
+<p>とすることでcookbookをダウンロードし、chef-repo/cookbooks/ディレクトリの中に 関連するファイル群を保存してくれます。</p>
+
+<p>この中で、それぞれのソフトウェアに対する設定なんかを記述できますが、今回は 省略（色々ありすぎるので）</p>
+
+<p>とりあえず一連の流れを利用できることを目標にしています。</p>
+
+<h3>3. [Chef solo + Berkshelf編] 構築した仮想環境にchefをインストールする</h3>
+
+<p>chefを仮想環境上で動作させるためには、仮想環境自体にchefが入っていることが必要です。</p>
+
+<p>そのため、仮想環境にchefをホストからインストールします。</p>
+
+<pre>$ knife solo prepare [user name]@[VMのIPアドレス] -i ~/.vagrant.d/insecure_private_key
+</pre>
+
+
+<p>でホストから仮想環境へchefのインストールができます。 もし、</p>
+
+<pre>ERROR: Net::SSH::HostKeyMismatch: fingerprint XXXXXXXXXXXXXXXXXXXXXXXXX.....
+</pre>
+
+
+<p>というエラーが出たら、~/.ssh/known_hostsにVMのIPアドレスの情報が残っている可能性があるので、 その１行を消して下さい。~/.ssh/known_hostsをIPアドレスで検索すればすぐに見つかると思います。</p>
+
+<pre>$ vagrant ssh-config --host [host名] >> ~/.ssh/config
+</pre>
+
+
+<p>していれば</p>
+
+<pre>$ knife solo prepare [host名]
+</pre>
+
+
+<p>でももちろん実行可能です(わざわざ書かなくてもいいか・・・)</p>
+
+<p>ここまで実行するとchef-repo/nodes/ の中にjsonファイルが生成されます。(default.jsonとか、[host名].json) いよいよもう少しです。</p>
+
+<h2>4. [Chef solo + Berkshelf編] VMにcookbookで指定したソフトウェアのインストールや設定を反映させる</h2>
+
+<p>chef-repo/node/の中に入っているjsonファイルに、実際に利用するcookbookを指定してあげます。</p>
+
+<pre>{ 
+    runlist:[
+    ]
+}
+</pre>
+
+
+<p>というひな形があるので、runlistの中に実際に実行するcookbookの名前を記述します。</p>
+
+<pre>{ 
+    runlist:[
+        'python',
+        'git',
+        'nginx'
+    ]
+}
+</pre>
+
+
+<p>これでOK。</p>
+
+<p>最後に、実際に仮想環境にこれらをインストールすることを指示してあげます。 (※カレントディレクトリはchef-repoです)</p>
+
+<pre>$ knife solo cook [user name]@[VMのIPアドレス] -i ~/.vagrant.d/insecure_private_key nodes/[host名].json
+もしくは
+$ knife solo cook [~/.ssh/configに追加したhost名] nodes/[host名].json
+</pre>
+
+
+<p>するだけ。これで対象の仮想環境にpythonとnginxがインストールされました。 めでたしめでたし。</p>
+
+<hr />
+
+<p>以上です。 とりあえずcookbookのひな形をもってきてインストールするだけ。までをやりました。 次回またまとまった内容があれば、プロビジョニングやアプリケーション、OSの細かい設定 などを行っていきたいと思います。 (この記事の内容だけだとnginxはインストールされただけで、実行されてないしｗ)</p>
+
+<h2>参考にさせていただいたリンク</h2>
+
+<ul>
+<li><a href="http://qiita.com/taiki45/items/b46a2f32248720ec2bae">今っぽい Vagrant + Chef Solo チュートリアル</a></li>
+<li><a href="http://qiita.com/koizuss@github/items/599b453bf3e38f825027">knife solo prepare で ERROR: Net::SSH::HostKeyMismatch:</a></li>
+<li><a href="http://www.amazon.co.jp/%E5%85%A5%E9%96%80Chef-Solo-Infrastructure-as-Code-ebook/dp/B00BSPH158">入門Chef Solo &#8211; Infrastructure as Code(Kindle本)</a></li>
+<li><a href="http://www.msng.info/archives/2013/09/vagrant-1-3-0-no-provision.php">Vagrant 1.3.0 からは2回目以降の起動時にプロビジョニングが自動で走らないので注意</a></li>
+</ul>
+
+
+<hr />
+
+<h3>追記</h3>
+
+<h4>2013/11/18</h4>
+
+<ol>
+<li><p>リンク先が違っているとご指摘いただいたので、修正いたしました。</p></li>
+<li><p>コメントにいただいているように、Vagrant-Berkshelfプラグインを導入すると更に手順を簡略化することもできそうなので 後日手元で動作を確認後、文章がまとまればブログにしてみたいと思います。機会があれば読んでいただけると嬉しいです。</p></li>
+</ol>
+
+
+<p>よろしくお願いします(・∀・)</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[xv6のソースコードとテキストを読んでみる1_chapter0_1]]></title>
+    <link href="http://KentaKomai.github.io/blog/2013/11/10/wordpress73/"/>
+    <updated>2013-11-10T00:00:00+09:00</updated>
+    <id>http://KentaKomai.github.io/blog/2013/11/10/wordpress73</id>
+    <content type="html"><![CDATA[<p><a href="http://komaken.me/blog/2013/10/28/xv6%E3%81%AE%E3%82%BD%E3%83%BC%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%89%E3%81%A8%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88%E3%82%92%E8%AA%AD%E3%82%93%E3%81%A7%E3%81%BF%E3%82%8B-0/">前回</a>に書いたとおり、 Unix v6の移植版xv6のソースコードと、テキストを読んでいこうと思います。</p>
+
+<p>本当はchapterごとに１記事書いていこうと思ってたんですが、 思っていた以上に僕の英語力がダメで翻訳にものすごい時間かかってしまっているので、 chapter内でもキリのいいところで、紹介していこうと思います。</p>
+
+<p>翻訳ははっきりいってかなりお粗末なもので、 僕が独自に解釈したものが多く含まれています。</p>
+
+<p>間違った内容が載っている可能性もあります。ご注意ください。 (※お気づきの方いらっしゃいましたら、教えてくれるととてもありがたいです。)</p>
+
+<p>概要が伝わること、少しでも興味を持つきっかけなんかになれば とても嬉しく思います。</p>
+
+<h2>Chapter 0</h2>
+
+<h3>OSのインターフェース</h3>
+
+<p>OSの仕事は複数のプログラムや複数のサービスを提供し、 低レイヤーのハードウェアの動作を管理して、抽象化します。</p>
+
+<p>またOSはインターフェースを通してユーザが作成したプログラムに OSのサービスを提供します。より良いインターフェースをデザインすることは 難しいことです。私達プログラマは実装を正しく簡単に行うために、 シンプルで簡単なインターフェースを望むこともあれば、 アプリケーションに多くの機能を盛り込みたい場合、複雑で詳細に設定したり命令可能な インターフェースを望むこともあります。この２つの言い分をバランス良く解決する 方法として、多くの一般的な機能を抽出して、それらを結合することもできる、 いくつかのメカニズムに依存するインターフェースをデザインする必要があります。</p>
+
+<p>(中略)</p>
+
+<p>実行されているプログラムはプロセスと呼ばれ、テキスト、データ、 そしてスタックをメモリ上に保持しています。 テキストはプログラムの命令が、データには演算に利用される 変数など、そしてスタックはプログラムのプロシージャが含まれています。 (ここはかなり僕の解釈で原文ままではない、と思います。)</p>
+
+<p>プロセスがカーネルが提供するサービスを利用するときは、OSのインターフェース 経由で呼び出します。そのような命令をシステムコールと呼びます。システムコールは カーネルの内部に入り込み、サービスを実行し結果を返します。このように ユーザプログラムがシステムコールを利用するとき、 プロセスはユーザスペースとカーネルスペースの間を行き来します。</p>
+
+<p>カーネルは、それぞれのプロセスが自身のユーザスペースで実行されることを確実にするために、 CPUのプロテクション機構を利用し、保護を実現するために必要な権限で実行されます。 ユーザプログラムにこの権現はありません。ユーザプログラムがシステムコールを呼び出すときは ハードウェアで権限を上げ、カーネルで準備された機能を実行します。</p>
+
+<p>xv6カーネルが提供するシステムコールは以下の通りです。</p>
+
+<pre>fork()  プロセスを作成する
+exit()  現在のプロセスを終了する
+wait()  子プロセスが終了するのを待つ
+kell(pid)   pidのプロセスを終了する
+getpid()    現在実行中のプロセスを返す
+sleep(n)    n秒プロセスをスリープする
+exec(filename, *argv)   ファイルを読み込み実行する
+sbrk(n) プロセスのメモリをn byte拡張する
+open(filename, flags)   ファイルを開く。フラグは read / write
+read(fd, buf, n)    ファイルを n byte読み込む
+write(fd, but, n)   ファイルに n byte書き込む
+close(fd)   開いたファイルを閉じる
+dup(fd) ファイルコピー
+pipe(p) 
+chdir(dirname)  カレントディレクトリの変更
+mkdir(dirname)  ディレクトリを新規作成する
+mknod(name, major, minor)   デバイスファイルを新規作成する
+fstat(fd)   ファイルの詳細を返す
+link(f1, f2)    f1のリンクをf2に作成する
+unlink(filename)    ファイルを削除する
+</pre>
+
+
+<p>シェルはユーザが入力したコマンドを読み込み、実行する通常の ユーザプログラムであり、カーネルの一部ではありません。これはシステムコールの インターフェースのおかげで、シェルは内部的にシステムコールを利用しているだけです。</p>
+
+<p>そのためUnixではシェルをsh,bash,zshなど、それぞれユーザが 好きなものに変更することが可能になっています。</p>
+
+<h3>原文</h3>
+
+<p>後ほど復習と確認のため、今回書いた場所の原文も中略した部分を含めて載せておきます。(図やイメージなどは省略してます。)</p>
+
+<p><a href="https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=1&amp;cad=rja&amp;ved=0CCoQFjAA&amp;url=http%3A%2F%2Fwww.cs.columbia.edu%2F~junfeng%2F11sp-w4118%2Flectures%2Funix.pdf&amp;ei=nGt-UorzKI2jkgW8kIDQAw&amp;usg=AFQjCNFvDyV-VUcoFSYuBed2Vu090cvxkw&amp;sig2=4hqRhlAF7nIFcZ4PdU1CfA&amp;bvm=bv.56146854,d.dGI">オリジナル</a></p>
+
+<p>The job of an operating system is to share a computer among multiple programs and to provide a more useful set of services than the hardware alone supports. The operating system manages and abstracts the low-level hardware, so that, for example, a word processor need not concern itself with which type of disk hardware is being used. It also multiplexes the hardware, allowing many programs to share the computer and run (or appear to run) at the same time. Finally, operating systems provide con- trolled ways for programs to interact, so that they can share data or work together.</p>
+
+<p>An operating system provides services to user programs through an interface. Designing a good interface turns out to be difficult. On the one hand, we would like the interface to be simple and narrow because that makes it easier to get the imple- mentation right. On the other hand, we may be tempted to offer many sophisticated features to applications. The trick in resolving this tension is to design interfaces that rely on a few mechanisms that can be combined to provide much generality.</p>
+
+<p>This book uses a single operating system as a concrete example to illustrate oper- ating system concepts. That operating system, xv6, provides the basic interfaces intro- duced by Ken Thompson and Dennis Ritchie’s Unix operating system, as well as mim- icking Unix’s internal design. Unix provides a narrow interface whose mechanisms combine well, offering a surprising degree of generality. This interface has been so successful that modern operating systems—BSD, Linux, Mac OS X, Solaris, and even, to a lesser extent, Microsoft Windows—have Unix-like interfaces. Understanding xv6 is a good start toward understanding any of these systems and many others.</p>
+
+<p>As shown in Figure 0-1, xv6 takes the traditional form of a kernel, a special pro- gram that provides services to running programs. Each running program, called a process, has memory containing instructions, data, and a stack. The instructions im- plement the program’s computation. The data are the variables on which the computa- tion acts. The stack organizes the program’s procedure calls.</p>
+
+<p>When a process needs to invoke a kernel service, it invokes a procedure call in the operating system interface. Such procedures are call system calls. The system call enters the kernel; the kernel performs the service and returns. Thus a process al- ternates between executing in user space and kernel space.</p>
+
+<p>The kernel uses the CPU’s hardware protection mechanisms to ensure that each process executing in user space can access only its own memory. The kernel executes with the hardware privileges required to implement these protections; user programs execute without those privileges. When a user program invokes a system call, the hardware raises the privilege level and starts executing a pre-arranged function in the kernel. The collection of system calls that a kernel provides is the interface that user pro- grams see. The xv6 kernel provides a subset of the services and system calls that Unix kernels traditionally offer. The calls are:</p>
+
+<p>he rest of this chapter outlines xv6’s services—processes, memory, file descrip- tors, pipes, and file system—and illustrates them with code snippets and discussions of how the shell uses them. The shell’s use of system calls illustrates how carefully they have been designed. The shell is an ordinary program that reads commands from the user and exe- cutes them, and is the primary user interface to traditional Unix-like systems. The fact that the shell is a user program, not part of the kernel, illustrates the power of the sys- tem call interface: there is nothing special about the shell. It also means that the shell is easy to replace; as a result, modern Unix systems have a variety of shells to choose from, each with its own user interface and scripting features. The xv6 shell is a simple implementation of the essence of the Unix Bourne shell. Its implementation can be found at line (7850).</p>
+
+<h2>感想</h2>
+
+<p>この辺の導入部分は、ひとまず知識としては既に知っていることも多く、内容の理解よりも 翻訳に時間がかかりました。</p>
+
+<p>今回はソースコードを読む箇所はゼロ。</p>
+
+<p>そしてシステムコールの数すくない！ここには載せていませんが、ソースコードも9000行未満です。 頑張って最後まで読みたいなぁ。</p>
+
+<p>結構書き溜めているので、できればサクサク次の記事アップロードしたいです。</p>
+]]></content>
+  </entry>
+  
+</feed>

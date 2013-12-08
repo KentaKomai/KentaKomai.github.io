@@ -1,0 +1,488 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>簡単なバッファオーバーフローを再現してみる（４） - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="前回に引き続き、こちらの参考書の内容を元にBOFサンプルを手元で再現し、動作を追ってみたいと思います。 (1)~(3)はスタックセグメントにおけるBOF発生を再現していましたが、今回はヒープセグメントと環境変数を使ったサンプルを再現してみたいと思います。(環境は(2)と同じ、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/04/20/wordpress33">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">簡単なバッファオーバーフローを再現してみる（４）</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-20T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>前回に引き続き、<a href="http://www.amazon.co.jp/Hacking-%E7%BE%8E%E3%81%97%E3%81%8D%E7%AD%96%E8%AC%80-%E2%80%95%E8%84%86%E5%BC%B1%E6%80%A7%E6%94%BB%E6%92%83%E3%81%AE%E7%90%86%E8%AB%96%E3%81%A8%E5%AE%9F%E9%9A%9B-Jon-Erickson/dp/4873115140/ref=pd_sim_b_4">こちらの参考書</a>の内容を元にBOFサンプルを手元で再現し、動作を追ってみたいと思います。</p>
+
+<p>(1)~(3)はスタックセグメントにおけるBOF発生を再現していましたが、今回はヒープセグメントと環境変数を使ったサンプルを再現してみたいと思います。(環境は(2)と同じ、最近のgdbだと同じ挙動を再現しませんでした。)</p>
+
+<p>とりあえず書いた脆弱性を持ったサンプルがこちら。書籍にあるサンプルプログラムはmallocのエラーチェックとか、エラー出力専用の関数などが用意されていましたが、長くなるので今回はギリギリまで削って、必要最低限だけ抜き出して書き直しました。</p>
+
+<pre class="lang:default decode:true">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;sys/stat.h&gt;
+
+void ShowUsage(char *prog_name, char *filename){
+    printf("output usage: foobar...");
+    exit(0);
+}
+
+int main(int argc, char *argv[]){
+    int user_id, fd;
+    char *buffer, *datafile;
+
+    buffer = (char *)malloc(100);
+    datafile = (char *)malloc(20);
+    strcpy(datafile, "./memo_app_data");
+
+    if(argc &lt; 2) ShowUsage(argv[0], datafile);
+
+    strcpy(buffer, argv[1]);
+
+    fd = open(datafile, O_WRONLY|O_CREAT|O_APPEND,S_IRUSR|S_IWUSR);
+    user_id = getuid();
+
+    if(write(fd, &user_id, 4) == -1) printf("[error]It failed in writing userID\n");
+    write(fd, "\n", 1);
+
+    if(write(fd, buffer, strlen(buffer)) == -1) printf("[error]It failed in writing buffer\n");
+    write(fd, "\n", 1);
+
+    if(close(fd) == -1) printf("[error] fatal close file\n");
+    printf("-----end-----\n");
+
+    //mallocで確保した領域は解放をする
+    free(buffer);
+    free(datafile);
+}</pre>
+
+
+<p>プログラムの動作はコード見てもらえればわかりやすいと思います。同じディレクトリにあるmemo_app_dataに対して、プログラムの実行ユーザのIDと、引数で与えた文字列を記録するだけの簡単なメモ帳プログラムですね。</p>
+
+<p>&nbsp;</p>
+
+<p>コンパイルしたら、このプログラムの所有者をrootにして、suidを設定して、gdbデバッグ開始</p>
+
+<pre class="lang:sh decode:true">$gcc -g -o memo_app ./memo_app.c
+$sudo chown root:root memo_app
+$sudo chmod u+s memo_app
+$gdb -q momo_app</pre>
+
+
+<p>注目するべきは16,17行目のmalloc()関数です。malloc()関数はヒープセグメントに領域を確保して、先頭アドレスを返します。buffer(引数で与えるメモ帳に書き込む文字列)は100byte、datafile(ファイル名を格納しておく変数)は20byteそれぞれ確保されていますね。今まで変数宣言したときに、確保されるスタックセグメントとは、違った領域にアドレスが設定されています。</p>
+
+<p>まずはそれを確認してみます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.15.06.png" rel="image_group"><img class="alignnone size-full wp-image-351" alt="Screen Shot 2013-04-11 at 14.15.06" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.15.06.png?resize=362%2C293" data-recalc-dims="1" /></a></p>
+
+<p>上の画像が、変数宣言を終えてすぐのそれぞれの変数のアドレスと、その中身。</p>
+
+<p>スタックセグメントの規則通り、最初に宣言されているものから順番に上に詰まれていっているのがわかります。</p>
+
+<p>次はmalloc()でbufferとdatafileに領域を確保した後</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.22.06.png" rel="image_group"><img class="alignnone size-full wp-image-353" alt="Screen Shot 2013-04-11 at 14.22.06" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.22.06.png?resize=405%2C83" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>bufferとdatafileの中にアドレスが格納されているのがわかります。このアドレスに飛んで中身を見てみます。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.24.16.png" rel="image_group"><img class="alignnone size-full wp-image-354" alt="Screen Shot 2013-04-11 at 14.24.16" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.24.16.png?resize=341%2C191" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>bufferの後ろに4byte多く確保され(計104byte)、その後ろにdarafileの領域が確保されていることがわかります。bufferの中身を見てみます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.23.43.png" rel="image_group"><img class="alignnone size-full wp-image-352" alt="Screen Shot 2013-04-11 at 14.23.43" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.23.43.png?resize=777%2C152" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>中身がほとんど０なのは、偶然です。（必ず０になるわけではないということ）必要があれば明示的に初期化する必要があります。datafileのほうは、strcpy()関数で初期化されているので、無論その値が入ります。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.32.54.png" rel="image_group"><img class="alignnone size-full wp-image-355" alt="Screen Shot 2013-04-11 at 14.32.54" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-11-at-14.32.54.png?resize=550%2C41" data-recalc-dims="1" /></a></p>
+
+<p>では104byte確保されている変数bufferの中に104byteの文字をつっこんでみます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-12.49.44.png" rel="image_group"><img class="alignnone size-full wp-image-376" alt="Screen Shot 2013-04-16 at 12.49.44" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-12.49.44.png?resize=898%2C54" data-recalc-dims="1" /></a></p>
+
+<p>前々回でも利用したように、perlスクリプトを利用して、Aを104文字出力させています。この状態で変数buffer, datafileの中身を確認してみます。</p>
+
+<p>まずはbuffer</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-12.53.08.png" rel="image_group"><img class="alignnone size-large wp-image-377" alt="Screen Shot 2013-04-16 at 12.53.08" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-12.53.08.png?resize=640%2C141" data-recalc-dims="1" /></a></p>
+
+<p>16byteずつ表示しているのが6列と8byte、計104byte、A(asciiコードで0&#215;41)という文字が格納されているのがわかります。この状態で次はdatafileを見てみます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-12.56.39.png" rel="image_group"><img class="alignnone size-full wp-image-378" alt="Screen Shot 2013-04-16 at 12.56.39" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-12.56.39.png?resize=570%2C84" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>中身は空っぽです。bufferには確保されている104byteの文字を格納しただけで、先ほど通常に動作させた場合のdatafileに格納されていた&#8221;./memo_app_data&#8221;という文字列はありません。</p>
+
+<p>これは文字列の最後をnullで判定しているためです。bufferが104byte確保されている場合、104byteの文字列を代入すると、そこには104byteの文字列+1byteのnull文字の計105byteが変数bufferの先頭アドレスから格納されていきます。</p>
+
+<p>なので、bufferから105byte目の変数datafileのアドレスはbufferの末尾に付加されたnullを指している、ということになります。だからこの場合、datafileの中身は空っぽになってます。</p>
+
+<p>今度はbufferの中に104byte以上の文字列を挿入してみます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-14.27.47.png" rel="image_group"><img class="alignnone size-full wp-image-382" alt="Screen Shot 2013-04-16 at 14.27.47" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-14.27.47.png?resize=955%2C48" data-recalc-dims="1" /></a></p>
+
+<p>これで104byteの&#8221;A&#8221;に&#8221;komaifile&#8221;という文字を追加したものをbufferに入れてみます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-14.50.32.png" rel="image_group"><img class="alignnone size-large wp-image-383" alt="Screen Shot 2013-04-16 at 14.50.32" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-14.50.32.png?resize=640%2C91" data-recalc-dims="1" /></a></p>
+
+<p>bufferの中身をみてみると、引数に渡した文字列全てが入っており、datafileには、105byte以降の文字が入っています。</p>
+
+<p>このことから、105byte以降には、任意の文字列を指定することができます。今回、このアプリケーションはメモ帳アプリなので、datafileの中身は、メモを書き込むファイルだということが推測されます。ここで大切なのは、SUIDが設定されているので、root権限でmemo_app_dataというファイルに書き込みが行われている、ということです。</p>
+
+<p>つまり、datafileの文字列を任意に指定できる、ということは、任意のファイルにroot権限で書き込みができる可能性がある、ということになります。</p>
+
+<p>&nbsp;</p>
+
+<p>ただし、制約もあります。書き込む対象ファイルがdatafileに入ってるのと同じように、書き込む文字列はbufferに入っています。</p>
+
+<p>ということは、上記の場合Aが104文字にkomaifileが追加された文字列が、ファイルkomaifileに書き込むことができる、ということです。任意のファイルに書き込むことはできますが、書き込む文字列は任意にできるのは104byteまで、末尾にはファイル名がついてしまう、という制約が、この場合は確実につきます。</p>
+
+<p>&nbsp;</p>
+
+<p>/etc/passwdを指定して任意のユーザを追加してみます。</p>
+
+<p>まずは/etc/passwdの書式を確認してみましょう。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-16.36.04.png" rel="image_group"><img class="alignnone  wp-image-387" alt="Screen Shot 2013-04-16 at 16.36.04" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-16-at-16.36.04.png?resize=701%2C553" data-recalc-dims="1" /></a></p>
+
+<p>検証用にローカルに立てているサーバなので、公開しても問題ないものです。</p>
+
+<p>1行に一人のユーザの情報が格納されていて、書式は</p>
+
+<blockquote><p>ユーザ名：パスワードハッシュ：ユーザID：グループID：メモ的な何か：ホームディレクトリ：デフォルトで仕様するシェル</p></blockquote>
+
+<p>というようになっています。パスワードが共通してXになっているのはシャドウファイルが利用されているということです。</p>
+
+<p>シャドウファイルが利用されているパスワードは、/etc/shadowに別途暗号化され格納されていますが、ここに直接パスワードハッシュを格納することもできます。よって</p>
+
+<blockquote><p>hacker:パスワードハッシュ:0:0:hogehoge&#8230;..:/root:/bin/bash</p></blockquote>
+
+<p>という1行をこのファイルに挿入することができれば、root権限を保持したhackerというユーザをシステムに追加することができるようになる、ということです。</p>
+
+<p>/etc/passwdと/etc/shadowに関して、こちらに詳しく書かれています⇨<a href="http://www.usupi.org/sysad/111.html">参考リンク</a></p>
+
+<p>&nbsp;</p>
+
+<p>次はパスワードハッシュをどのようにして得るか、ということが問題になります。パスワードハッシュは、DES,MD5,SHA-256, SHA-512のなかから選択することができます。ただし、DESは本来使うべきではありません。（強度が他に比べて極端に低いので）僕が普段利用している公開サーバも、デフォルトでSHA-512が利用されています。</p>
+
+<p>ちなみに、/etc/shadowを見ると、それぞれのユーザのパスワードが、どの方式でハッシュ値得ているか、がわかります。</p>
+
+<ol>
+<li>$1$で始まるパスワード⇨MD5　($1$から$まではsalt)</li>
+<li>$5$で始まるパスワード⇨SHA-256 ($1$から$まではsalt)</li>
+<li>$6$で始まるパスワード⇨SHA-512 ($1$から$まではsalt)</li>
+<li>何もついていないもの⇨DES (頭二文字がsalt)</li>
+</ol>
+
+
+<p>となっています。</p>
+
+<p>さきほどあげた参考リンクにもありますが、DESとMD5はperlのcrypt()関数で簡単に得ることができます。</p>
+
+<pre class="lang:perl decode:true"># sample
+print crypt($ARGV[0], $ARGV[1])."\n";</pre>
+
+
+<p>コマンドラインから実行して</p>
+
+<p>一つ目の引数がハッシュ値を得たい、平文のパスワード</p>
+
+<p>二つ目がsaltの指定</p>
+
+<p>になっています。シェルから$ perl -e &#8220;print crypt(&#8216;planetext&#8217;, &#8216;salt&#8217;)&#8221;で呼び出すと便利です。</p>
+
+<p>これで平文：password、salt:AAでDES暗号にしたものがこちらです</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-19-at-12.07.46.png" rel="image_group"><img class="alignnone size-full wp-image-404" alt="Screen Shot 2013-04-19 at 12.07.46" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-19-at-12.07.46.png?resize=286%2C54" data-recalc-dims="1" /></a></p>
+
+<p>これで、情報が揃いました。</p>
+
+<p>hacker:AA6tOYSfGxd/A:0:0:hogehoge&#8230;..:/root:/bin/bash</p>
+
+<p>これでroot権限を持ったログインID:hacker、パスワード:passwordというユーザの情報が作れました。これを/etc/passwdに追加できれば成功です。</p>
+
+<p>ただ、先ほど挙げたように、今回BOFさせる文字列には制限があります。文字列の最後が/etc/passwdになっていなければ、/etc/passwdに追加できない、ということです。つまり先ほどのユーザ情報の文字列は</p>
+
+<p>hacker:AA6tOYSfGxd/A:0:0:hogehoge&#8230;..:&#8230;&#8230;/etc/passwd</p>
+
+<p>となっていなければなりません。しかしそれだと、最後の項目がユーザのシェル、というユーザ情報が壊れてしまいます。</p>
+
+<p>&nbsp;</p>
+
+<p>そこで、末尾に/etc/passwdで終わっても、シェルへのパスを指すように工夫します。ここではシンボリックリンクを利用します。通常、利用されるシェルがbashの場合はbashのパス表示します。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-20-at-20.33.46.png" rel="image_group"><img class="alignnone size-full wp-image-407" alt="Screen Shot 2013-04-20 at 20.33.46" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-20-at-20.33.46.png?resize=423%2C37" data-recalc-dims="1" /></a></p>
+
+<p>まぁだいたいは/bin/bashだと思います。このファイルに対してシンボリックリンクを作成します。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-20-at-20.39.13.png" rel="image_group"><img class="alignnone size-full wp-image-408" alt="Screen Shot 2013-04-20 at 20.39.13" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-20-at-20.39.13.png?resize=510%2C118" data-recalc-dims="1" /></a></p>
+
+<p>こんな感じに、/tmp/etc/passwdファイルを作成して、/bin/bashへのシンボリックリンクにします。</p>
+
+<p>こうすることで、/tmp/etc/passwdがシェルへのリンクになりました。</p>
+
+<p>読ませるファイルは/etc/passwd</p>
+
+<p>バッシュへのパスは/tmp/etc/passwd</p>
+
+<p>これで先ほどの制約をクリアできる形になりました。</p>
+
+<p>よって</p>
+
+<p>hacker:AA6tOYSfGxd/A:0:0:hogehoge(ここで文字数調整):/root:/tmp(ここまでで104文字)/etc/passwd</p>
+
+<p>の１行をメモ帳プログラムに引数として渡せば、ログインID:hacker、パスワード:passwordのroot権限をもったユーザが追加されることになります。文字数を上手に調整して、引数に渡します</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-20-at-21.17.13.png" rel="image_group"><img class="alignnone size-full wp-image-409" alt="Screen Shot 2013-04-20 at 21.17.13" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-20-at-21.17.13.png?resize=799%2C43" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>これを実行した後に、/etc/passwdの中身を見てみます</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-20-at-21.26.46.png" rel="image_group"><img class="alignnone size-full wp-image-410" alt="Screen Shot 2013-04-20 at 21.26.46" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-20-at-21.26.46.png?resize=803%2C381" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>/etc/passwdの末尾に先ほどの文字列が挿入されていますね。これが手元で再現したときは感動大きかったです（笑）</p>
+
+<p>そのまま先ほど追加した行に書いたログインIDでログインできていることも、root権限になっていることも確認できると思います。</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>こんな感じでした。perlコマンドの-eオプションは汎用性非常に高いですね。ここまででBOF再現は以上です。更に詳しい解説だったり、他の手法もいくつか参考書には掲載されているので興味があるかたは是非読んでみて下さい。</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-20T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/04/20/wordpress33/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/04/20/wordpress33/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/04/15/wordpress32/" title="Previous Post: leet文字まとめ">&laquo; leet文字まとめ</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/04/26/wordpress34/" title="Next Post: メールヘッダーをよく見る。">メールヘッダーをよく見る。 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

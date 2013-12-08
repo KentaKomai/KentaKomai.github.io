@@ -1,0 +1,306 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Googleスプレッドシートで簡単JSONP api - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="最近はMacユーザも増え(僕も去年の15inch retinaで初めて)たり、プリインストールでofficeが入ってないwindowsも増えたせいか、仕事でも学校でもgoogle driveでドキュメント作成することが増えました。 それらのシートを情報テーブルとして、リアルタイムに編集できたり、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/04/11/wordpress30">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">Googleスプレッドシートで簡単JSONP Api</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-11T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>最近はMacユーザも増え(僕も去年の15inch retinaで初めて)たり、プリインストールでofficeが入ってないwindowsも増えたせいか、仕事でも学校でもgoogle driveでドキュメント作成することが増えました。</p>
+
+<p>それらのシートを情報テーブルとして、リアルタイムに編集できたり、取得できたらいいなーと思って調べたらありました。（というよりやらなきゃいけなくなったので、調べてたら、とりあえず出来た）</p>
+
+<p>昔から利用されているExcelのシートとかを、googleスプレッドシートに移植して、WEB経由でアクセスしたり、用途は色々ありそうです。便利です。</p>
+
+<p>つまり、googleスプレッドシート内の情報をJSONP形式で出力するAPI（というと大げさだけど）にしてみます。取得はjqueryのajax関数(datatype:&#8217;jsonp&#8217;)とかで。別にajaxで取得したいわけじゃなければjsonpじゃなくて、txtやcsv出力なら、プログラムを書かずに実現できます。今回書いたのはjsonpでajaxで取得するためのスクリプトです。</p>
+
+<p>スプレッドシートを作成し、メニューから[tool] &ndash;> [script editor]でスクリプトを新規作成・登録できます。</p>
+
+<pre class="lang:js decode:true">var spreadsheetId = 'スプレッドシートID';
+var sheetName = 'シートの名前'; 
+
+function doGet(req) {
+    var response = { status: { code: "100", message: "" } };
+    if (req == undefined) {
+        response.members = getUserInfo(undefined);
+    } 
+
+    if (response.members.length == 0) {
+        response.status.message = "Warning: Members not found.";
+    }
+
+    return ContentService.createTextOutput(
+      req.parameters.callback + '(' + JSON.stringify(response) + ')' )
+      .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getUserInfo(value) {
+
+    var sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(sheetName);
+    var list = sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
+
+    var data = new Array();
+
+    if (value == undefined) {
+        for(var i=0; i&lt;list.length; i++){
+            var row = Object();
+            row.id = list[i][0]; //ID
+            row.name = list[i][1]; //氏名
+            row.mail = list[i][2]; //mail
+            data.push(row);
+        }
+        return data;
+    }
+}</pre>
+
+
+<p>&nbsp;</p>
+
+<p>本当は取得する列も行もparameterで色々指定するように書いてたんですが、ブログ用にできるだけシンプルにしました。 ユーザ一覧みたいな情報が格納されているテーブルから、IDと名前とアドレスを取得して、ユーザ一覧情報をjson形式にしてreturnしています。</p>
+
+<p>ここでポイントはjsonpに対応するためにcallback用のパラメータをreturnする文字列の中に含める、ということです。これがないと正常に取得できませんでした。(req.parameters.callback)のところです。</p>
+
+<p>任意のスクリプトを書いて保存した後は、[Deploy as web app]をクリック。アクセス用のURLを発行します。</p>
+
+<p>それができたら今度は自分のアプリケーションからajax経由で先ほどのURLからJSONをダウンロードしてきます。</p>
+
+<pre class="lang:default decode:true">$.ajax({
+    type: 'GET',
+    url: 'さっき取得したURL',
+    datatype: 'jsonp',
+    jsonp: 'callback'
+}).done(function(response){
+    //取得したデータを使って色々する
+    console.dir(response);
+});</pre>
+
+
+<p>これでOK。responceにjsonはいってるんで、好きにいじくる。僕が使ったシチュエーションだとangularJS使ってたんで、モデルに取得したjsonつっこむだけでオブジェクトがたっぷり！みたいな嬉しい感じでした。</p>
+
+<p>これしかない！！っていうときは少ないと思いますが、既存のスプレッドシートにデータがたくさんあるなら、ざっくりこういうのが書ければ便利かなー、と思います。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-11T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/04/11/wordpress30/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/04/11/wordpress30/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/04/10/wordpress29/" title="Previous Post: 簡単なバッファオーバーフローを再現してみる（３）">&laquo; 簡単なバッファオーバーフローを再現してみる（３）</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/04/14/wordpress31/" title="Next Post: pythonによる関数の実行時間測定[timeitモジュール]">pythonによる関数の実行時間測定[timeitモジュール] &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

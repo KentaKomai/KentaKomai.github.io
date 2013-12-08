@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>nullcon 2013 Battle Underground Programming 3 writeup - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="前回に引き続き、nullcon 2013 Battle Underground の自分が担当した問題のwriteup書いていきます。 Programming3です。 以下問題文 Mr. X is fond of prime numbers. Recently, Mr. X learnt of &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/03/03/wordpress20">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">Nullcon 2013 Battle Underground Programming 3 Writeup</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-03T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>前回に引き続き、nullcon 2013 Battle Underground の自分が担当した問題のwriteup書いていきます。</p>
+
+<p>Programming3です。</p>
+
+<p>以下問題文</p>
+
+<blockquote><p>Mr. X is fond of prime numbers. Recently, Mr. X learnt of some special numbers called Smarandache-Wellin numbers. The n&#8217;th Smarandache-Wellin number is obtained by concatenating the first n primes. For example, 2, 23, 235, 2357, 235711 are the first 6 decimal Smarandache-Wellin numbers. Mr. X is interested in binary Smarandache-Wellin numbers. Furthermore, Mr. X is only interested in those numbers which are prime. He found the first 3 such numbers 2, 11 and 751 and now needs your help in finding the next 2 numbers. Enter the next 2 binary Smarandache-Wellin primes. The flag is the MD5 hash of the next 2 binary Smarandache-Wellin primes separated by _ (underscore). For eg. if the numbers are 23 and 235, the flag would have been MD5SUM(&#8220;23_235&#8243;)</p></blockquote>
+
+<p>ざっくり意訳（これも何度も意味を履き違えて、なかなか解答にたどり着かなかった・・）</p>
+
+<blockquote><p>Xさんは素数が好きです。 最近、XさんはSmarandache-Wellin numbers呼ばれる数について学びました。n番目のSmarandache-Wellin numberはn番目までの素数を連結させることによって得ることができます。Xさんは2進数のSmarandache-Wellin numberのうち、素数だけに興味があります。彼は2, 11, 751という最初の3つの２進数Smarandache-Wellin numberを見つけました。その次の２つの数字を見つけてください。次の２つのSmarandache-Wellin numberを_(アンダースコア)で連結したものの、MD5チェックサムがこの問題のフラグです。</p></blockquote>
+
+<p><a href="http://en.wikipedia.org/wiki/Smarandache%E2%80%93Wellin_number">http://en.wikipedia.org/wiki/Smarandache%E2%80%93Wellin_number</a></p>
+
+<p>問題文にも書いてありますが、簡単に言うと、素数は2, 3, 5, 7, 11&#8230;.とあり、Smarandache-Wellin numberとは2, 23, 235, 2357, 235711&#8230;.というのがそれに当たります。</p>
+
+<p>Xさんはそれを2進数でやりたくて、しかもそのうちの素数だけを抜き出したい。</p>
+
+<p>2, 11, 751までは見つけたので、あと２つ見つけてくれ、という問題です。</p>
+
+<p>2は2進数で 10</p>
+
+<p>11は2進数で 1011</p>
+
+<p>751は2進数で101110111</p>
+
+<p>後ろに素数を2進数にしたものをくっつけて、2進数全体が素数かどうかを判定します。それで751の次に当てはまるものを得るスクリプトを書いていきます。</p>
+
+<pre class="lang:default decode:true">import random
+
+def is_prime(q,k=50):
+    q = abs(q)
+    if q == 2: return True
+    if q &lt; 2 or q&1 == 0: return False
+
+    d = (q-1)&gt;&gt;1
+    while d&1 == 0:
+        d &gt;&gt;= 1
+
+    for i in xrange(k):
+        a = random.randint(1,q-1)
+        t = d
+        y = pow(a,t,q)
+        while t != q-1 and y != 1 and y != q-1: 
+            y = pow(y,2,q)
+            t &lt;&lt;= 1
+        if y != q-1 and t&1 == 0:
+            return False
+    return True
+
+root = 2
+ans = ""
+while True:
+    if is_prime(root):
+        print "root is : ",str(root)
+        ans += str(format(root, 'b'))
+        print "check ans: ", ans
+        if is_prime(int(ans, 2)):
+            print "-------------------"
+            print int(ans, 2)
+            print ans
+            h = raw_input()
+            if h == 'end':
+                exit()
+        else:
+            print int(ans,2),"/",ans," is not prime..."
+
+    root += 1</pre>
+
+
+<p>最初、問題に着手したばかりのときは、2, 11, 751までのプロセスも明確ではなかったので、そこから計算して出力するようにしています。</p>
+
+<p>751以降は桁数が莫大になっていくので、デバッグ用の出力はうっとおしいだけですが、規則性にちゃんと気がつけたのでよかったです。</p>
+
+<p>以下は2,11,751までの出力をキャプチャしたものです。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-17.07.03.png" rel="image_group"><img class="alignnone size-full wp-image-227" alt="Screen Shot 2013-03-03 at 17.07.03" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-17.07.03.png?resize=514%2C708" data-recalc-dims="1" /></a></p>
+
+<ol>
+<li>最初に2が素数で、それを2進数にしたものが10</li>
+<li>10に、次の素数である3を2進数したもの(11)をくっつけて 1011（10進数の11）</li>
+<li>ここからがキモで、1011に次の素数である5(2進数で101)をくっつけて1011101(10進数で93)を得るが、これ自体は素数じゃないので次の処理へ</li>
+<li>次の素数である7(2進数で11)を前回の結果1011101にくっつけて101110111(10進数で751)を得る。751は素数なので、これで３つ。</li>
+</ol>
+
+
+<p>Xさんがどういうプロセスで３つ目までを見つけたかは知りませんが、今回求めるべき数列の規則性はこれだということがわかりました。</p>
+
+<p>そのまま処理を続けていけば、次の二つも見つかります。</p>
+
+<p>13499925319356478420482627384338205627134397423032950243093776977656290637381356029088437508765876860004145536363528373584239891642207051418759823661775098400822064249224107957394151475347641577607291008219620857887840743942302339494275640240389954171415859751242018684702291309687871788001082502981179843710955968305626219107882381173932042111051037558216690866104363093437124046556014178911539242991232498163764379843984059581618991857509603695132829301769</p>
+
+<p>と</p>
+
+<p>4178024520048464687377630333781717879404075971768776245420063857617925088891489606176607287044369960037018902011849289176641296067768886109727422734188064023638022562254733564342171478053064724114411765870377775349657496322378512525142999031090251164168452641800241733625987554996534416882012963991102408146223868356497622554970987902356644145730512464281093744854608796407077859318984359976335400473918261877085825298647843735060014896081070785205019798426736815795971430257132698691</p>
+
+<p>ですね。もうこの数字をなんて呼べばいいかもわからないくらいの大きい数です（笑）751の次がこんなにでかくなるなんて、思ってもいませんでしたｗ</p>
+
+<p>あとは問題文通り、この二つを_(アンダースコア)でつなげてMD5ハッシュ値を得れば正解。答えは以下の通りです。</p>
+
+<p>554ec7e8fa6830da4ed6b265f1a08fe0</p>
+
+<p>この問題、解法には割と早く近づいたのですが、その時動かしていた素数判定のアルゴリズムに不良があって、最初何度も正確な数字を得ることができずに苦しみました・・・・。そこに関しては改めて別の記事で比較検証したいと思います。ネットって探すとなんでも落ちてますね・・・ｗ</p>
+
+<p>今回、Programming1,2,3を解いて一番の反省点は「英語読むのが遅いし、正確じゃない！」ということですね。恥ずかしい・・・。writeupを読みながら改めて問題文を読むと、「普通に書いてあることだったじゃん・・・」って思うこともしばしば・・・。</p>
+
+<p>あとは、Programming以外の問題がまるで駄目でした・・・。REとCryptは問題を見てもいないのがほとんどですが、Exploitationは１つくらい解きたかった・・・。</p>
+
+<p>でも楽しかった！！３位嬉しい！！！</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-03T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/03/03/wordpress20/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/03/03/wordpress20/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/03/03/wordpress19/" title="Previous Post: nullcon 2013 Battle Underground Programming 2 writeup">&laquo; nullcon 2013 Battle Underground Programming 2 writeup</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/03/09/wordpress21/" title="Next Post: よく使うjavascriptデバッグ方法のメモとついでに検証">よく使うjavascriptデバッグ方法のメモとついでに検証 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>MacOSなどでコマンドラインからキーボードでEOFを入力する方法 - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="ひさしぶりにAOJやってて、EOFまで文字列を読み込む処理があって 手元でテストするときに困ったのでメモ。 わざわざブログ書くほどのことでもないけど control + d を押すことでEOF（End of Fileという入力やファイルの最終端を意味する文字）をキーボードから入力できます。 & &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/06/07/wordpress43">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">MacOSなどでコマンドラインからキーボードでEOFを入力する方法</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-07T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>ひさしぶりにAOJやってて、EOFまで文字列を読み込む処理があって</p>
+
+<p>手元でテストするときに困ったのでメモ。</p>
+
+<p>わざわざブログ書くほどのことでもないけど</p>
+
+<blockquote><p>control + d</p></blockquote>
+
+<p>を押すことでEOF（End of Fileという入力やファイルの最終端を意味する文字）をキーボードから入力できます。</p>
+
+<p>&nbsp;</p>
+
+<p>余談ですが、AOJではこちらの問題やりました。</p>
+
+<p>僕もアルゴリズムの勉強やプロコンなど始めたばかりですが、いい問題だと思ったので、ついでに書いておきます。</p>
+
+<p><a href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=0026">http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=0026</a></p>
+
+<p>&nbsp;</p>
+
+<p>いつもプロコンに参加してる人には簡単な問題だと思いますが、プロコンってなに！？って人には是非チェックしてほしいな、と思った問題でした。</p>
+
+<p>（基本的な制御文がひと通り出てくるのと、難しいアルゴリズムは必要ないので。）</p>
+
+<p>&nbsp;</p>
+
+<pre class="lang:default decode:true">#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;cstdio&gt;
+
+using namespace std;
+
+#define XAXIS 10
+#define YAXIS 10
+
+int main(){
+    int paper[XAXIS][YAXIS];
+    int x,y,s;
+    int white = 0, most=0;
+
+    for(int i=0; i&lt;XAXIS; i++)
+    for(int j=0; j&lt;YAXIS; j++)
+        paper[i][j] = 0;
+
+    while(scanf("%d,%d,%d", &x, &y, &s) != EOF){
+        switch(s){
+            case 3:
+                if(x+2 &lt;  XAXIS) paper[x+2][y] += 1;
+                if(y+2 &lt;  YAXIS) paper[x][y+2] += 1;
+                if(x-2 &gt;= 0)     paper[x-2][y] += 1;
+                if(y-2 &gt;= 0)     paper[x][y-2] += 1;
+
+            case 2:
+                if(x+1 &lt;  XAXIS && y+1 &lt; YAXIS )  paper[x+1][y+1] += 1;
+                if(x+1 &lt;  XAXIS && y-1 &gt;= 0)       paper[x+1][y-1] += 1;
+                if(x-1 &gt;= 0     && y+1 &lt; YAXIS )  paper[x-1][y+1] += 1;
+                if(x-1 &gt;= 0     && y-1 &gt;= 0)       paper[x-1][y-1] += 1;
+
+            case 1:
+                if(x+1 &lt;  XAXIS) paper[x+1][y] += 1;
+                if(y+1 &lt;  YAXIS) paper[x][y+1] += 1;
+                if(x-1 &gt;= 0)     paper[x-1][y] += 1;
+                if(y-1 &gt;= 0)     paper[x][y-1] += 1;
+                paper[x][y] += 1;
+                break;
+        }
+    }
+
+    for(int i=0; i&lt;XAXIS; i++)
+    for(int j=0; j&lt;YAXIS; j++){
+        if(paper[i][j] == 0 )  white++;
+        most = max(most,paper[i][j]);
+    }
+
+    cout&lt;&lt;white&lt;&lt;endl&lt;&lt;most&lt;&lt;endl;
+    return 0;
+}</pre>
+
+
+<p>僕はこんな感じでAcceptでしたが、switch文の内部のif文はどうにかしたいなぁ・・・。</p>
+
+<p>他の人のソースコードを見ることもできます。</p>
+
+<p>ランキング高い人は、大体最初にxとyに+2してる感じですね。</p>
+
+<p>こっちの話のほうが長くなっちゃった・・・。</p>
+
+<p>&nbsp;</p>
+
+<p>とりあえず今まで知らなかった controll + d が便利！！！</p>
+
+<p>すいません、それがメインです。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-07T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/06/07/wordpress43/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/06/07/wordpress43/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/06/06/wordpress42/" title="Previous Post: [C言語]casehack.cワロタｗｗｗ">&laquo; [C言語]casehack.cワロタｗｗｗ</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/06/10/wordpress44/" title="Next Post: 仕事中や作業の合間についついSNS見て集中できない人へ">仕事中や作業の合間についついSNS見て集中できない人へ &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

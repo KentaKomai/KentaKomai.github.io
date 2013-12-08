@@ -1,0 +1,638 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Javaのアノテーション便利すぎワロタｗｗをしたいので総復習したけどワロエナイ - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="学校のカリキュラムでC#やってた頃、当時の担任の先生の勧めで始めたjavaですが、お恥ずかしながらアノテーションちゃんとやってなくて、ノリでやってました（笑）書いてあるまんま読んで、なんとなーく「こんなことしてくれてるっぽいなー」程度でした・・・こんなの知らないでやってたのか！！（怒） &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/03/13/wordpress22">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">Javaのアノテーション便利すぎワロタｗｗをしたいので総復習したけどワロエナイ</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-13T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>学校のカリキュラムでC#やってた頃、当時の担任の先生の勧めで始めたjavaですが、お恥ずかしながらアノテーションちゃんとやってなくて、ノリでやってました（笑）書いてあるまんま読んで、なんとなーく「こんなことしてくれてるっぽいなー」程度でした・・・こんなの知らないでやってたのか！！（怒）と思う方もいると思います、自分でも思いました(・∀・)デザインパターンとかやってる場合じゃねぇ！（笑）</p>
+
+<p>フレームワーク使ってWeb開発やってたらノリじゃ自分で書けないし、読む時も時間かかって仕方なくなってきたので、まとめます。C#でいう属性(attribute)ですかね。ざっくり調べた感じ標準で提供されているものはjavaのアノテーションより、c#の属性のほうが充実してる印象です。（どっちも中途半端なんで参考になりませんが）</p>
+
+<p>引用 wikipedia</p>
+
+<h2> 1．JavaのアノテーションとC#の属性</h2>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%82%A2%E3%83%8E%E3%83%86%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3#Java.E3.81.AB.E3.81.8A.E3.81.91.E3.82.8B.E3.82.A2.E3.83.8E.E3.83.86.E3.83.BC.E3.82.B7.E3.83.A7.E3.83.B3">Javaのアノテーションについて</a></p>
+
+<p>Java SE 5から登場。クラスやメソッド、パッケージに対してメタデータとして注釈を記入する。実態はjava.lang.Annotationインターフェースを継承したインターフェースで、自作もできる。</p>
+
+<p>アノテーションには３種類ある</p>
+
+<ol>
+<li>データが無く、名前だけのマーカー</li>
+<li>データをひとつだけ持ち、メソッド呼び出しに似た、単一アノテーション</li>
+<li>複数のデータをもつフル・アノテーション</li>
+</ol>
+
+
+<p>&nbsp;</p>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E5%B1%9E%E6%80%A7">C#の属性について</a></p>
+
+<p>クラスやメンバーに追加情報を与えるもの。コンパイラに対する指示を行ったり、クラス利用者に対する情報を残す。属性にはカスタム属性と擬似カスタム属性の２種類ある。擬似カスタム要素とはCLR(Common Language Runtime)が認識できるような属性。コードに属性を記述するとコンパイラはメタデータを生成する。</p>
+
+<p>&nbsp;</p>
+
+<h2>２．とりあえず標準で提供されているものを使ってみる</h2>
+
+<p>javaのほう</p>
+
+<p>本当にクソなサンプルコードだな、って書きながら思ったけど、もうめんどくさかった（笑）</p>
+
+<pre class="lang:java decode:true">/*
+ * Sample Class
+ * ブログ用に書いたしょーもないサンプル用のクラスです
+ * @auther KentaKomai
+ * @version 1.0
+ */
+public class Sample {
+    public static void main(String[] args){
+        SampleChildClass c = new SampleChildClass("koma", 10);
+        c.speak2();
+
+    }
+}
+
+class SampleParentClass {
+    protected String name;
+    protected int age;
+
+    private String job;
+
+    public SampleParentClass(String name, int age){
+        this.name = name;
+        this.age = age;
+    }
+
+    /**
+     * 自己紹介用メソッド
+     * @author KentaKomai
+     */
+    protected void speak(){
+        System.out.println("私は大人です！");
+    }
+
+    /**
+     * 自己紹介用メソッド2
+     * @author KentaKomai
+     * @deprecated クライアントから苦情あり、ネタで作った。でも消すとバグる
+     */
+    @Deprecated
+    protected void speak2(){
+        System.out.println("アダルトビデオを見ます！");
+    }
+
+    /**
+     * 自己紹介用メソッド３、友達に挨拶する
+     * @author KentaKomai
+     * @param friend_name 友人の名前
+     */
+    protected void speak3(String friend_name){
+        System.out.println("Hello, " + friend_name + "! How are you?");
+    }
+}
+
+class SampleChildClass extends SampleParentClass {
+
+    public SampleChildClass(String name, int age){
+        super(name, age);
+    }
+
+    @Override
+    protected void speak(){
+        System.out.println("ぼくはこどもです！");
+    }
+
+    @Override
+    protected void spaak3(String friend_name){
+        System.out.println("Hi, " + friend_name + "! How are you?");
+    }
+
+}</pre>
+
+
+<p>上記のコードはJavaが標準で提供しているもの＋javadoc用になってます。</p>
+
+<p>java書くなら以下全ての用途を全て覚えておいたほうがいい、と断言できるくらい頻出のものばかりです。俺、@overrideしか覚えてなかったｗ以下が標準で提供されているものです。</p>
+
+<ol>
+<li><span style="line-height: 14px;">@Override :そのメソッドがスーパークラスのメソッドをオーバーライドしていることを明示的にする。（スーパークラスにないメソッドにつけたりするとエラーが出るようにしてくれたり、ソースコードを読む人にとって、オーバーライドされたメソッドであることが視覚的にわかりやすくなる）</span></li>
+<li>@Deprecated :そのメソッドの仕様が非推奨であることを明示的にするアノテーション。このアノテーションがついたメソッドやクラスを利用すると警告メッセージがコンパイル時に表示されるようになる。（下位互換のために、仕方なく残しているメソッドなどにつけるといいかも）</li>
+<li>@SuppressWarning :引数にメッセージを与えると、メッセージによってコンパイル時のエラーを非表示にすることができます。（ゴリ押ししたいときに・・・ｗ）<a href="http://www.ne.jp/asahi/hishidama/home/tech/java/supwarn.html">メッセージの参考に</a></li>
+</ol>
+
+
+<p>よく使うのはこの３つ。独自アノテーションを定義するために、標準で提供されているものが、これらとは別にありメタアノテーションといいます</p>
+
+<ol>
+<li><span style="line-height: 14px;">@Target :独自に定義したアノテーションが、何を対象に利用できるものか、を宣言するためのアノテーション。例えば@Overrideアノテーションはメソッドが対象で、@SuppressWarningはだいたいのものに、つけることができます。クラスにつけるのか、変数につけるのか、みたいなのをこれで決めます。</span></li>
+<li>@Retention :これ一番ピンと来ないんですが、アノテーションの配置方法を決める、ということらしいです。コンパイル時やプログラム実行時にもアノテーションの情報を保持するかどうか、を定義できる。</li>
+</ol>
+
+
+<p>以上の５つが、標準で提供されているアノテーションみたいです。</p>
+
+<h3>３．一応標準じゃないけど、頻出アノテーション</h3>
+
+<p>これ以外にも頻繁に見かけるもの＋勉強ついでにJUnitに関するアノテーションをメモっておきます。</p>
+
+<p>Javadoc関連のアノテーション</p>
+
+<p>(Javadocとは、ソースコードに書かれている情報から、自動的にパッケージに関するドキュメントを生成してくれるプログラム。僕は自分自身がjavadocでドキュメントを確認する、ってことは少ないですが、javadoc形式で書かれたコメントなどは、IDEで参照するときに、非常に重宝しているのでjavadocを全く使わない、という方でもjavadocのアノテーションに関して理解し、それに対応したソースコードを書くことは非常に有意義、だと思います。僕が個人的によく見かけると思ってるものから順番に書きます（全部じゃないです）)</p>
+
+<ol>
+<li><span style="line-height: 14px;">@author :開発者の名前を記述</span></li>
+<li>@param:引数と引数の概要に関して記述</li>
+<li>@return: 戻り値の概要を記述</li>
+<li>@exception: メソッドが投げる例外クラスとその概要を記述(@throwsと同義)</li>
+<li>@version : クラスやメソッドのバージョンを記述（バージョン管理システムで割り当てを自動にすることも出来る）</li>
+<li>@see : 関連する他のクラスやメソッドを記述。わからないことあったら、ここも見てね！って感じ</li>
+<li>@deprecated : java標準の@Deprecatedと同様に非推奨のクラスやメソッドを明示する。</li>
+</ol>
+
+
+<p>他にももうちょいあるけど、よく見るのはこんな感じ</p>
+
+<pre class="lang:java decode:true">/**
+ * foo class
+ * javadoc用アノテーションのためのサンプルクラス
+ * @param int a 引数aの説明
+ * @param int b 引数bの説明
+ * @author k.komai
+ * @version 2.0
+ * @see bar
+*/
+public class foo extends bar{
+  /*処理色々*/
+}</pre>
+
+
+<p>こんな感じで使えます。<a href="http://docs.oracle.com/javase/jp/6/api/">javadocでつくられた公式APIリファレンスはこちら</a></p>
+
+<p>&nbsp;</p>
+
+<p>JUnit関連のアノテーション</p>
+
+<ol>
+<li><span style="line-height: 14px;">@Test :メソッドがテストメソッドであることを示す。</span></li>
+<li>@Before : @Testアノテーションがついたメソッドを実行する前に実行されるメソッドにつける</li>
+<li>@After : @Testアノテーションがついたメソッドを実行する後に実行するメソッドにつける</li>
+<li>@BeforeClass : テストクラスを呼び出す前に実行されるメソッドにつける</li>
+<li>@AfterClass : テストクラスを呼び出した後に実行されるメソッドにつける</li>
+</ol>
+
+
+<p>わかりやすくていいですね。簡単に覚えられた。</p>
+
+<p>&nbsp;</p>
+
+<h3>４．自分でアノテーションを定義する</h3>
+
+<p>ここまで長々とダラダラ書いてきましたが、結局のところ、一番よく見かけるのはフレームワークや、外部パッケージで定義された、独自のアノテーションかもしれません。フレームワークもパッケージも山ほどあるので、それらを全てここに書けるわけもなく・・・</p>
+
+<p>「よくわからないアノテーションが出てきたときに、それが何をしているか、理解したい」です、とりあえず。（リファレンスに書いてるから、そっかー！じゃなくて、処理を含めて）</p>
+
+<p>4-１．アノテーションの定義</p>
+
+<pre class="lang:java decode:true">import java.lang.annotation.Retention;
+import java.lang.annotation.Target
+import java.lang.annotation.RetentionPolicy;
+
+/*
+ * 独自アノテーションサンプル
+ * @auther K,Komai
+ * @version 1.0
+ *
+ */
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface SampleRequired{
+}</pre>
+
+
+<p>これでアノテーション自体はできあがり。マーカーアノテーションというやつで、意味を付加するだけなので、メンバーは持ちません。</p>
+
+<p>4-2.アノテーションを処理する</p>
+
+<p><a href="http://itpro.nikkeibp.co.jp/article/COLUMN/20090115/322957/">参考URL</a></p>
+
+<p>どういう処理させたらいいか、考えて、参考URLのものとまったく同じじゃつまらないし・・・ということで、任意のアノテーションを取得して、まぁその後は好きに処理させたらおっけー、ということで、一覧に出すプログラム書きました。クラスそのもの、メソッド、フィールドを例に出していますが、同じ方法で、全てのElementTypeにアクセスできます。</p>
+
+<pre class="lang:java decode:true" title="info annotation">package sample;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({
+    ElementType.TYPE,
+    ElementType.FIELD,
+    ElementType.CONSTRUCTOR,
+    ElementType.METHOD
+})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Info {
+    String value();
+
+}</pre>
+
+
+<p>&nbsp;</p>
+
+<pre class="lang:java decode:true" title="SampleClass1">package sample;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Info("SampleClass1 Info")
+public class SampleClass1 {
+
+    private List list;
+
+    public SampleClass1(){
+
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        return list.equals(obj);
+    }
+
+    @Info("hogehoge")
+    public void initList(){
+        list = new ArrayList();
+        list.add(10);
+    }
+
+}</pre>
+
+
+<p>&nbsp;</p>
+
+<pre class="lang:default decode:true" title="SampleClass2">package sample;
+
+@Info("Sample2 class")
+public class SampleClass2 {
+
+    @Info("foo field")
+    private Foo foo;
+
+    @Info("default constract")
+    public SampleClass2(){
+        foo = new Foo();
+    }
+
+    @Info("bar method")
+    public void bar() {
+        foo.bar();
+    }
+
+}</pre>
+
+
+<p>上記の２つのクラスと１つの独自アノテーションを使って処理</p>
+
+<pre class="lang:java decode:true" title="Client">package sample;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+public class Client {
+    public static void main(String[] args){
+        System.out.println("start annotation sample");
+        SampleClass1 sc1 = new SampleClass1();
+        SampleClass2 sc2 = new SampleClass2();
+
+        //指定されているアノテーションを取得する
+        Annotation annotList[] = Info.class.getAnnotations();
+        System.out.println("annotation size is [" + annotList.length + "]");
+        for(int i=0; i&lt;annotList.length; i++){
+            Annotation anno = annotList[i];
+            System.out.println("    annotation class is [" + anno.annotationType().getName() + "]");
+        }
+
+        /* ***CLASSに対するアノテーションの取得*** */
+        //SampleClass1
+        Annotation annotList1[] = SampleClass1.class.getAnnotations();
+        System.out.println("SampleClass1's annotation size is [" + annotList1.length + "]");
+        for(int i=0; i&lt;annotList1.length; i++){
+            Annotation anno1 = annotList1[i];
+            System.out.println("    annotation class is [" + anno1.annotationType().getName() + "]");
+        }
+        //SampleClass2
+        Annotation annotList2[] = SampleClass2.class.getAnnotations();
+        System.out.println("SampleClass2's annotation size is [" + annotList2.length + "]");
+        for(int i=0; i&lt;annotList2.length; i++){
+            Annotation anno2 = annotList2[i];
+            System.out.println("    annotation class is [" + anno2.annotationType().getName() + "]");
+        }
+        System.out.println();
+        System.out.println();
+
+        /* ***METHODに対するアノテーションの取得*** */
+        //SampleClass1
+        Method methodList1[] = SampleClass1.class.getMethods();
+        System.out.println("SampleClass1's method count is [" + methodList1.length + "]");
+        for(Method method : methodList1){
+            System.out.println("    method name is [" + method.getName() + "]");
+            for(Annotation annot : method.getAnnotations()){
+                System.out.println("        method annotation is [" + annot.annotationType().getName() + "]");
+            }
+        }
+        //SampleClass2
+        Method methodList2[] = SampleClass1.class.getMethods();
+        System.out.println("SampleClass2's method count is [" + methodList2.length + "]");
+        for(Method method : methodList2){
+            System.out.println("    method name is [" + method.getName() + "]");
+            for(Annotation annot : method.getAnnotations()){
+                System.out.println("        method annotation is [" + annot.annotationType().getName() + "]");
+            }
+        }
+        System.out.println();
+        System.out.println();
+
+        /* ***FIELDに対するアノテーションの取得 *** */
+        //SampleClass1
+        Field fieldList1[] = SampleClass1.class.getFields();
+        System.out.println("SampleClass1 has  [" + fieldList1.length + "] fields");
+        for(Field field : fieldList1){
+            System.out.println("     field name is [" + field.getName() +"]");
+            for(Annotation annot : field.getAnnotations()){
+                System.out.println("        field annotation is [" + annot.annotationType().getName() + "]");
+            }
+        }
+        //SampleClass1
+        Field fieldList2[] = SampleClass2.class.getDeclaredFields();//getFields();
+        System.out.println("SampleClass2 has  [" + fieldList2.length + "] fields");
+        for(Field field : fieldList2){
+            System.out.println("     field name is [" + field.getName() +"]");
+            for(Annotation annot : field.getAnnotations()){
+                System.out.println("        field annotation is [" + annot.annotationType().getName() + "]");
+            }
+        }
+        System.out.println();
+        System.out.println();
+
+        //特定のメソッドに対するアノテーション情報を取得する(リフレクション)
+        try{
+            Info annos = SampleClass1.class.getMethod("initList", new Class[0]).getAnnotation(Info.class);
+            System.out.println(annos);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+}</pre>
+
+
+<p>ごめん、正直力尽きたｗｗｗｗ</p>
+
+<p>良いサンプルを作るって大変ですな・・・とりあえず扱い方（自分で定義する方法と、それに対応した処理を実装するとこ）は把握できたので、ここまで・・・。</p>
+
+<p>より有効な使い方などは直接既存フレームワークのソースを読むことをおすすめしますｗ</p>
+
+<p>まぁこんな感じでいける、ということだけでも伝われば・・・（笑</p>
+
+<p>アノテーション便利なのはよーくわかったけど、ワロタｗｗｗｗはできませんね、今のところ・・・ｗ</p>
+
+<p>今回、アノテーションに関して調べて、副産物的に勉強になったのは</p>
+
+<ol>
+<li><span style="line-height: 1.714285714; font-size: 1rem;">クラスリテラルに関して（ClassName.class）</span></li>
+<li><span style="line-height: 1.714285714; font-size: 1rem;">Classクラスに関して (public final class Class)</span></li>
+<li><span style="line-height: 1.714285714; font-size: 1rem;">リフレクション</span></li>
+</ol>
+
+
+<p>ですね。いろいろ使えそう。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-13T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/03/13/wordpress22/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/03/13/wordpress22/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/03/09/wordpress21/" title="Previous Post: よく使うjavascriptデバッグ方法のメモとついでに検証">&laquo; よく使うjavascriptデバッグ方法のメモとついでに検証</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/03/13/wordpress23/" title="Next Post: wordpress 3.5 でマルチサイト機能をオンにしたり、親子間でのデータやり取りに関するメモ">wordpress 3.5 でマルチサイト機能をオンにしたり、親子間でのデータやり取りに関するメモ &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

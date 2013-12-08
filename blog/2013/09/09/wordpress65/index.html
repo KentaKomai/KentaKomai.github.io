@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>git flowとgithub flowざっくりまとめ - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="最近学校のチーム制作で、gitを使うことになったので 前半は復習も兼ねてgitそのものの基礎的なコマンドや参考リンクの紹介 後半はタイトルとおり、注目されているリポジトリモデルである git flowと、それを簡易的に発展させたgithub flowの簡単な内容を 確認したいと思います。 1. &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/09/09/wordpress65">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">Git Flowとgithub Flowざっくりまとめ</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-09T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>最近学校のチーム制作で、gitを使うことになったので 前半は復習も兼ねてgitそのものの基礎的なコマンドや参考リンクの紹介</p>
+
+<p>後半はタイトルとおり、注目されているリポジトリモデルである git flowと、それを簡易的に発展させたgithub flowの簡単な内容を 確認したいと思います。</p>
+
+<h2>1.gitの基礎と使い方</h2>
+
+<p><strong>参考リンク</strong><br/>
+* <a href="http://ja.wikipedia.org/wiki/Git">wikipedia git</a><br/>
+* <a href="http://git-scm.com/book/ja">Pro git 和訳</a><br/>
+* <a href="http://sourceforge.jp/magazine/09/03/16/0831212">gitを使いこなすために20のコマンド</a></p>
+
+<p><strong>概要</strong></p>
+
+<ol>
+<li>Linuxの開発者リーナス・トーバルズが開発</li>
+<li>分散型バージョン管理システム（svnは集中型）</li>
+<li>ネットワークにつながっていないときでも、ログの確認、コミットが可能</li>
+<li>代表的なweb上のgitホスティングサービスとしてgithub, bitbucket, 国内ならgitbreakなど。</li>
+</ol>
+
+
+<p><strong>超基本的な使い方</strong></p>
+
+<ol>
+<li>git clone &#91;gitのアドレス&#93; で既存リポジトリを自分の環境にコピー</li>
+<li>ソースコードを編集</li>
+<li>git statusで変更を確認</li>
+<li>git add &#91;ソースコードのパス&#93; でコミットするファイルを明示する</li>
+<li>git commit -m &#8216;コミットコメント&#8217; でaddしたファイルの変更点をローカルリポジトリにコミット</li>
+<li>git push &#91;送信先リモートリポジトリ名&#93; &#91;送信先ブランチ名&#93; でリモートリポジトリに変更点を送信</li>
+<li>2-6を繰り返す</li>
+</ol>
+
+
+<p>これが最低限必要なコマンド（だと思います） これ以外だと</p>
+
+<ul>
+<li>git diff</li>
+<li>git log</li>
+<li>git reset</li>
+<li>git branch</li>
+<li>git merge</li>
+<li>git checkout</li>
+<li>git init</li>
+</ul>
+
+
+<p>とかが慣れてきてから使えれば、まぁいいと思います。</p>
+
+<p>僕の個人的な意見としては、上記の1-7の流れ程度はコマンドラインから行えることが 最低限だけど、それ以外は各種GUIクライアントを利用したほうが、楽だし効率もいいかな と思ってます。GUIで確認できるコミットログや、brunchのツリーなんかは CUIでは体感できないものかな、と思います。</p>
+
+<p>代表的なクライアントにはsmartGitや、sourceTreeなど。 githubも公式でクライアントをリリースしています。</p>
+
+<ul>
+<li><a href="http://www.syntevo.com/smartgithg/">smartGit</a></li>
+<li><a href="http://www.sourcetreeapp.com/">sourceTree</a></li>
+<li><a href="http://mac.github.com/">github for mac</a></li>
+<li><a href="http://windows.github.com/">github for windows</a></li>
+</ul>
+
+
+<p>このブログのメインであるgit flowに関しては、このうちsourceTreeのみ アプリケーション内で、git flowに関する機能を補完してくれる 機能を備えています。 （もちろん補完されないだけで、どのクライアントでもCUIでもgit flowは 使えます。）</p>
+
+<h2>2.git-flowとは</h2>
+
+<p><strong>参考リンク</strong></p>
+
+<ul>
+<li><a href="http://nvie.com/posts/a-successful-git-branching-model/">A successful Git branch (git flow 原典)</a></li>
+<li><a href="http://danielkummer.github.io/git-flow-cheatsheet/index.ja_JP.html">Git flow cheat seat (日本語)</a></li>
+<li><a href="http://www.slideshare.net/KatokichiSoft/git-flow-16616440">Git flowの活用事例 (slideshare)</a></li>
+</ul>
+
+
+<p><strong>概要</strong></p>
+
+<p>ちゃんとした内容は原典や参考リンクを読んでいただければと思いますが ざっくりと説明すると</p>
+
+<ul>
+<li>Gitにおけるリポジトリのモデル（こんなふうにbrunchを切って運用すれば便利じゃね？みたいな感じ）</li>
+<li>Git flowというコマンドを別途インストールするかsourceTreeの機能を利用すると簡単に実現できる（しなくても運用で実現は可能）</li>
+<li>Git flowのリポジトリモデルをそのまま用いず、各所でカスタマイズして利用されている(参考リンク参照)</li>
+<li>メインのmasterブランチ、developブランチを主軸に、feature,release,hotfixの補助的なbrunch群で構成される</li>
+<li>masterブランチは常にリリースできる状態、開発はdevelpブランチから、更にブランチを作成して行う。(それがfeature,release,hotfix)</li>
+<li>featureは機能追加のためのブランチ(通常時はこれがメインになるのかな？)</li>
+<li>releaseはリリース直前のためのブランチ</li>
+<li>hotfixはリリース直後の緊急対応用のブランチ</li>
+</ul>
+
+
+<p>こんな感じ</p>
+
+<p>基本的な流れは</p>
+
+<ol>
+<li>developをベースに開発用ブランチを作成して（これがfeatureにあたる）開発者それぞれが開発をスタート</li>
+<li>他の人が開発したコードを自分の開発用ブランチにマージ</li>
+<li>開発が終われば編集内容をdevelopにマージして、開発者用ブランチを削除</li>
+<li>developブランチをremoteブランチにpush</li>
+<li>1-4を繰り返して開発を進める</li>
+<li>開発が終了したらリリースのための作業を始める(developをベースにreleaseブランチを利用、 軽微なバグフィックス、リリース向けのコードや設定の編集)</li>
+<li>releaseの編集を終えたら、developとmasterに内容をマージして、releaseブランチを削除</li>
+<li>リリースを行う(masterブランチのデプロイ)</li>
+<li>リリース後に、緊急バグが発生したらmasterをベースにhotfixブランチを作成し、対応</li>
+<li>対応できたらmasterにマージし、hotfixブランチを削除</li>
+<li>1-10を繰り返してバージョン管理を運用する</li>
+</ol>
+
+
+<p>こんな感じです。developをベースに作成したブランチで基本的に作業を行い、完了したらマージしてブランチ削除、が 基本的な流れです。 developやmasterのコードを直接編集してはいけません。あくまでベースになり、マージ対象になるだけ。</p>
+
+<h2>3.github-flowとは</h2>
+
+<p><strong>参考リンク</strong></p>
+
+<ul>
+<li><a href="http://scottchacon.com/2011/08/31/github-flow.html">GitHub Flow (原典)</a></li>
+<li><a href="https://gist.github.com/Gab-km/3705015">GitHub Flow (Japanese translation)</a></li>
+</ul>
+
+
+<p>github内（サービスではなくてgithub開発チームの内部、という意味）で運用されている git-flowをベースにしたリポジトリモデルです。</p>
+
+<p>githubの中の人であるscott chacon氏はgit flowを『I always answer that I think that it’s great ( (git flowについて聞かれたときに)素晴らしいものであると、いつも答えている)』 としながらも、ふたつの短所をあげています。</p>
+
+<ol>
+<li>ほとんどのチームや開発者が実際に必要とするよりも複雑すぎではないか</li>
+<li>1の複雑な操作をGUIツールに操作を強制することができず、 CUIで全操作を行う必要がある(現在はsource treeがあるので、一応GUIでも操作できるけど)</li>
+</ol>
+
+
+<p>これをより単純にすることで解決したものが、github flowらしいです。</p>
+
+<p><strong>特徴</strong></p>
+
+<ul>
+<li>masterブランチは常にデプロイ可能な状態にしておく</li>
+<li>新しい開発などは、masterからブランチを作成して名前をつけ、そこで行う</li>
+<li>作成したブランチにローカルでコミットし、サーバー上の同じ名前のブランチにも定期的に作業内容をpushする</li>
+<li>フィードバックや助言が欲しい時、ブランチをマージしてもよいと思ったときは、 プルリクエスト を作成する</li>
+<li>他の誰かがレビューをして機能にOKを出してくれたら、あなたはコードをmasterへマージすることができる</li>
+<li>マージをしてmasterへpushしたら、直ちにデプロイをする</li>
+</ul>
+
+
+<p>これだけですね。developブランチという概念がなくなったこと、プルリクエストというgithubの独自機能 が運用に用いられていることが、git flowとの大きな違いです。</p>
+
+<p>僕が思う、github flowのもうひとつのメリットとして</p>
+
+<p><strong>プレビュー前にmasterへのマージが発生しない</strong></p>
+
+<p>ということです。これならだれでも気軽に、開発を行い、プルリクエストをして、上級者からのレビューを受けることが 可能になります。（そうすることが上級者にも強制される）</p>
+
+<p>レビューやテストが重要視される昨今にマッチしたモデルであると個人的には思います。</p>
+
+<hr />
+
+<p>git flowは各所で賞賛され、利用されているモデルではあるみたいですが、やはり銀の弾丸ではないので、 プロジェクトや企業によって、カスタマイズされている場合も多くあるようです。</p>
+
+<p>ぼくは　git flowを知るまでは、ブランチをモデル化して運用する、ということすら 考えがなかったので、とても勉強になりました。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-09T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/09/09/wordpress65/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/09/09/wordpress65/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/08/31/wordpress64/" title="Previous Post: [C言語]コールスタック(スタックフレーム)の仕組みを復習する">&laquo; [C言語]コールスタック(スタックフレーム)の仕組みを復習する</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/10/01/wordpress66/" title="Next Post: たのしいバイナリの歩き方、読みました">たのしいバイナリの歩き方、読みました &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

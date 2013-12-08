@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Googleコーディングガイドを読みつつ、いろいろな命名規約を比較してみる - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="Ruby on RailsのMVC命名規約ついて調べてたけど、最近よく書くc++とpythonに関してのガイドを見つけたので、その２つの言語に関して書きます。 ちょっと流行ったオライリーのリーダブルコードも読んだんですが、相変わらず糞コード量産してしまうので、勉強です・・・orz &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/02/25/wordpress14">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">Googleコーディングガイドを読みつつ、いろいろな命名規約を比較してみる</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-25T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Ruby on RailsのMVC命名規約ついて調べてたけど、最近よく書くc++とpythonに関してのガイドを見つけたので、その２つの言語に関して書きます。</p>
+
+<p>ちょっと流行ったオライリーのリーダブルコードも読んだんですが、相変わらず糞コード量産してしまうので、勉強です・・・orz</p>
+
+<p>あと全文紹介するだけだと、それなら本家を読んだほうがいいし、日本語訳も既に翻訳されたものがネットにいくつもあるので、今回は命名規約＋αのみです。</p>
+
+<p>更に詳しく読みたい方がいれば、本家Google Coding Guideと、それらの日本語訳を参照してください。</p>
+
+<p>読んで感じたのは、Googleで利用されている命名規約を知るだけでなく、細かい言語仕様なんかも一緒に確認できたことです。サラサラっとでも一度全部読んでみることをおすすめします。（もちろん、これらの命名規約をどこでも厳守する必要はありません。あくまでGoogleのガイドラインです。）</p>
+
+<ul>
+<li><a href="http://google-styleguide.googlecode.com/svn/trunk/pyguide.html">Google Python Style Guide : http://google-styleguide.googlecode.com/svn/trunk/pyguide.html</a></li>
+<li><a href="http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml">Google C++ Style Guide : http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml</a></li>
+</ul>
+
+
+<h2>Google Python Style Guide によるPython の命名規約</h2>
+
+<h3>非推奨なもの</h3>
+
+<ol>
+<li>カウンタ、イテレータ以外の１文字変数</li>
+<li>パッケージ、モジュール名のハイフン( &#8211; )</li>
+<li>二重アンダーラインで囲まれた名前(Pythonで予約された__main__などと重なるため)</li>
+</ol>
+
+
+<h3>一般的な命名</h3>
+
+<ol>
+<li>最初にアンダーバーを一つ付加すると、変数と関数を保護するための機能が提供される(import * fromでインポートできない)　(protected)</li>
+<li>最初にアンダーバーを二つ付加すると、変数や関数をプライベートにすることができる(private)</li>
+<li>ちなみに、ファイル名（＝モジュール名）はmodule_name.pyとする。多くのModuleName.pyという名前の既存モジュールが存在するが、これはモジュールがクラス名の後に命名されると混乱するので、現在は非推奨になっている。</li>
+</ol>
+
+
+<h3>命名規約</h3>
+
+<ul>
+<li>モジュール： module_name</li>
+<li>パッケージ : package_name</li>
+<li>クラス名 : ClassName</li>
+<li>メソッド名: method_name</li>
+<li>例外 : ExceptionName</li>
+<li>関数名 : function_name</li>
+<li>グローバル定数：GLOBAL_CONSTANT_NAME</li>
+<li>グローバル変数：global_var_name</li>
+<li>インスタンス変数 : instance_var_name</li>
+<li>ローカル変数：local_var_name</li>
+</ul>
+
+
+<p>メイン関数について</p>
+
+<p>ファイルは基本的にインポート可能であるべきなので、インポートにより、メイン関数が実行されないようにする。pythonにおいては、pychecker, pydocと単体テストのモジュールがインポート可能でなければならないので、、インポート時にメイン関数が実行されないように、以下のようにチェックを行うこと。</p>
+
+<pre class="lang:python decode:true">dev main():
+
+if __name__ == '__main__':
+    main()</pre>
+
+
+<p>以上がGoogle Python Style GuideのNamingの項目です。メイン関数のチェックに関しては定番ですね。テストもしやすいし、そのままインポートできます。何もなくても、これは大体書きますね。あれ、と思ったのは変数名の前のアンダーバー。ひとつ付けたときってprotectedになるんだっけ・・・？まぁなるんでしょうけど、あとで動作確認含めて、検証してみます。あとNamingの項目ではないですが、「インポートは必ず絶対パスで」と「継承のないクラスは必ずobjectを継承する」というポイントは、なるほど、と勉強になりました。</p>
+
+<p>ちなみに、クラス名、例外で用いられている記法はパスカルケース。それ以外はスネークケースですね。あと今回登場していませんが有名どこだと、キャメルケース。全然知らないけど、ハンガリアン記法なんかがありますね。次はC++いってみます。こっちはpythonより細かくて全部読むのめんどくry&#8230;.</p>
+
+<h2>Google C++ Style GuideによるC++の命名規約</h2>
+
+<h3>一般的な命名規約</h3>
+
+<ol>
+<li>関数名、変数名、ファイル名はわかりやすいものにする。無理に省略することは避ける。型や変数は名詞で、関数は命令的な動詞にするべき。</li>
+<li>プロジェクト外でも極めてよく知られている略語で無い限り、使用してはいけない。</li>
+</ol>
+
+
+<h3>ファイル名（一部省略）</h3>
+
+<ol>
+<li>ファイル名は全て小文字にするべきで、アンダーバー、ダッシュを含んでていても構わない。一貫性のあるパターンがなければアンダーバーを使うとより。</li>
+<li>c++ファイルはすべて.cc、ヘッダファイルは.hで終わるべき。</li>
+<li>db.hのように/usr/includeに存在するファイル名を使ってはいけない。</li>
+<li>ファイル名は具体的なものにする。(logs.hではなく、http_server_logs.hなど)</li>
+<li>インライン関数は.hファイルにいれなければならない。シンプルなインライン関数は直接.hファイルに書いたほうがよい。</li>
+</ol>
+
+
+<h3>型名（クラス名）</h3>
+
+<p>大文字で始めて、単語の頭文字を大文字にして、アンダーバーを使わないようにする。（パスカル記法ですね） ex: ClassName</p>
+
+<h3>変数名</h3>
+
+<ol>
+<li>全て小文字にして、単語と単語の間にはアンダーバーを入れる。クラスメンバ変数はアンダーバーで終わるようにする。構造体のデータメンバは、アンダーバーなしの通常の変数と同様に命名するべき(スネーク記法) ex: variable_name, class_member_variable_name_</li>
+<li>グローバル変数に特別な決まりはないが、グローバル変数自体、めったに使うべきではない。もし使う場合は g_ などのプレフィックスを付加し、ローカル変数と視覚的に区別しやすいように工夫すること。</li>
+</ol>
+
+
+<h3>定数名</h3>
+
+<p>kで始まり、単語の先頭を大文字にして続ける。ex : kConstNumber</p>
+
+<h3>関数名</h3>
+
+<ol>
+<li>通常の関数は大文字で始めて、単語の先頭を大文字にするべき。アンダーバーは使わない。関数がエラー時にクラッシュするなら、関数名にOrDieを付加するべき。ex : FunctionName(), CountNumbersOrDie()</li>
+<li>アクセサとミューテータ(get/set関数)は取得、または設定する変数名と一致させる。そのため、単語はそれぞれ小文字で、間にアンダーバーを入れる。ex : void set_user_id(int user_id)</li>
+</ol>
+
+
+<h3>名前空間名</h3>
+
+<p>名前空間は全て小文字で、プロジェクト名と、できればディレクトリ構造に基づいて名前をつける。</p>
+
+<h3>列挙子名</h3>
+
+<p>列挙子の名前は定数やマクロと同様にするべき。できるだけ定数と同様にするべきだが、マクロと同じにしても構わない。ex : kErrorOutOfMemory</p>
+
+<h3>マクロ名</h3>
+
+<p>一般的にはマクロを使うべきではないが、どうしても必要なら、大文字とアンダースコアだけを使った名前にする ex : define FOO_VAR &#8230;</p>
+
+<p>以上がGoogle C++ Style Guideの命名規約になります。ちょっと詳細すぎたり、限定的すぎる箇所もあったので、それは割愛させていただきました。まぁ大体はpythonと同じくパスカル記法とスネーク記法ですね。あと、マクロ、グローバル変数は原則使用しない。定数、列挙子は小文字のkから始まってから、パスカル記法、というところが一部特殊です。</p>
+
+<p>もちろん厳守する必要なないですが、個人でここまでコーディング規約決めてる人ってのもなかなかいないですね。俺も、書いてるプログラムや気分によって、いつのまにか変わってしまうこともしばしば・・・それぞれのルールには根拠もあって、Googleはこのようなコーディング規約を設けているので、特別拘りが見つかるまでは、ひとまず真似してみるのもいいと思います。</p>
+
+<p>最後におさらいしておきます</p>
+
+<p>パスカル記法　：　ClassName  （それぞれ単語の頭文字が大文字）</p>
+
+<p>スネーク記法　：   class_member_variable （それぞれ単語は全て小文字(または大文字)で、間にアンダーバー）</p>
+
+<p>キャメル記法 　：  variableName (今回出て来なかったやつ。最初の単語は小文字で、以降単語の頭文字が大文字)</p>
+
+<p>この３つは非常によく出てくる記法です。ハンガリアン記法はあんまり見かけないので省略。一応wikipediaだけでも。[<a href="http://ja.wikipedia.org/wiki/%E3%83%8F%E3%83%B3%E3%82%AC%E3%83%AA%E3%82%A2%E3%83%B3%E8%A8%98%E6%B3%95#.E3.82.B7.E3.82.B9.E3.83.86.E3.83.A0.E3.83.8F.E3.83.B3.E3.82.AC.E3.83.AA.E3.82.A2.E3.83.B3">ハンガリアン記法</a>]　よっぽど変数の中身や宣言を明確に、かつ限定的にしたいときに、数えるほどですが、使ったことあります。プログラムは書くだけでなく、読むことも仕事や勉強ですから、お互いにいいコードを見せあいたいですね、頑張ります。</p>
+
+<p>アルゴリズムの問題とかのプログラム書く時は、変数a,b,cとかやっちゃいますけどね・・・（笑）</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-25T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/02/25/wordpress14/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/02/25/wordpress14/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/02/25/wordpress13/" title="Previous Post: ASCIIコードを暗記するためだけのクソゲーを作る">&laquo; ASCIIコードを暗記するためだけのクソゲーを作る</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/02/26/wordpress15/" title="Next Post: 簡単なバッファオーバーフローを再現してみる（１）">簡単なバッファオーバーフローを再現してみる（１） &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,665 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>[python]ctypesモジュールを使ってみる - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="オライリーの『リバースエンジニアリング』のデバッガ自作の触りで登場した、pythonのctypesというモジュールに関して、ちゃんと使えるようになったら、もっと色々と便利そうなので、試してみました。 &nbsp; 公式リファレンス python2.5で追加され、C言語と互換性のあるデータ型を提供、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/05/08/wordpress36">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">[Python]ctypesモジュールを使ってみる</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-05-08T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>オライリーの『<a href="http://www.oreilly.co.jp/books/9784873114484/">リバースエンジニアリング</a>』のデバッガ自作の触りで登場した、pythonのctypesというモジュールに関して、ちゃんと使えるようになったら、もっと色々と便利そうなので、試してみました。</p>
+
+<p>&nbsp;</p>
+
+<p><a href="http://docs.python.jp/2.5/lib/module-ctypes.html">公式リファレンス</a></p>
+
+<p>python2.5で追加され、C言語と互換性のあるデータ型を提供、動的リンクライブラリの関数呼び出しを可能にしてくれます。</p>
+
+<p>&nbsp;</p>
+
+<p>サンプルコードはこちら（全てgithubにもアップロードしてあります）</p>
+
+<p>サンプル１（windowsで動作させています）</p>
+
+<pre class="lang:python decode:true"># coding:utf-8
+
+from ctypes import *
+
+def main():
+    print("start using ctypes!")
+
+    #windowsAPIのライブラリをインポートするならwindll.kernel32
+    win_api = windll.kernel32
+    print(win_api)
+
+    #c標準ライブラリをインポートするならcdll.msvcrt
+    c_lib = cdll.msvcrt
+    print(c_lib)
+
+    #windowsAPIのsleep()を呼び出してみる
+    win_api.Sleep(5000)
+
+    #cのprintfを呼び出してみる
+    c_lib.printf("printf%d\n", 100)
+
+if __name__ == '__main__':
+    main()</pre>
+
+
+<p>これをwindowsで実行すると、ちゃんとWinAPIのsleep()とc標準ライブラリのprintfが呼び出されます。</p>
+
+<p>C言語で提供されているデータ型はctypesモジュール内でラップされています。以下が提供されているデータ型です。</p>
+
+<table>
+  <tr>
+    <td valign="baseline">
+      <tt>c_char</tt>
+    </td>
+    
+    <td>
+      <code>char</code>
+    </td>
+    
+    <td>
+      1文字の 文字列
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_wchar</tt>
+    </td>
+    
+    <td>
+      <code>wchar_t</code>
+    </td>
+    
+    <td>
+      1文字の ユニコード文字列
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_byte</tt>
+    </td>
+    
+    <td>
+      <code>char</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_ubyte</tt>
+    </td>
+    
+    <td>
+      <code>unsigned char</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_short</tt>
+    </td>
+    
+    <td>
+      <code>short</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_ushort</tt>
+    </td>
+    
+    <td>
+      <code>unsigned short</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_int</tt>
+    </td>
+    
+    <td>
+      <code>int</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_uint</tt>
+    </td>
+    
+    <td>
+      <code>unsigned int</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_long</tt>
+    </td>
+    
+    <td>
+      <code>long</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_ulong</tt>
+    </td>
+    
+    <td>
+      <code>unsigned long</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_longlong</tt>
+    </td>
+    
+    <td>
+      <code>__int64</code> or <code>long long</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_ulonglong</tt>
+    </td>
+    
+    <td>
+      <code>unsigned __int64</code> or <code>unsigned long long</code>
+    </td>
+    
+    <td>
+      整数/長整数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_float</tt>
+    </td>
+    
+    <td>
+      <code>float</code>
+    </td>
+    
+    <td>
+      浮動小数点数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_double</tt>
+    </td>
+    
+    <td>
+      <code>double</code>
+    </td>
+    
+    <td>
+      浮動小数点数
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_char_p</tt>
+    </td>
+    
+    <td>
+      <code>char *</code> (NUL 終端)
+    </td>
+    
+    <td>
+      文字列または <code>None</code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_wchar_p</tt>
+    </td>
+    
+    <td>
+      <code>wchar_t *</code> (NUL 終端)
+    </td>
+    
+    <td>
+      ユニコードまたは <code>None</code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td valign="baseline">
+      <tt>c_void_p</tt>
+    </td>
+    
+    <td>
+      <code>void *</code>
+    </td>
+    
+    <td>
+      整数/長整数 または<code>None</code>
+    </td>
+  </tr>
+</table>
+
+
+<p>引用：<a href="http://docs.python.jp/2.5/lib/node455.html">公式リファレンス</a></p>
+
+<p>&nbsp;</p>
+
+<p>pythonとCの大きな違いとして、</p>
+
+<p>1．構造体がない</p>
+
+<p>2．ポインタがない</p>
+
+<p>&nbsp;</p>
+
+<p>ということがありますが、ctypesモジュールなら、ちゃんとそこもカバーしてくれます。</p>
+
+<p>例えば</p>
+
+<pre class="lang:default decode:true">struct Hoge {
+  int a;
+  char b;
+}</pre>
+
+
+<p>というC言語で書かれた構造体をpythonのctypesで表現するには</p>
+
+<pre class="lang:default decode:true">class POINT(Structure):
+  _fields_ = [
+    ("a", c_int),
+    ("b", c_char)
+  ]</pre>
+
+
+<p>というようにclass 構造体名(Structure):の形式で宣言すれば利用できます。メンバは_fields_のなかに、リストで渡せばOKです。（メンバ名, データ型）です。</p>
+
+<p>&nbsp;</p>
+
+<p>ポインタに関してはbyref()関数を使って</p>
+
+<p>&nbsp;</p>
+
+<pre class="lang:default decode:true">i = c_int(100)
+p = byref(i)</pre>
+
+
+<p>とすることでint型の変数iのポインタが変数pに代入されます。</p>
+
+<p>これでC言語の機能を補完することができたと思います。</p>
+
+<p>&nbsp;</p>
+
+<p>次に既存のdllを読み込んで関数を呼び出してみます。</p>
+
+<p>サンプルはこちら</p>
+
+<pre class="lang:c decode:true">#include &lt;stdio.h&gt;
+
+void hello(){
+    printf("hello world!");
+}</pre>
+
+
+<p>呼び出すと &#8220;hello world!&#8221;と出力するだけのhello()関数を作成します。</p>
+
+<p>これをコンパイルして動的リンクライブラリ(dll)にしてあげます</p>
+
+<pre class="lang:default decode:true">$gcc -c ./sample.c
+$gcc -share -o sample.dll ./sample.o</pre>
+
+
+<p>これでdllファイルができあがります。（-cオプションなしにコンパイルするとmain()関数がないよ！ってエラーがでます）</p>
+
+<p>これをpythonから読み込んでみます。</p>
+
+<p>コードがこちら</p>
+
+<pre class="lang:python decode:true"># coding:utf-8
+
+from ctypes import *
+
+def main():
+    my_mod = CDLL("./mod_sample.dll")
+    my_mod.hello()
+
+if __name__ == "__main__":
+    main()</pre>
+
+
+<p>CDLL()関数はファイルを指定して動的リンクライブラリを読み込む関数です。これで先ほどコンパイルしてできあがったdllファイルを読み込んであげます。</p>
+
+<p>これを実行すると標準出力に&#8221;hello world!&#8221;が出力されるはずです。</p>
+
+<p>要は今までC言語で作られた動的リンクライブラリがリソースとして再利用ができる、ということですね。これはワクワクします。</p>
+
+<p>&nbsp;</p>
+
+<p>もうひとつサンプルとして、WinAPIのMessageBox()関数を呼び出してみたいと思います。</p>
+
+<p>まずはMessageBox()関数の仕様を確認します。</p>
+
+<p><a href="http://msdn.microsoft.com/ja-jp/library/cc410914.aspx">MSDN-MessageBox()</a></p>
+
+<pre class="lang:default decode:true">int MessageBox(
+  HWND hWnd,          // オーナーウィンドウのハンドル
+  LPCTSTR lpText,     // メッセージボックス内のテキスト
+  LPCTSTR lpCaption,  // メッセージボックスのタイトル
+  UINT uType          // メッセージボックスのスタイル
+);</pre>
+
+
+<p>ということらしいです。普段C言語でプログラミングしている方でも、ちょっと見慣れない型かもしれません。（Windowsプログラミングしているならお馴染みだと思いますが。）</p>
+
+<p>それはこちらを参考にさせていただきました。</p>
+
+<p><a href="http://chokuto.ifdef.jp/urawaza/datatype.html">データ型について</a></p>
+
+<p><a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa383751(v=vs.85).aspx">MSDN-Windows Data Types</a></p>
+
+<p>関数の引数だけでなく、どのライブラリを使っているかも重要です。MSDNのページの一番したのほうに書いてあります。ヘッダーファイルのほうではなくて、インポートライブラリのほうです。MessageBoxの場合はUser32ですね。それをctypesで読み込んであげます。</p>
+
+<p>一つ目の引数は親ウィンドウがなければNULLで問題ないので、あとは文字列を二つと、スタイルを定義した定数を与えてあげるだけです。（これは種類がたくさんあるので、別に覚える必要はないと思いますが）</p>
+
+<p>コードはこちら</p>
+
+<p>&nbsp;</p>
+
+<pre class="lang:default decode:true"># coding:utf-8
+
+from ctypes import *
+
+def main():
+    win_api_user = windll.user32
+    win_api_user.MessageBoxW(None, u"unicode-text", u"unicode-title", 0x00000040)
+
+if __name__ == "__main__":
+    main()</pre>
+
+
+<p>これをwindowsから実行することで、メッセージボックスが表示されたかと思います。</p>
+
+<p>&nbsp;</p>
+
+<p>ctypesの使い方の触りとしては、こんな感じですかね。</p>
+
+<p>&nbsp;</p>
+
+<p>先日友達とバスケしに都内の体育会に行ったんですが、そこで知り合った同じ学校のゲーム学科の人からc++で書かれた面白いプログラム見せてもらったんで、それをctypesを使ってpythonで書きなおしたらまた紹介したいと思います。</p>
+
+<p>&nbsp;</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-05-08T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/05/08/wordpress36/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/05/08/wordpress36/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/05/01/wordpress35/" title="Previous Post: Rails + Github + herokuでちょっと開発したときに困ったところメモ">&laquo; Rails + Github + herokuでちょっと開発したときに困ったところメモ</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/05/09/wordpress37/" title="Next Post: ある文字コードでエンコードされている文字列のエンコード方式を変更してその結果を表示する簡単な方法">ある文字コードでエンコードされている文字列のエンコード方式を変更してその結果を表示する簡単な方法 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

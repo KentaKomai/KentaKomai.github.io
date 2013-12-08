@@ -1,0 +1,487 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>xv6のソースコードとテキストを読んでみる1_chapter0_2 - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="前回に書いたとおり、 Unix v6の移植版xv6のソースコードと、 テキストを読んでいこうと思います。 翻訳ははっきりいってかなりお粗末なもので、 僕が独自に解釈したものが多く含まれています。 あまりにも間違った内容が載っている可能性もあります。ご注意ください。 (※ &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/11/25/wordpress76">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">Xv6のソースコードとテキストを読んでみる1_chapter0_2</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-25T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><a href="http://komaken.me/blog/2013/11/10/xv6%E3%81%AE%E3%82%BD%E3%83%BC%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%89%E3%81%A8%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88%E3%82%92%E8%AA%AD%E3%82%93%E3%81%A7%E3%81%BF%E3%82%8B1_chapter0_1-2/">前回</a>に書いたとおり、 Unix v6の移植版xv6のソースコードと、 テキストを読んでいこうと思います。</p>
+
+<p>翻訳ははっきりいってかなりお粗末なもので、 僕が独自に解釈したものが多く含まれています。</p>
+
+<p>あまりにも間違った内容が載っている可能性もあります。ご注意ください。 (※お気づきの方いらっしゃいましたら、教えてくれるととてもありがたいです。)</p>
+
+<h2>Chapter0</h2>
+
+<h3>プロセスとメモリ</h3>
+
+<p>xv6ののメモリは、命令例、変数、スタックが入ったユーザ空間と プロセスごとにプライベートなカーネル空間で構成されています。 xv6はプロセスが実行待機しているプロセスの中からCPU資源を割り当てる タイムシェアリングという仕組みを提供しています。</p>
+
+<p>プロセスが実行されていないとき、xv6はプロセスのCPUレジスタを保存し、次に そのプロセスが実行されるときにリストアします。カーネルはそれぞれのプロセスに プロセス識別子、またはpidを割り当てます。</p>
+
+<p>プロセスが新しいプロセスを作成するときはforkシステムコールを呼び出します。 forkは呼び出しプロセス(親プロセス)と同じメモリ情報を持った新しいプロセス （子プロセスと呼ばれます）を作成します。</p>
+
+<p>親プロセスで呼び出されたforkは子プロセスのpidを返し、子プロセス内のforkはゼロを 返します。下記にサンプルコードを示します。</p>
+
+<pre>int pid;
+pid = fork();
+if(pid > 0){
+    printf("parent: child=%d\n", pid);
+    pid = wait();
+    printf("child %d is done\n", pid);
+} else if(pid == 0){
+    printf("child: exiting\n");
+    exit();
+} else {
+    printf("fork error\n");
+}
+</pre>
+
+
+<p>exitシステムコールは、呼び出しプロセスの実行を止め、メモリやオープンしたファイルなどの リソースの解放を行います。</p>
+
+<p>waitシステムコールは、現在実行しているプロセスの子プロセスが終了するまで待ち、 終了したときに子プロセスのpidを返します。例えば</p>
+
+<pre>parent: child=1234
+child: exiting
+</pre>
+
+
+<p>このような出力をしたプログラムがあるとして（&#8221;parent: child=1234&#8243;は親プロセスが &#8220;child: exiting&#8221;は子プロセスが出力したとします。親プロセスと子プロセス、どちらの printfが先に呼ばれたか、は上記の通り出ない場合もあります。）</p>
+
+<p>この二つの出力の後、子プロセスは終了し、親プロセスはwaitシステムコールから 処理が帰ってくることになります。</p>
+
+<p>そして、さらに以下を出力します。</p>
+
+<pre>parent: child 1234 is done
+</pre>
+
+
+<p>親と子、それぞれのプロセスは、それぞれ別のメモリ空間とレジスタ上で 実行されていることに注意してください。一方で変数の中身を変えたとしても 他方に影響はありません。</p>
+
+<p>execシステムコールは呼び出しプロセスのメモリを、ファイルから読み込んだ 新しいメモリイメージで置換えます。ファイルは、命令、データ、そしてどこから 処理を開始するか、などの情報を保持した特定のフォーマットに従ったもので なければなりません。xv6において、そのフォーマットはELFと呼ばれるものを使用します。 ELFに関する詳細はchpater2で説明していきます。</p>
+
+<p>execが成功すると、呼び出しプログラムへ処理は戻らず、ロードしたファイル内のELFヘッダ に定義されているエントリーポイント(処理がスタートする箇所)から、読み込んだプログラムの 実行をスタートします。</p>
+
+<p>execの実行には引数が２つ必要です。ひとつは実行可能ファイルの名前（パス）で、 もう一方は、読み込むファイル（プログラム）に対する引数群です。以下はサンプルコードです。</p>
+
+<pre>char *argv[3];
+argv[0] = "echo";
+argv[1] = "hello";
+argv[2] = 0;
+exec("/bin/echo", argv);
+printf("exec error\n");
+</pre>
+
+
+<p>上記の例では、execを呼び出したプログラムが &#8220;/bin/echo&#8221;と引数&#8221;echo&#8221;と&#8221;hello&#8221;に置換えられる例です。</p>
+
+<p>ほとんどのプログラムで最初の引数は慣例的にプログラムの名前自身で、それを無視します。</p>
+
+<p>xv6のシェルでは上記のようにして、ユーザの代わりにプログラムを実行します。 シェルの基本的な構造はとてもシンプルです。ソースコードテキストの8001行目で確認できます。</p>
+
+<p>メインのループでは、getcmdを用いて、コマンドラインから入力を受け付けています。 forkが呼ばれるときに、シェルプロセスのコピーが作成されます。親プロセスのシェルは 子プロセスのコマンドが実行されている間、waitシステムコールを呼び出しています。</p>
+
+<pre>int
+main(void)
+{
+    static char buf[100];
+    int fd;
+
+    // Assumes three file descriptors open.
+    while((fd = open("console", O_RDWR)) >= 0){
+        if(fd >= 3){
+            close(fd);
+            break;
+        }
+    }
+
+    // Read and run input commands.
+    while(getcmd(buf, sizeof(buf)) >= 0){
+        if(buf[0] == ’c’ &#038;&#038; buf[1] == ’d’ &#038;&#038; buf[2] == ’ ’){
+            // Clumsy but will have to do for now.
+            // Chdir has no effect on the parent if run in the child.
+            buf[strlen(buf)−1] = 0; // chop \n
+            if(chdir(buf+3) &lt; 0)
+                printf(2, "cannot cd %s\n", buf+3);
+            continue;
+        }
+        if(fork1() == 0)
+            runcmd(parsecmd(buf));
+        wait();
+    }
+    exit();
+}
+</pre>
+
+
+<p>例えば、ユーザが&#8221;echo hello&#8221;とコマンドラインに入力すると、 &ldquo;echo hello&#8221;を引数として、runcmd()が呼び出されます。</p>
+
+<p>runcmd(7906行目)は引数に渡されたコマンドを実行します。&#8221;echo hello&#8221;が入力された場合、 runcmdの内部ではexec(7926行目)が呼び出されす。execの実行が成功すると、runcmdから 読み込まれた命令を実行します。</p>
+
+<p></pre></p>
+
+<pre>void
+runcmd(struct cmd *cmd)
+{
+  int p[2];
+  struct backcmd *bcmd;
+  struct execcmd *ecmd;
+  struct listcmd *lcmd;
+  struct pipecmd *pcmd;
+  struct redircmd *rcmd;
+ 
+  if(cmd == 0)
+    exit();
+   
+  switch(cmd->type){
+  default:
+    panic("runcmd");
+ 
+  case EXEC:
+    ecmd = (struct execcmd*)cmd;
+    if(ecmd->argv[0] == 0)
+      exit();
+    exec(ecmd->argv[0], ecmd->argv);
+    printf(2, "exec %s failed\n", ecmd->argv[0]);
+    break;
+ 
+  case REDIR:
+    rcmd = (struct redircmd*)cmd;
+    close(rcmd->fd);
+    if(open(rcmd->file, rcmd->mode) &lt; 0){
+      printf(2, "open %s failed\n", rcmd->file);
+      exit();
+    }
+    runcmd(rcmd->cmd);
+    break;
+ 
+  case LIST:
+    lcmd = (struct listcmd*)cmd;
+    if(fork1() == 0)
+      runcmd(lcmd->left);
+    wait();
+    runcmd(lcmd->right);
+    break;
+ 
+  case PIPE:
+    pcmd = (struct pipecmd*)cmd;
+    if(pipe(p) &lt; 0)
+      panic("pipe");
+    if(fork1() == 0){
+      close(1);
+      dup(p[1]);
+      close(p[0]);
+      close(p[1]);
+      runcmd(pcmd->left);
+    }
+    if(fork1() == 0){
+      close(0);
+      dup(p[0]);
+      close(p[0]);
+      close(p[1]);
+      runcmd(pcmd->right);
+    }
+    close(p[0]);
+    close(p[1]);
+    wait();
+    wait();
+    break;
+     
+  case BACK:
+    bcmd = (struct backcmd*)cmd;
+    if(fork1() == 0)
+      runcmd(bcmd->cmd);
+    break;
+  }
+  exit();
+}
+</pre>
+
+
+<p>いずれ、runcmdから読み込まれたファイルは処理を終え、exitを呼び出します。 そうると、親プロセスのwait呼び出し箇所に、処理が戻ります。</p>
+
+<p>forkとexecがひとつの命令でなく、分かれていることを不思議に思うかもしれません。 なぜ、プロセスを生成するforkと、プログラムをロードするexecが別々に定義されているかは、 後ほど解説していきます。それがとても秀逸なデザインであることがわかると思います。</p>
+
+<p>xv6は暗黙的にほとんどのユーザ空間メモリを割り当てます。forkは親プロセスのメモリをコピーし 子プロセスに割り当て、それからexecは実行ファイルを保持するのに十分なメモリを 割り当てます。プロセスが実行中に更にメモリを必要とした場合(mallocなど)には、 sbrk(n)をコールすることで、データ領域をnバイト拡張することができます。 sbrkは新しいメモリ領域のアドレスを返します。</p>
+
+<p>xv6はユーザという概念を提供しておらず、他のユーザからあるユーザを守る、といった 機能はありません。Unixでいえば、xv6のプロセスは全てrootで動作する、と言えます。</p>
+
+<h3>原文</h3>
+
+<p>An xv6 process consists of user-space memory (instructions, data, and stack) and per-process state private to the kernel. Xv6 provides time-sharing: it transparently switches the available CPUs among the set of processes waiting to execute. When a process is not executing, xv6 saves its CPU registers, restoring them when it next runs the process. The kernel associates a process identifier, or pid, with each process.</p>
+
+<p>A process may create a new process using the fork system call. Fork creates a new process, called the child process, with exactly the same memory contents as the calling process, called the parent process. Fork returns in both the parent and the child. In the parent, fork returns the child’s pid; in the child, it returns zero. For example, consider the following program fragment:</p>
+
+<p>[::source code::]</p>
+
+<p>The exit system call causes the calling process to stop executing and to release resources such as memory and open files. The wait system call returns the pid of an exited child of the current process; if none of the caller’s children has exited, wait waits for one to do so. In the example, the output lines</p>
+
+<p>[::source code::]</p>
+
+<p>might come out in either order, depending on whether the parent or child gets to its printf call first. After the child exits the parent’s wait returns, causing the parent to print</p>
+
+<p>[::source code::]</p>
+
+<p>Note that the parent and child were executing with different memory and different registers: changing a variable in one does not affect the other.</p>
+
+<p>The exec system call replaces the calling process’s memory with a new memory image loaded from a file stored in the file system. The file must have a particular format, which specifies which part of the file holds instructions, which part is data, at which instruction to start, etc.</p>
+
+<p>xv6 uses the ELF format, which Chapter 2 discusses in more detail. When exec succeeds, it does not return to the calling program; instead, the instructions loaded from the file start executing at the entry point declared in the ELF header.</p>
+
+<p>Exec takes two arguments: the name of the file containing the executable and an array of string arguments.</p>
+
+<p>This fragment replaces the calling program with an instance of the program /bin/echo running with the argument list echo hello. Most programs ignore the first argument, which is conventionally the name of the program.</p>
+
+<p>The xv6 shell uses the above calls to run programs on behalf of users. The main structure of the shell is simple; see main (8001).</p>
+
+<p>The main loop reads the input on the command line using getcmd. Then it calls fork, which creates a copy of the shell process. The parent shell calls wait, while the child process runs the command.</p>
+
+<p>For example, if the user had typed ‘‘echo hello’’ at the prompt, runcmd would have been called with ‘‘echo hello’’ as the argument.</p>
+
+<p>runcmd (7906) runs the actual command. For ‘‘echo hello’’, it would call exec (7926). If exec succeeds then the child will execute instructions from echo instead of runcmd.</p>
+
+<p>At some point echo will call exit, which will cause the parent to return from wait in main (8001).</p>
+
+<p>You might wonder why fork and exec are not combined in a single call; we will see later that separate calls for creating a process and loading a program is a clever design.</p>
+
+<p>Xv6 allocates most user-space memory implicitly: fork allocates the memory required for the child’s copy of the parent’s memory, and exec allocates enough memory to hold the executable file. A process that needs more memory at run-time (perhaps for malloc) can call sbrk(n) to grow its data memory by n bytes; sbrk returns the location of the new memory.</p>
+
+<p>Xv6 does not provide a notion of users or of protecting one user from another; in Unix terms, all xv6 processes run as root.</p>
+
+<h3>感想</h3>
+
+<p>とりあえずは基本的な導入部分が続きます。 ソースコードを見ていると、当たり前のことだけど、OSも 人間がプログラミングしたものだ、と感じるることができて なかなか感慨深いです。</p>
+
+<p>並行してunix v6のソースコードも実はゆっくり読んでるんですが やはりソースコードの可読性やx86上で動作するということもあって 個人的には、xv6のほうが入りやすいかな、と感じています。</p>
+
+<p>個人的に読むために、既に結構先まで翻訳してある(翻訳というのもおこがましい ようなもの)のですが、なかなかブログにまとめることができずに、ようやく ２回目です。</p>
+
+<p>一応目標としては、卒業するまでに全編、理解も含めて読み終えることです。 頑張ります。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-25T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/11/25/wordpress76/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/11/25/wordpress76/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/11/19/wordpress75/" title="Previous Post: [CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた">&laquo; [CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/11/28/wordpress77/" title="Next Post: 簡易プロセス死活監視プログラムをc#で">簡易プロセス死活監視プログラムをc#で &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

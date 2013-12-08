@@ -1,0 +1,357 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>簡単なバッファオーバーフローを再現してみる（２） - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="前回、途中までこの記事を書いて、問題発生しちゃってうまく再現できなかったので、書き直し。 ざっくりと内容を説明します。 こちらの技術書に書いてあるBOFの項目の復習と再現記録です。 環境は今回に限りUbuntu7.0.2 + gcc 3.3.6(前回の日記に書いた通り、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/03/03/wordpress17">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">簡単なバッファオーバーフローを再現してみる（２）</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-03T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>前回、途中までこの記事を書いて、問題発生しちゃってうまく再現できなかったので、書き直し。</p>
+
+<p>ざっくりと内容を説明します。</p>
+
+<p><a href="http://www.amazon.co.jp/Hacking-%E7%BE%8E%E3%81%97%E3%81%8D%E7%AD%96%E8%AC%80-%E2%80%95%E8%84%86%E5%BC%B1%E6%80%A7%E6%94%BB%E6%92%83%E3%81%AE%E7%90%86%E8%AB%96%E3%81%A8%E5%AE%9F%E9%9A%9B-Jon-Erickson/dp/4873115140">こちらの技術書</a>に書いてあるBOFの項目の復習と再現記録です。</p>
+
+<p>環境は今回に限りUbuntu7.0.2 + gcc 3.3.6(前回の日記に書いた通り、当初の環境だとうまく再現できなかったため)</p>
+
+<p>今回は関数の戻りアドレスの上書きを検証します。</p>
+
+<p><a href="https://github.com/KentaKomai/warehouse/blob/master/bof_sample/bof_sample2.c">コード</a>はこちら。</p>
+
+<pre class="lang:c decode:true">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int check(char *password){
+    char password_buffer[16];
+    int auth_flag=0;
+    printf("auth_flag:%dn", auth_flag);
+    printf("password_buffer:%sn", password_buffer);
+
+    strcpy(password_buffer, password);
+
+    printf("auth_flag:%dn", auth_flag);
+    printf("password_buffer:%sn", password_buffer);
+
+    if(strcmp(password_buffer, "SamplePassword") == 0){
+        auth_flag = 1;
+    }
+
+    return auth_flag;
+}
+
+int main(int argc, char *argv[]) {
+
+    if(argc &lt; 2){
+        printf("usage: %s &lt;password&gt;n", argv[0]);
+        exit(0);
+    }
+
+    if(check(argv[1])){
+        printf("--------------------------n");
+        printf("authentication is success!n");
+        printf("--------------------------n");
+    }else{
+        printf("password id different...n");
+    }
+
+    return 0;
+}</pre>
+
+
+<p>最初はpassword_bufferへ確保されているサイズ以上の文字列を与えることで、auth_flagを上書きする、というものでしたが、今回はメモリ上でauth_flagがアドレスが小さいため、その手法が利用できません。</p>
+
+<p>今回は再現と検証に時間かかりすぎました・・・。バージョンの違いでずいぶんと挙動が変わりますね・・・。</p>
+
+<p>ざっくりといきます。まずはいつもどおりブレイクポイント仕掛けて、メモリの位置を確認してあげます。<br/>
+まずは実行</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.00.14.png" rel="image_group"><img class="alignnone size-large wp-image-191" alt="Screen Shot 2013-03-01 at 19.00.14" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.00.14.png?resize=625%2C65" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>次はメモリアドレスを調べてあげます。<a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.01.30.png" rel="image_group"><img class="alignnone size-full wp-image-192" alt="Screen Shot 2013-03-01 at 19.01.30" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.01.30.png?resize=876%2C320" data-recalc-dims="1" /></a>auth_flagがpassword_bufferより小さいメモリアドレスになってるのがわかります。</p>
+
+<p>つまり、単純にpassword_bufferに大量の文字列を挿入して上書きしても、auth_flagnには何の影響も出ないことがわかります。</p>
+
+<p>そのまま実行を続けても・・・</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.04.49.png" rel="image_group"><img class="alignnone size-large wp-image-193" alt="Screen Shot 2013-03-01 at 19.04.49" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.04.49.png?resize=625%2C167" data-recalc-dims="1" /></a>メイン関数に戻る前にSegmentation faultになって強制終了しちゃいます。</p>
+
+<p>なので、今度はアセンブラにして見てみます。main()関数のほうをアセンブラに変換してみます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.07.40.png" rel="image_group"><img class="alignnone size-large wp-image-194" alt="Screen Shot 2013-03-01 at 19.07.40" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.07.40.png?resize=625%2C606" data-recalc-dims="1" /></a>注目するべきはアドレス 0x08484e4 &lt;main+66>の箇所です。</p>
+
+<p>ここでcheck()関数を呼び出しています。関数呼び出しが行われると、その前のmov命令で、メモリ上のスタックセグメントに、引数とか、callした関数から処理がmain()関数に戻ってくるためのアドレスなどが、プッシュされます。（この辺の仕組みも復習のため別途記事書きます。今決めました。）すごーくざっくり言うと、この場合check()関数が終わった後に、次の行である0x08484e9へ戻るために、そのアドレスをスタックに格納する仕組みになっています。もちろん、呼び出された関数内より先にスタックにpushされるので、check()関数内のpassword_bufferやauth_flagより先にスタックに格納されていることになります。</p>
+
+<p>つまりは、アドレスの小さい順にこの３つを書くと</p>
+
+<p>auth_flag, password_buffer, main()関数への戻りアドレス</p>
+
+<p>になっているはずなんです。（他にも格納されているものはありますが、今は分かりやすくこの３つだけを取り上げます。）</p>
+
+<p>確認してみます。今回は引数にわかりやすい文字列を、16文字ぴったり与えてみます。 <a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.18.36.png" rel="image_group"><img class="alignnone size-large wp-image-196" alt="Screen Shot 2013-03-01 at 19.18.36" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.18.36.png?resize=625%2C128" data-recalc-dims="1" /></a>ブレイクポイントのところで、引数をpassword_bufferへコピーしているので、もうひとつだけ進めます(stepコマンドでステップ実行)</p>
+
+<p>その状態で、メモリアドレス内を確認してみます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.19.20.png" rel="image_group"><img class="alignnone size-large wp-image-198" alt="Screen Shot 2013-03-01 at 19.19.20" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.19.20.png?resize=625%2C159" data-recalc-dims="1" /></a></p>
+
+<p>引数で与えた通りに、0xbffff820から16byte分にhogeが４回格納されていますね（リトルエンディアンなので、4byteごとに逆に格納されていることに注意してください。）</p>
+
+<p>そして、その後、12byte後(0xbffff83c)から4byteに、 main()関数の戻りアドレスである0x08484e9が格納されているのが確認できます。</p>
+
+<p>つまり、ここを認証後の処理が格納されているメモリアドレスに書き換えてしまえば良さそうです。認証後の処理がどのアドレスに格納されているかを確認していきます。またアセンブラで処理を表示させます。( disassemble main )</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.27.25.png" rel="image_group"><img class="alignnone size-large wp-image-199" alt="Screen Shot 2013-03-01 at 19.27.25" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-01-at-19.27.25.png?resize=625%2C285" data-recalc-dims="1" /></a></p>
+
+<p>ぶっちゃけこれはサンプル用に書いたプログラムなんで、一目瞭然と言っていいくらいに見やすくなっちゃってますが、check()関数から帰ってきて２行目、0x08484ebで何かしらの比較を行なって、その後0&#215;08484513にジャンプして、そのあと、print()関数を呼び出しています。</p>
+
+<p>これってif文がelseになった時の処理じゃないか・・・とアタリをつけます。（キッチリ追っていけばもちろん根拠を持ってそうなりますが）</p>
+
+<p>つまりそれより前にある、print()関数を三回コールしているところが、if文がtrueだったときの処理ですね。最初のprint()関数が呼ばれているひとつ前の0x080484edへ、戻りアドレスを書き換えれば、認証を回避できるかもしれないので、やってみます。</p>
+
+<p>引数にこのアドレスを突っ込んであげればOKです。リトルエンディアンなので、1byteづつ後ろから並び替えて与えます。xedx84x04x08ですね。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.48.36.png" rel="image_group"><img class="alignnone size-large wp-image-210" alt="Screen Shot 2013-03-03 at 1.48.36" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.48.36.png?resize=625%2C152" data-recalc-dims="1" /></a>引数にperlでxedx84x04x08を10回繰り返して与えます。それによってpassword_bufferをBOFさせます。その状態でpassword_buffer周辺のメモリ内容を確認してみます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.52.18.png" rel="image_group"><img class="alignnone size-large wp-image-211" alt="Screen Shot 2013-03-03 at 1.52.18" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.52.18.png?resize=625%2C144" data-recalc-dims="1" /></a>ご覧の通り、先ほどの場所のアドレスが0x980484edで上書きされてますね！これで、check()関数が終わったあと、そのままそのアドレスへ戻るようになります。その状態で、動作させてみます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.55.19.png" rel="image_group"><img class="alignnone size-large wp-image-212" alt="Screen Shot 2013-03-03 at 1.55.19" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-1.55.19.png?resize=625%2C202" data-recalc-dims="1" /></a>認証を回避し、authentication is success!が表示されていますね。</p>
+
+<p>こんな感じです。</p>
+
+<p>この手法を使うことによって、auth_flagがメモリ上にBOFさせるアドレスより前にある場合でも認証を回避しています。つまり任意のアドレスにジャンプさせることができます。（本当は各アセンブラの処理内容についてもまとめようと思いましたが、ちょっと長くなりすぎるので、またの機会にまとめます。）</p>
+
+<p>次回のBOFの記事では、いよいよ任意のコードを挿入する手法について書きたいと思いますが、自分の環境で再現し、理解してからなので、時間かかっちゃいそうです・・・。</p>
+
+<p>その前にnullcon Battle Undergroundで自分が担当した問題のwriteupの記事書きます。今日は早めに寝よう・・・。</p>
+
+<p>&nbsp;</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-03T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/03/03/wordpress17/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/03/03/wordpress17/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/02/28/wordpress16/" title="Previous Post: BOFの勉強中に発生したスタックセグメントの謎(CentOS6.3 + gcc 4.4.6)">&laquo; BOFの勉強中に発生したスタックセグメントの謎(CentOS6.3 + gcc 4.4.6)</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/03/03/wordpress18/" title="Next Post: nullcon 2013 Battle Underground Programming 1 Writeup">nullcon 2013 Battle Underground Programming 1 Writeup &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

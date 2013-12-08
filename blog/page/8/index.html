@@ -1,0 +1,783 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="前回に引き続きCodeGate2012の復習とか ※注意 他の方のwriteupを参考に解いています。（許可とってないのでリンクは貼りませんが、ぐぐってすぐ出てくる海外の方のブログを色々参考にさせていただいています。）
+できれば全問触りたいのでwriteupを見ることを前提で解き初めてます。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/page/8">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/16/wordpress7/">CodeGate2012 Forensics400を解いてみる</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-16T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前回に引き続きCodeGate2012の復習とか</p>
+
+<p>※注意</p>
+
+<ul>
+<li>他の方のwriteupを参考に解いています。（許可とってないのでリンクは貼りませんが、ぐぐってすぐ出てくる海外の方のブログを色々参考にさせていただいています。）</li>
+<li>できれば全問触りたいのでwriteupを見ることを前提で解き初めてます。</li>
+</ul>
+
+
+<p>問題文</p>
+
+<blockquote><p>In Energy corporate X which is located in Seoul, APT(Advanced Persistent Threat) was occurred.<br/>
+For 6 months, Attacker A has stolen critical information with an elaborate attack.<br/>
+Attacker A exerted great effort to remove his all traces such as malicious file, prefetch, registry and event logs for the period of attacking, so it was hard for Energy Corporate X to find an attacking path. However IU who is Forensic expert can find the traces of the malicious files Attacker A used by analyzing MFT(Master File Table).<br/>
+What time malicious file was created? The time is based on Korea Standard Time(UTC +09:00)<br/>
+Answer: YYYY-MM-DDThh:mm:ss.sTZD<br/>
+(TZD : +hh:mm or -hh:mm). Calculate down to seven decimal points.</p></blockquote>
+
+<p>ざっくり意訳（今回難しいな・・・）</p>
+
+<blockquote><p>ソウルにある企業Xに、重大な脅威が発生しました。６ヶ月もの間、攻撃者Aは高度な手法を用いて重要な情報を盗みました。攻撃者Aは攻撃が終わるまでの悪意のあるファイル、レコード、イベントログなどの痕跡を消すため努力しました。ですので、企業Xが攻撃の情報を見つけるのは大変困難でした。しかしフォレンジックのエキスパートであるIUはMFT（MasterFileTable）を分析することによって、攻撃者Aの悪意のあるファイルの痕跡を発見することができました。その悪意のあるファイルはいつ作成されたでしょうか？時間は韓国標準時間(UTC +09:00)でYYYY-MM-DDThh:mm:ss.sTZDの形式で答えてください。小数点以下は７桁まで計算してください。</p></blockquote>
+
+<p>こんな感じですかね・・・違和感バリバリですが、まぁ意味はギリギリわかります・・・（笑）</p>
+
+<p>問題ファイルはいつもどおり7zipで圧縮されており、解答すると$MFTというファイルひとつが出てきます。(問題ファイルはリネームしました)</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.21.44.png" rel="image_group"><img class="alignnone size-full wp-image-75" alt="Screen Shot 2013-02-16 at 14.21.44" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.21.44.png?resize=802%2C136" data-recalc-dims="1" /></a></p>
+
+<p>fileコマンドしても、dataとしか出ませんね。まぁ問題文にもMFT(Master File Table)とあるので、それでググってみます。それと一緒に参考になりそうなwikipediaのページも一緒に載せておきます。</p>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%83%9E%E3%82%B9%E3%82%BF%E3%83%BC_%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB_%E3%83%86%E3%83%BC%E3%83%96%E3%83%AB">MFT マスターファイルテーブル　-wikipedia-</a></p>
+
+<p><a href="http://ja.wikipedia.org/wiki/NT_File_System">NT File System -wikipedia-</a></p>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0">ファイルシステム -wikipedis-</a></p>
+
+<p>要するに、もらったファイルはwindowsのNTFSのMFTで、そこにシステム内のファイルが全部書いてあるーみたいな感じですかね。</p>
+
+<p>それでそのファイル開いてみたんですが、もちろんテキスト形式では意味不明です。これ中身を見る方法なんかないかなー、ってググってたらとても良いツール見つけました。参考にさせていただいたwriteupには「そういうツールがいくつかあるので、好きなもの使ってね」って感じで、具体的なツールは紹介されていなかったのですが、利用させていただいたので、紹介します。<a href="https://github.com/dkovar/analyzeMFT">Github analyzeMTF</a></p>
+
+<p>pythonで書かれたMTF解析して　csvで出力してくれるスクリプトですね。今度ちゃんと中身読んでみたいな。探すとなんでもありますね・・・ネットには。 writeupでも同じ形式で出力してるサンプルが載せられていたので、同じものを使ったのかも。(追記：韓国の参加者の方のブログでは同じものが紹介されていましたが、これを使わずに解答にたどり着いたようです。他にはR-studioっていうソフトで中身をチェックしている方もいました。）</p>
+
+<p>これを利用して、中身を見やすいCSVファイルにしてもらいます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.48.34.png" rel="image_group"><img class="alignnone size-full wp-image-76" alt="Screen Shot 2013-02-16 at 14.48.34" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.48.34.png?resize=782%2C50" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>使い方は-fオプションで対象ファイル、-oで出力ファイル、簡単です！</p>
+
+<p>さっそく中身を見てみます。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.52.10.png" rel="image_group"><img class="alignnone size-large wp-image-77" alt="Screen Shot 2013-02-16 at 14.52.10" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.52.10.png?resize=625%2C684" data-recalc-dims="1" /></a></p>
+
+<p>わちゃーーーーーーーー！おおよそ1500ファイルくらいのレコードが記録されていました。さてさて、この中から答えはどこにあるのでしょう・・・。文字列としては読みやすくなりましたが、それぞれがなんの値なのか・・・・。と思ったらちゃんと一番最初の行に書いてありますね。ExcelかNumbersで見たほうが見やすいかな。まぁここから先は全くわかりませんでした・・・。</p>
+
+<p>writeup見ればすぐにわかることなんで、ザックリ答えから書いちゃうと、1047コ目のレコードである/$Recycle.Bin/r32.exeがそのファイルなんですが、どうやってここにたどり着いたかサッパリ・・・他の方のwriteupには、対象ファイルは.exeで、ヒットする中で怪しいのはこれだけ、ということ。もうひとつ、隠しフォルダ$Recycle.Bin/のなかに入っているから、これが答え、ということでした。まぁ言われればそうなんですけど、.binファイルも含まれているのに、なぜ.exeに断定できたのか・・・Recycle.Binってゴミ箱ですよね・・・？削除した、ってゴミ箱にかよ・・・って思っちゃったんだけど、なんか見落としてるかな・・・英語ならゆっくり読めばなんとなくわかるんだけど、韓国語は全くわからん・・・。まず文字打てないし・・・ｗぐぬぬ・・・。</p>
+
+<p>答えはこのファイルが作成された時間ですね。これも含まれてます。上記のファイルが含まれるレコード内に2012-02-22 17:39:18.897461とあります。これが作成された時間。</p>
+
+<p>ただ、これは<a href="http://ja.wikipedia.org/wiki/%E5%8D%94%E5%AE%9A%E4%B8%96%E7%95%8C%E6%99%82">UTC時刻</a>なので、韓国・ソウルの時間に合わせて形式も解答の形に整形してあげます。小数点以下７桁で解答するように求められているので、小数点の最後にゼロをつけます</p>
+
+<p>2012-02-22 17:39:18.897461　->　2012-02-23T02:39:18.8974610+09:00</p>
+
+<p>これが解答。難しすぎるよー・・・・100~400まで順番にやって、ちゃんと難易度あがってるように僕は思います・・・よくできてるなぁ・・・</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/16/wordpress6/">CodeGate2012 Forensics400を解いてみる</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-16T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前回に引き続きCodeGate2012の復習とか</p>
+
+<p>※注意</p>
+
+<ul>
+<li>他の方のwriteupを参考に解いています。（許可とってないのでリンクは貼りませんが、ぐぐってすぐ出てくる海外の方のブログを色々参考にさせていただいています。）</li>
+<li>できれば全問触りたいのでwriteupを見ることを前提で解き初めてます。</li>
+</ul>
+
+
+<p>問題文</p>
+
+<blockquote><p>In Energy corporate X which is located in Seoul, APT(Advanced Persistent Threat) was occurred.<br/>
+For 6 months, Attacker A has stolen critical information with an elaborate attack.<br/>
+Attacker A exerted great effort to remove his all traces such as malicious file, prefetch, registry and event logs for the period of attacking, so it was hard for Energy Corporate X to find an attacking path. However IU who is Forensic expert can find the traces of the malicious files Attacker A used by analyzing MFT(Master File Table).<br/>
+What time malicious file was created? The time is based on Korea Standard Time(UTC +09:00)<br/>
+Answer: YYYY-MM-DDThh:mm:ss.sTZD<br/>
+(TZD : +hh:mm or -hh:mm). Calculate down to seven decimal points.</p></blockquote>
+
+<p>ざっくり意訳（今回難しいな・・・）</p>
+
+<blockquote><p>ソウルにある企業Xに、重大な脅威が発生しました。６ヶ月もの間、攻撃者Aは高度な手法を用いて重要な情報を盗みました。攻撃者Aは攻撃が終わるまでの悪意のあるファイル、レコード、イベントログなどの痕跡を消すため努力しました。ですので、企業Xが攻撃の情報を見つけるのは大変困難でした。しかしフォレンジックのエキスパートであるIUはMFT（MasterFileTable）を分析することによって、攻撃者Aの悪意のあるファイルの痕跡を発見することができました。その悪意のあるファイルはいつ作成されたでしょうか？時間は韓国標準時間(UTC +09:00)でYYYY-MM-DDThh:mm:ss.sTZDの形式で答えてください。小数点以下は７桁まで計算してください。</p></blockquote>
+
+<p>こんな感じですかね・・・違和感バリバリですが、まぁ意味はギリギリわかります・・・（笑）</p>
+
+<p>問題ファイルはいつもどおり7zipで圧縮されており、解答すると$MFTというファイルひとつが出てきます。(問題ファイルはリネームしました)</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.21.44.png" rel="image_group"><img class="alignnone size-full wp-image-75" alt="Screen Shot 2013-02-16 at 14.21.44" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.21.44.png?resize=802%2C136" data-recalc-dims="1" /></a></p>
+
+<p>fileコマンドしても、dataとしか出ませんね。まぁ問題文にもMFT(Master File Table)とあるので、それでググってみます。それと一緒に参考になりそうなwikipediaのページも一緒に載せておきます。</p>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%83%9E%E3%82%B9%E3%82%BF%E3%83%BC_%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB_%E3%83%86%E3%83%BC%E3%83%96%E3%83%AB">MFT マスターファイルテーブル　-wikipedia-</a></p>
+
+<p><a href="http://ja.wikipedia.org/wiki/NT_File_System">NT File System -wikipedia-</a></p>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0">ファイルシステム -wikipedis-</a></p>
+
+<p>要するに、もらったファイルはwindowsのNTFSのMFTで、そこにシステム内のファイルが全部書いてあるーみたいな感じですかね。</p>
+
+<p>それでそのファイル開いてみたんですが、もちろんテキスト形式では意味不明です。これ中身を見る方法なんかないかなー、ってググってたらとても良いツール見つけました。参考にさせていただいたwriteupには「そういうツールがいくつかあるので、好きなもの使ってね」って感じで、具体的なツールは紹介されていなかったのですが、利用させていただいたので、紹介します。<a href="https://github.com/dkovar/analyzeMFT">Github analyzeMTF</a></p>
+
+<p>pythonで書かれたMTF解析して　csvで出力してくれるスクリプトですね。今度ちゃんと中身読んでみたいな。探すとなんでもありますね・・・ネットには。 writeupでも同じ形式で出力してるサンプルが載せられていたので、同じものを使ったのかも。(追記：韓国の参加者の方のブログでは同じものが紹介されていましたが、これを使わずに解答にたどり着いたようです。他にはR-studioっていうソフトで中身をチェックしている方もいました。）</p>
+
+<p>これを利用して、中身を見やすいCSVファイルにしてもらいます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.48.34.png" rel="image_group"><img class="alignnone size-full wp-image-76" alt="Screen Shot 2013-02-16 at 14.48.34" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.48.34.png?resize=782%2C50" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>使い方は-fオプションで対象ファイル、-oで出力ファイル、簡単です！</p>
+
+<p>さっそく中身を見てみます。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.52.10.png" rel="image_group"><img class="alignnone size-large wp-image-77" alt="Screen Shot 2013-02-16 at 14.52.10" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.52.10.png?resize=625%2C684" data-recalc-dims="1" /></a></p>
+
+<p>わちゃーーーーーーーー！おおよそ1500ファイルくらいのレコードが記録されていました。さてさて、この中から答えはどこにあるのでしょう・・・。文字列としては読みやすくなりましたが、それぞれがなんの値なのか・・・・。と思ったらちゃんと一番最初の行に書いてありますね。ExcelかNumbersで見たほうが見やすいかな。まぁここから先は全くわかりませんでした・・・。</p>
+
+<p>writeup見ればすぐにわかることなんで、ザックリ答えから書いちゃうと、1047コ目のレコードである/$Recycle.Bin/r32.exeがそのファイルなんですが、どうやってここにたどり着いたかサッパリ・・・他の方のwriteupには、対象ファイルは.exeで、ヒットする中で怪しいのはこれだけ、ということ。もうひとつ、隠しフォルダ$Recycle.Bin/のなかに入っているから、これが答え、ということでした。まぁ言われればそうなんですけど、.binファイルも含まれているのに、なぜ.exeに断定できたのか・・・Recycle.Binってゴミ箱ですよね・・・？削除した、ってゴミ箱にかよ・・・って思っちゃったんだけど、なんか見落としてるかな・・・英語ならゆっくり読めばなんとなくわかるんだけど、韓国語は全くわからん・・・。まず文字打てないし・・・ｗぐぬぬ・・・。</p>
+
+<p>答えはこのファイルが作成された時間ですね。これも含まれてます。上記のファイルが含まれるレコード内に2012-02-22 17:39:18.897461とあります。これが作成された時間。</p>
+
+<p>ただ、これは<a href="http://ja.wikipedia.org/wiki/%E5%8D%94%E5%AE%9A%E4%B8%96%E7%95%8C%E6%99%82">UTC時刻</a>なので、韓国・ソウルの時間に合わせて形式も解答の形に整形してあげます。小数点以下７桁で解答するように求められているので、小数点の最後にゼロをつけます</p>
+
+<p>2012-02-22 17:39:18.897461　->　2012-02-23T02:39:18.8974610+09:00</p>
+
+<p>これが解答。難しすぎるよー・・・・100~400まで順番にやって、ちゃんと難易度あがってるように僕は思います・・・よくできてるなぁ・・・</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/15/wordpress5/">[Python]pytzモジュールでのタイムゾーン一覧</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-15T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>ざっくりとした使い方は他の方のブログにもたくさん載せられていたのですが、実際に定義されているタイムゾーンの一覧がググり方もわからず、とりあえず東京で・・・って感じで前回のCodeGate2012forensics200は終わってしまったのでついでに一覧をメモ</p>
+
+<p>リファレンス読みながらなんとか使えた感じなんで、本当はもっと良い感じの書き方・使い方があると思われます・・・。カッコ悪いコードあげちゃいましたけど、成長過程ということで・・・ｗ</p>
+
+<pre class="lang:python decode:true">print pytz.common_timezones # 地域/地名の形式
+print pytz.country_timezones　# 国の名前</pre>
+
+
+<p>&nbsp;</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/02/15/wordpress5/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/15/wordpress4/">CodeGate2012 Forensics300を解いてみる</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-15T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前回に引き続きCodeGate2012の復習とか</p>
+
+<p>※注意</p>
+
+<ul>
+<li>他の方のwriteupを参考に解いています。（許可とってないのでリンクは貼りませんが、ぐぐってすぐ出てくる海外の方のブログを色々参考にさせていただいています。）</li>
+<li>できれば全問触りたいのでwriteupを見ることを前提で解き初めてます。</li>
+</ul>
+
+
+<p>問題文</p>
+
+<blockquote><p>IU is investigating the system which was contaminated by malicious code.<br/>
+As a result of analyzing TimeLine, it seems to be contaminated after February 9th 2012.<br/>
+Contaminating path would be from visiting Web page. IU analyses various user traces of Internet, however IU can’t find malicious URL.<br/>
+Maybe traces would be removed, when it was contaminated. Find correct malicious URL and the time it was contaminated. (cf. Remove http(s)://)<br/>
+The time is based on Korea Standard Time(UTC +09:00).</p>
+
+<p>Answer: malicious_URL|YYYY-MM-DDThh:mm:ss<br/>
+(‘|’ is just a character)</p></blockquote>
+
+<p>ざっくり意訳</p>
+
+<blockquote><p>IUは悪意のあるコードによって感染しているシステムの調査をしています。</p>
+
+<p>調査結果のタイムラインから感染は2012.02.09以降でWEBページからの感染ということがわかりました。IUは様々なユーザのインターネット履歴を分析しましたが悪意のあるURLを見つけることはできませんでした。おそらく履歴を感染の際に削除されてしまったようです。システムが感染した時間と、悪意のあるURLを特定してください。</p>
+
+<p>注意</p>
+
+<p>URLからhttp(s)://は覗いてください。</p>
+
+<p>時間は韓国標準時刻でYYYY-MM-DDThh:mm:ssの形式で答えてください。</p>
+
+<p>答えは 　　悪意のあるURL｜時刻　で解答してください</p></blockquote>
+
+<p>こんな感じですね。IU押しですね・・・ｗ</p>
+
+<p>fileコマンド〜の流れは、まぁいいですよね。今回も7zipで圧縮されたwindowsのuserフォルダ</p>
+
+<p>今回はproneerさんのフォルダのみですね。フォルダの最深部にはCookiesというフォルダのみ(GoogleChromeのCookieみたいですね)</p>
+
+<p>お恥ずかしながら、Cookieってsqlite形式で保存されてるの初めて知りました・・・。sqliteコマンドで中身を見てみます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-21.23.18.png" rel="image_group"><img class="alignnone size-large wp-image-62" alt="Screen Shot 2013-02-15 at 21.23.18" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-21.23.18.png?resize=625%2C223" data-recalc-dims="1" /></a>簡単にコマンド説明</p>
+
+<pre class="lang:default decode:true">.table #テーブル一覧を表示
+.schema [テーブル名] #テーブル定義を表示</pre>
+
+
+<p>とりあえずSELECT * してみました。<a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-21.31.06.png" rel="image_group"><img class="alignnone size-large wp-image-63" alt="Screen Shot 2013-02-15 at 21.31.06" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-21.31.06.png?resize=625%2C228" data-recalc-dims="1" /></a>（一部抜粋です）</p>
+
+<p>よくわからない文字列がワラワラ・・・。その中に唯一、読めそうなもんがありますね。二つ目のカラムです。URLっぽい感じですよね。うん、ここに答えがありそう！！って思いここだけ抽出してみることに</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-21.36.12.png" rel="image_group"><img class="alignnone size-large wp-image-64" alt="Screen Shot 2013-02-15 at 21.36.12" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-21.36.12.png?resize=575%2C1024" data-recalc-dims="1" /></a></p>
+
+<p>おぉー！アドレスがずらずら！ここに答えが！そう思ってた時期が僕にもありました。</p>
+
+<p>結局のところ、ないんですよね、怪しいURLなんて・・・・。google,facebook, wikipedia, twitter,amazonなどなど・・・。よく見るURLと、まぁ特別あからさまなURLは見当たりません・・・。（ここでwriteupをカンニング・・・）</p>
+
+<p>ここで問題文に注目。IUさんが調査してるんですよね、既に。そして見つからなかった・・・消されてしまった可能性がある、ということでした。つまりこのCookiesというsqliteファイルから対象データは消されてしまったんですね。そりゃここ覗いても見当たらないわけだ・・・。</p>
+
+<p>参考にさせてもらったwriteupにあったのですが、基本的にsqliteファイルから完全にデータを削除することは、難しいみたいです。つまりファイル内にデータが残っている、と。</p>
+
+<p>binaryエディタで見てみます。forensics200でインストールしてみた010Editorがものすごく良いのでそれで見てみます。sqliteのテンプレートは見つかりませんでしたが・・・。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-21.50.43.png" rel="image_group"><img class="alignnone size-large wp-image-67" alt="Screen Shot 2013-02-15 at 21.50.43" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-21.50.43.png?resize=625%2C730" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>まぁテンプレートがない以上、普通のバイナリエディタとまぁ、変わりませんね・・・でもテンプレートの威力を味わって、有料版買ってしまいそうです・・・。</p>
+
+<p>まぁこんな感じでbinaryのなかに、さっきsqliteコマンドで見た内容がまんま入ってますね。画像は.schemaで表示させたcookiesテーブルの定義ですね。</p>
+
+<p>このファイルのなかから、さっきselect *で取得したアドレスになかったものを探していきます。</p>
+
+<p>binaryのなかから指定した文字列を検索して置き換える、っていうの何かいい方法ないかなぁ・・・地道に探しました・・・。これwriteup見なきゃ絶対僕には解けてないなぁ・・・</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-23.20.56.png" rel="image_group"><img class="alignnone size-large wp-image-68" alt="Screen Shot 2013-02-15 at 23.20.56" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-15-at-23.20.56.png?resize=625%2C229" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>ここですね。test.wargame.kr</p>
+
+<p>これがsqliteコマンドで表示されず、ファイルのなかに残っているURLです。</p>
+
+<p>日付に関しては<a href="http://wiki.abc-analytics.com/cookie/utma">こちら</a>を参照しました。URLの後にutmaとありますが、ここに色々な情報が格納されるようです。リンクを見ると.(dot)ごとに６つの情報があり３つ目がutmaが生まれた時間、４つ目が最新の１つ前のセッション開始時間、５つ目が最新のセッション開始時間。WEBページにアクセスしたときに悪意のコードをロードするので、３つ目の時間を利用します。(UNIX時間ですので、変換が必要です。)</p>
+
+<p>forensics200の時に書いたコードをそのまま使って答えを出力します。時間の表示形式が若干違うのでそこだけ修正。<a href="https://github.com/KentaKomai/CodeGate2012/blob/master/codegate2012_forensics300.py">コード</a></p>
+
+<p>答え：　test.wargame.kr|2012-02-09T23:57:27</p>
+
+<p>&nbsp;</p>
+
+<p>難しい・・・・全然解ける気がしないっす・・・正直・・・</p>
+
+<p>でもCookieの形式とか本当に勉強になりました。</p>
+
+<p>ポイントとしては、対象ファイルを通常に開いても答えがないことに気がつく、utmaの情報にすぐに辿り着けるか、形式を把握しているか、だと感じました。</p>
+
+<p>むずむず・・・・</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/14/wordpress3/">CodeGate2012 Forensics 200を解いてみる</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-14T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前回に引き続きCodeGate2012の復習とか</p>
+
+<p>※注意</p>
+
+<ul>
+<li>他の方のwriteupを参考に解いています。（許可とってないのでリンクは貼りませんが、ぐぐってすぐ出てくる海外の方のブログを色々参考にさせていただいています。）</li>
+<li>できれば全問触りたいのでwriteupを見ることを前提で解き初めてます。</li>
+</ul>
+
+
+<p>問題文</p>
+
+<blockquote><p>When IU who lives in Seoul tried to do SQL Injection attack a certain WEB site, suddenly the browser was closed abnormally. What is the SQL Injection value she tried to enter and when the browser was closed? The time is based on Korea Standard Time(UTC +09:00)</p>
+
+<p>Time Format is YYYY-MM-DDThh:mm:ssTZD (TZD : +hh:mm or hh:mm)<br/>
+Answer : injection_value|time<br/>
+(‘|’ is just a character)<br/>
+Convert ‘ ‘ to ‘_’ for injection value.</p></blockquote>
+
+<p>ざっくり意訳</p>
+
+<blockquote><p>ソウル在住のIUがあるWEBサイトへSQLインジェクション攻撃を試した際に、突然ブラウザが以上終了してしまった。ブラウザが閉じてしまった時間と彼女が行ったSQLインジェクションの値を答えてください。</p>
+
+<p>時間は韓国標準時刻(UTC +09:00)</p>
+
+<p>答えは  SQLインジェクションの値|時間　の形式です。</p>
+
+<p>スペースはアンダーバーに置き換えてください。</p></blockquote>
+
+<p>&nbsp;</p>
+
+<p>こんな感じですね。いってみます！ほとんど他の方のWriteupの再現を、って感じですが。</p>
+
+<p>問題ファイルはforensics100の問題と同様、7zip圧縮されてるwindowsのUsersフォルダですね。</p>
+
+<p>この問題でのポイントは</p>
+
+<ul>
+<li>SQLインジェクションをしてたらブラウザが落ちた</li>
+</ul>
+
+
+<p>の一点ですね。ちなみにforensics100でproneerはCFOの名前かと思ってましたが、このハッカーのおねーさん（年齢は分からないけどｗ）の名前っぽいですね。失礼しました・・・。</p>
+
+<p>WindowsのUsersフォルダが見れる場合、そのユーザが使ってる可能性があるアプリケーションの情報をチェックしたい場合は/Users/[user name]/AppData/Roaming/内をとりあえず覗いてみる、ってのは定石として良いかもしれませんね。（他の方は当然やってるかもしれませんが）ザックリですいませんが、上記フォルダからMozilla/Firefoxフォルダの中にいろいろあります。</p>
+
+<p>ここで備忘録のためにメモしておくのですが、writeupを書かれてる方は、スパっとFirefoxのフォルダにたどり着いているのですが、この/Users/proneer/AppData/のなかを見る限りInternet Explorerもインストールされてる様なんです。どういう手順でfirefoxのフォルダにたどり着いたか気になります・・。チームで出てる場合は人数分けたりしても良いかもですね。どのみち、ブラウザが落ちた、ということに着目すれば、ブラウザの情報に何かしら情報が残っているかも、という流れにはなりますね。</p>
+
+<p>ここで着目するのが、Profiles/075lfxbt.default/sessionstore.js</p>
+
+<p>Firefoxにはデフォルトでセッションストア機能っていうのがあって、PCのダウンなどにより、意図してないアプリケーションの終了があった場合に、タブや状態などを復元してくれる機能らしいです。（Chromeにもありますね。IEとかsafariはどうなんだろ・・・ちょっと宿題に。）つまり定期的にブラウザの状態をファイルに保存していて、ダウンの際に復元できるように備えてあるわけです。</p>
+
+<p>このファイルを確認すると</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-14-at-14.40.05.png" rel="image_group"><img class="alignnone size-large wp-image-44" alt="Screen Shot 2013-02-14 at 14.40.05" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-14-at-14.40.05.png?resize=625%2C103" data-recalc-dims="1" /></a></p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-14-at-14.40.22.png" rel="image_group"><img class="alignnone size-medium wp-image-45" alt="Screen Shot 2013-02-14 at 14.40.22" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-14-at-14.40.22.png?resize=300%2C127" data-recalc-dims="1" /></a></p>
+
+<p>見つかりますね。フォーム入力できるページへのアクセスはいくつかありますが、値を入力してる箇所はここだけ。（しかも思いっきりSQL文っぽいし）日付はlastUpdateの値がそれです。writeup見ながらだからサクサクと理解しながら解けましたが、ここにサラっとたどり着くには知識がないとダメですね・・・。</p>
+
+<p>ここから日付時刻(1328976025895)を問題文で指定されたフォーマットに変換してあげます。</p>
+
+<p>コードはGithubにあげました。<a href="https://github.com/KentaKomai/CodeGate2012/blob/master/codegate2012_forensics200.py">コード</a><br/>
+<a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-14-at-23.34.07.png" rel="image_group"><img class="alignnone size-large wp-image-46" alt="Screen Shot 2013-02-14 at 23.34.07" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-14-at-23.34.07.png?resize=625%2C43" data-recalc-dims="1" /></a></p>
+
+<p>実はpythonでUNIX標準時間をW3C-DTF形式にするところがめっちゃ時間かかった・・・</p>
+
+<p>今回ここが一番勉強になったかもしれません・・・PHPならワンライナーでできたんですが・・・</p>
+
+<p>後ろに+09:00というようにUTC時刻との差が表示されるやつです。コードにあるように結局は拡張モジュール使いました。ぐぬぬ・・・</p>
+
+<p>しかも形式が+09:00ではなく、+0900がデフォルトで、強引に正規表現で整形するという・・・プログラム書く意味ないじゃん！！！！</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/13/wordpress2/">CodeGate2012 Forensics 100 解いてみる</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-13T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>もうすぐCodeGate2013開催ということで全体的に予習してみようと思います。</p>
+
+<p>解いていった順番にブログに手順を書いていこうと思います。</p>
+
+<p>※注意</p>
+
+<p>・他の方のwriteupを参考に解いています。（許可とってないのでリンクは貼りませんが、ぐぐってすぐ出てくる海外の方のブログを色々参考にさせていただいています。）</p>
+
+<p>・できれば全問触りたいのでwriteupを見ることを前提で解き初めてます。</p>
+
+<p>まずは問題文</p>
+
+<blockquote><p> In order to steal financial information of Company X, IU got a job under cover. She decided to attack CFO’s computer, and then insert malicious code to his computer in the way of social engineering. She figured out that he didn’t use to turn off his computer, when he gets off work. After he leaves the office, she obtains financial data from his computer to search EXCEL file. By checking installed application program, she can find the information in the file. She lacks the file externally. In order to remove all traces, she erases malicious code, event logs and recent file list.</p>
+
+<p>The company X has to figure out what information she stole correctly to make an appropriate measure. These are files attacked from CFO’s computer. Find the full path and size of the file which she stole. On the day, CFO left the office at 14:00. The time is based on Korea Standard Time(UTC +09:00).<br/>
+Answer: strupr(md5(full_path|file_size)) (‘|’ is just a character)</p></blockquote>
+
+<p>簡単に訳（クソすぎる翻訳ですが許してください・・・・）</p>
+
+<blockquote><p>IUはX社の財務情報を盗むために密かに仕事をしていました。彼女はX社のCFOのPCに攻撃することを決め、彼のPCにソーシャルエンジニアリングによって悪意のあるコードをインストールしました。CFOは職場から出るときにPCの電源をOFFにしていませんでした。彼がオフィスから出た後、財務情報のExcelファイルを取得します。インストールされたアプリをチェックし、情報を探すことができます。　全ての痕跡を消すために、彼女はコード、イベントログ、そして最近のファイルのリストを削除します。X社は彼女がどんな情報を盗んだのかを知らなければなりません。これらはCFOのコンピュータから攻撃されたファイルです。彼女が盗んだファイルのサイズとフルパスを見つけてください。その日、CFOは14:00に会社を出ました。時間は韓国標準時間に基づいています(UTC +09:00)　答えはstrupr(md5(対象ファイルのフルパス|ファイルサイズ))です</p>
+
+<p></div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/02/13/wordpress2/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/04/wordpress1/">自分専用のサイトとブログ開設しました。</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-04T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>サークル共用(iscream.servehttp.com)のほうにもブログあるんだけど</p>
+
+<p><em id="__mceDel">ちまちました記事が多くなってきそうな予感がしたのと<br /> 使っていないドメインが１つあったので、作っちゃいました。</em></p>
+
+<p>サイトトップにはPortfolioなんて書いてありますが<br/>
+ほとんどプロフィール用サイトです。</p>
+
+<p>コンテンツはこれから少しづつ充実させていく、ということで・・・ｗ<br/>
+このブログは日々の活動やら何やらで色々気がついたことなんかをメモしていきます<br/>
+技術的かつ基礎的なものが中心になると思うので<br/>
+退屈かと思いますが、何かあれば<br/>
+コメントやコンタクトをとっていただければと思います。</p>
+
+<p>よろしくお願い致します。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/7/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

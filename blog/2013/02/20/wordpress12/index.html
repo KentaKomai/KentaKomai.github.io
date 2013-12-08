@@ -1,0 +1,430 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>C++ algorithm sort関数の仕様を確認してみる - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="これの仕様を理解していなかったために、本来点数稼げる問題を落としてしまったので確認・・・今まで数字に対してしか使ってなかったことを思い出しました・・・くそぅ・・・。 まずは簡単にプログラムかいてみます。 #include &lt;iostream&gt;
+#include &lt;sstream& &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/02/20/wordpress12">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">C++ Algorithm Sort関数の仕様を確認してみる</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-20T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>これの仕様を理解していなかったために、本来点数稼げる問題を落としてしまったので確認・・・今まで数字に対してしか使ってなかったことを思い出しました・・・くそぅ・・・。</p>
+
+<p>まずは簡単にプログラムかいてみます。</p>
+
+<pre class="lang:c++ decode:true">#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;vector&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+class SortVerification {
+    public:
+        void strSortSample(int n) {
+            string strImages[n];
+            stringstream ss;
+            cout&lt;&lt;"str sort"&lt;&lt;endl;
+            for(int i=0; i&lt;n; i++){
+                ss&lt;&lt;i&lt;&lt;".jpg";
+                strImages[i] = ss.str();
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+                ss.str(""); //initialize ss
+            }
+        }
+        void intSortSample(int n) {
+            int min = 0;
+            int max = n;
+            int array[n];
+
+            srand(time(NULL));
+            cout&lt;&lt;"int sort"&lt;&lt;endl;
+            for(int i=min; i&lt;max; i++){
+                array[i] = min + rand() * (max-min+1.0) / (1.0+RAND_MAX);
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+        }
+};
+
+int main() {
+    SortVerification sv;
+    sv.strSortSample(100);
+    sv.intSortSample(100);
+    return 0;
+}</pre>
+
+
+<p>&nbsp;</p>
+
+<p>こちらを実行すると、標準出力に&#8221;0.jpg&#8221;, &#8220;1.jpg&#8221;, &#8220;2.jpg&#8221;, &#8220;3.jpg&#8221;&#8230;&#8230;&#8221;99.jpg&#8221;までが出力されます。数字のほうは、ランダムにしました。0-100の間でランダムな数字が配列に格納されます。</p>
+
+<p>ここで出力されている配列に、それぞれalgorythm::sort()を噛ませると、配列はどのようにソートされるのか、ということを確認したいと思います。</p>
+
+<p>プログラムを以下のように変えて実行します。</p>
+
+<pre class="lang:c++ decode:true">#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;vector&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+#include &lt;cmath&gt;
+
+using namespace std;
+
+class SortVerification {
+    public:
+        void strSortSample(int n) {
+            string strImages[n];
+            stringstream ss;
+            cout&lt;&lt;"str sort"&lt;&lt;endl;
+            for(int i=0; i&lt;n; i++){
+                ss&lt;&lt;i&lt;&lt;".jpg";
+                strImages[i] = ss.str();
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+                ss.str(""); //initialize ss
+            }
+            sort(strImages, strImages+n);
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+            }
+        }
+        void intSortSample(int n) {
+            int min = 0;
+            int max = n;
+            int array[n];
+
+            srand(time(NULL));
+            cout&lt;&lt;"int sort"&lt;&lt;endl;
+            for(int i=min; i&lt;max; i++){
+                array[i] = min + rand() * (max-min+1.0) / (1.0+RAND_MAX);
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+            sort(array, array+n);
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+        }
+};
+
+int main() {
+    SortVerification sv;
+    sv.strSortSample(109);
+    sv.intSortSample(109);
+    return 0;
+}</pre>
+
+
+<p>sortした後に、もう一度、配列全体を出力する処理を加えました。</p>
+
+<p>ここで出力を確認します。</p>
+
+<p>数字のほうは、ランダムに生成された数字が、昇順に並び替わってるのがわかると思います。それに対して文字列に対しては、どのように出力されているでしょう。<a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-20-at-12.35.53.png" rel="image_group"><img class="alignnone size-large wp-image-111" alt="Screen Shot 2013-02-20 at 12.35.53" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-20-at-12.35.53.png?resize=310%2C1024" data-recalc-dims="1" /></a></p>
+
+<p>すいません、これ知ってる人からしたら「今更なに言ってるんだ（笑）」なんでしょうけど、僕、最初は&#8221;1.jpg&#8221;, &#8220;2.jpg&#8221;, &#8220;3.jpg&#8221;&#8230;.ってなると思ってました・・・。なるわけないですよね・・・文字列ですから・・・。単刀直入に言うと、「辞書順」にソートされます。10の後に11ではなく、100が19の後に20ではなく、2がきていますね。とても基礎的な部分なんでしょうが、これを理解していない為に、解けなかった問題があったのでメモしておきます。</p>
+
+<p>ちなみに降順にソートしたい場合はsort()の第三引数にfunctional::greater<T>()を与えてあげればOKです。最後にそれを加えたソースがこちら。</p>
+
+<pre class="lang:default decode:true">#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;vector&gt;
+#include &lt;cstdlib&gt;
+#include &lt;ctime&gt;
+#include &lt;cmath&gt;
+#include &lt;functional&gt;
+
+using namespace std;
+
+class SortVerification {
+    public:
+        void strSortSample(int n) {
+            string strImages[n];
+            stringstream ss;
+            cout&lt;&lt;"str sort"&lt;&lt;endl;
+            for(int i=0; i&lt;n; i++){
+                ss&lt;&lt;i&lt;&lt;".jpg";
+                strImages[i] = ss.str();
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+                ss.str(""); //initialize ss
+            }
+            sort(strImages, strImages+n);
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+            }
+            sort(strImages, strImages+n, greater&lt;string&gt;());
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;strImages[i]&lt;&lt;endl;
+            }
+        }
+        void intSortSample(int n) {
+            int min = 0;
+            int max = n;
+            int array[n];
+
+            srand(time(NULL));
+            cout&lt;&lt;"int sort"&lt;&lt;endl;
+            for(int i=min; i&lt;max; i++){
+                array[i] = min + rand() * (max-min+1.0) / (1.0+RAND_MAX);
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+            sort(array, array+n);
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+            sort(array, array+n, greater&lt;int&gt;());
+            for(int i=0; i&lt;n; i++){
+                cout&lt;&lt;i&lt;&lt;":"&lt;&lt;array[i]&lt;&lt;endl;
+            }
+        }
+};
+
+int main() {
+    SortVerification sv;
+    sv.strSortSample(109);
+    sv.intSortSample(109);
+    return 0;
+}</pre>
+
+
+<p>algorythm.hは強力ですね。ちなみに第三引数は自分でソート順を定義することも可能だそうで、それはいづれまた必要になったときに改めて記事書いてみます。あぁ・・・悔しい・・・</p>
+
+<p><a href="https://github.com/KentaKomai/warehouse/blob/master/sortVerification/sample1.cpp">今回のコード</a></p>
+
+<p>&nbsp;</p>
+
+<p>&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;2013/02/24　追記&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;</p>
+
+<p>デフォルトではsort()関数は昇順にソートしますが、降順にソートしたい場合はfunctional::greaterを利用すると記述しましたが、AOJで他の参加者の方のコードを見せていただいたら以下のようにも降順ソートできるみたいです！functional.hをインクルードする必要もないので、単純に降順ソートしたい場合は便利ですね。</p>
+
+<pre class="lang:c++ decode:true ">string str("abcde");
+sort(str.bigin(), str.end());    //昇順ソート
+sort(str.rbigin(), str.rend());  //降順ソート</pre>
+
+
+<p>イテレータをそれぞれ最初の文字を末尾に、最後の文字を頭にもってきてあげてますね。so cool!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-20T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/02/20/wordpress12/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/02/20/wordpress12/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/02/20/wordpress11/" title="Previous Post: 引数に与えられた文字列をASCIIの10進数と16進数で出力するだけのスクリプト">&laquo; 引数に与えられた文字列をASCIIの10進数と16進数で出力するだけのスクリプト</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/02/25/wordpress13/" title="Next Post: ASCIIコードを暗記するためだけのクソゲーを作る">ASCIIコードを暗記するためだけのクソゲーを作る &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

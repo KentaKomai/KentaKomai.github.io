@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>CodeGate2012 Vuln100のwriteupを読んでみる - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="CodeGate2012の復習とかやっていきます。 今回は出場者向けの内部ネットワーク内で稼働しているWebアプリケーションが対象なので、いつも参考にさせていただいているwriteupのブログを理解するまで読んで、記録しておく感じになります。（自分では部分的にも解いていません） &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/02/18/wordpress9">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">CodeGate2012 Vuln100のwriteupを読んでみる</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-18T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>CodeGate2012の復習とかやっていきます。</p>
+
+<p>今回は出場者向けの内部ネットワーク内で稼働しているWebアプリケーションが対象なので、いつも参考にさせていただいているwriteupのブログを理解するまで読んで、記録しておく感じになります。（自分では部分的にも解いていません）本当はforensics500を解いてから、と思ったのですが、難しすぎてwriteup見ても時間かかりそうだったので、先にVulnをチェックしてみることにしました。</p>
+
+<p>いつもはリンク貼ってなかったけど、様々なところからリンク貼りまくりっぽかったので、僕も紹介します。</p>
+
+<ul>
+<li><a href="http://eindbazen.net/2012/02/codegate-2012-vuln-100/">http://eindbazen.net/2012/02/codegate-2012-vuln-100/</a></li>
+<li><a href="http://leetmore.ctf.su/wp/codegate-2012-quals-vuln-100/">http://leetmore.ctf.su/wp/codegate-2012-quals-vuln-100/</a></li>
+</ul>
+
+
+<p>こちらの記事にあるwriteupを読ませていただいて、自分のなかで消化します。どちらも上位チームの方々のブログです。</p>
+
+<p>まずはいつもどおり問題文と意訳（短いですが）</p>
+
+<blockquote><p>What is Administrator listening to the music?<br/>
+Service: <a href="http://1.237.174.123:3333/">http://1.237.174.123:3333/</a></p>
+
+<p>管理者が聴いてる音楽はなんでしょうか？アドレスは<a href="http://1.237.174,123:3333/%E3%81%A7%E3%81%99">http://1.237.174,123:3333/%E3%81%A7%E3%81%99</a></p></blockquote>
+
+<p>URLへ飛ぶと、ユーザが音楽をアップロードして、聴くことができるオンラインのミュージックプレイヤーアプリらしいです。自分自身のIPアドレスからアップロードした音楽のみを視聴することができる仕組みです。</p>
+
+<p>まず最初に、サービスを使ってみる。</p>
+
+<p>フォームに入力する（選択する）値は、mp3ファイルへのパス、ジャンル、タイトルの３つです。アップロードするフォームを利用したり、curlコマンドを使ったり。</p>
+
+<p>ファイルの最後に .mp3　がないとalert(&#8216;uplod mp3 file only&#8217;)というエラーが返ってくるということがわかりました。</p>
+
+<p>入力値はそれぞれ、mp3へのパスとタイトルは文字列として、ジャンルは数字で送信しています。そこから以下のSQL文を推測します。</p>
+
+<pre class="lang:default decode:true">INSERT INTO foo (mp3, genre, title) values ("filepath", NUMBER, "musictitle");</pre>
+
+
+<p>ジャンルの値に、SQLインジェクションを試みてみます。burp suiteやcurlコマンド、スクリプトなどなんでもいいので、genreのvalueを書き換えて送信します。</p>
+
+<pre class="lang:default decode:true">3,(SELECT 123+123)) --</pre>
+
+
+<p>フォームの下に、246とSELECT文の結果が表示されているのが確認できたので、genreの値にSQLインジェクションが可能なことがわかります。ここに、任意のSQL文を実行できる脆弱性があるので、データベースの情報を収集していきます。</p>
+
+<p>writeupに書かれたまま翻訳しているだけなので、手順だけ書くと</p>
+
+<ol>
+<li>information_schema.schemataからデータベース名を取得</li>
+<li>information_schema.tablesからデータベース名を条件にテーブル名を取得</li>
+</ol>
+
+
+<p>これで、テーブル一覧が取得でき、そこから&#8221;upload_mp3_[ユーザのIPアドレス]&#8220;の形式でテーブルが作成されていることがわかります。（ユーザごとに１つのテーブルが作成されている、ということ）</p>
+
+<p>テーブルのリストを見ると、Administratorのテーブルは、おそらく&#8221;upload_mp3_127_0_0_1&#8243;だと予想がつくので、</p>
+
+<p>information_schema.columnsからテーブル名を条件に、カラム名を取得するとidx,genre,title,fileの４つのカラムが定義されていることがわかります。</p>
+
+<blockquote><p>TODO: information_schemaに関しては、ちょっと調べてまとめてみようと思います。主要データベースのこういうのは知ってないと論外になりそうですね・・・。</p>
+
+<p>TODO: 文字列を標準入力で受け取って16進数を返す、それだけのスクリプト、あると便利かも。探してなければ書いてみます。</p></blockquote>
+
+<p>あとはupload_mp3_127_0_0_1テーブルからfileカラムの値持ってくるだけですね！データのbinaryがまんま入ってるみたいです。そこからデータ持ってきて、再生すれば、キレイな声のお姉さんが答え教えてくれます。むーん・・・自分が最初からチャレンジしてたらできたかなぁ・・・100の問題でも十分に難しい・・・・。</p>
+
+<p>今回writeupを読んで勉強になったこと。</p>
+
+<ol>
+<li><a href="http://dev.mysql.com/doc/refman/5.1/ja/information-schema.html">mysql information_schema</a>について</li>
+<li>SQLインジェクションが可能かの判定と、INSERT文へのSELECT文挿入</li>
+<li><a href="http://sitearo.com/cocoa/0800_internet/curl/">curlコマンドの使い方</a>(manコマンドで確認するとより詳細が確認できます)</li>
+<li><a href="https://github.com/hellman/quickhttp">python quickhttpモジュール</a></li>
+<li>SQL ORD関数、SUBSTR関数</li>
+</ol>
+
+
+<p>以上です。次はVuln200の問題のwriteup読んでみたいと思います。</p>
+
+<p>今年のCodeGateはWeb問題が追加される、とのことだったので、こういう問題は要チェックかもしれません。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-18T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/02/18/wordpress9/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/02/18/wordpress9/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/02/18/wordpress8/" title="Previous Post: 滝行のチャレンジしてみた">&laquo; 滝行のチャレンジしてみた</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/02/19/wordpress10/" title="Next Post: CodeGate2012 Vuln200のwriteupを読んでみる">CodeGate2012 Vuln200のwriteupを読んでみる &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

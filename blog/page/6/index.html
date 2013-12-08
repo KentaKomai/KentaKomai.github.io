@@ -1,0 +1,2033 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="Google App Engine上で動作しているアプリケーションからAPIを利用して、jsonデータ引っ張ってきたんですが、なんか48000ちょいしか取得できてなくて、途中でデータぶった切れちゃってる・・・ 原因が全然わからなくて困ってたら、同じような現象で困ってる人いました。 なにやら、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/page/6">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/04/03/wordpress27/">[Javascript] jQueryのajax()関数で処理できる文字数の限界を試せなかった</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-03T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Google App Engine上で動作しているアプリケーションからAPIを利用して、jsonデータ引っ張ってきたんですが、なんか48000ちょいしか取得できてなくて、途中でデータぶった切れちゃってる・・・</p>
+
+<p>原因が全然わからなくて困ってたら、同じような現象で困ってる人いました。</p>
+
+<p>なにやら、あまりにもデータがでかいと全部取得する前に、次の処理が動いて、結果途中でデータがきれることがある・・・・と。</p>
+
+<p>そりゃ困った・・・。原因を探るために色々検診してみます。<br/>
+※オチをいいますが、おそらくajax()が悪いのではないと思われます。<br/>
+それか、再現した環境とjQueryのバージョンが違う…</p>
+
+<p>以下検証したコード</p>
+
+<pre class="lang:default decode:true" title="index.html">&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;index&lt;/title&gt;
+    &lt;script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;AJAX MAX LENGTH&lt;/h1&gt;
+    &lt;input type="button" id="start_done" value="done start"/&gt;
+    &lt;input type="button" id="start_complete" value="complete start"/&gt;
+    &lt;div id="ajax_text_done" style="width:400px;"&gt;
+        &lt;h2&gt;ajax - done&lt;/h2&gt;
+        &lt;pre&gt;
+
+        &lt;/pre&gt;
+    &lt;/div&gt;
+    &lt;div id="ajax_text_complete"&gt;
+        &lt;h2&gt;ajax - complete&lt;/h2&gt;
+        &lt;pre&gt;
+
+        &lt;/pre&gt;
+    &lt;/div&gt;
+    &lt;script type="text/javascript"&gt;
+        $(function(){
+
+                $("#start_done").click(function(){
+                    alert("function start!");
+                    $.ajax({
+                        type: "GET",
+                        url: "./ajax.php",
+                    }).done(function(data){
+                        console.dir(data);
+                        $("#ajax_text_done pre").append(data);
+                        alert(data.length);
+                    });
+                });
+
+                $("#start_complete").click(function(){
+                    alert("function start!");
+                    $.ajax({
+                        type: "GET",
+                        url: "./ajax.php",
+                        success: function(data){
+                            $("#ajax_text_complete pre").append(data);
+                            alert(data.length);
+                        }
+                    })
+                })
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+
+<p>jqHXR.complate() とコールバックでsuccess:function()で処理する二種類用意しました。</p>
+
+<p>ajax()でコールされているajax.phpがこちら。</p>
+
+<pre class="lang:default decode:true" title="ajax.php">&lt;?php
+ini_set('memory_limit', '-1');
+define("STRLENGTH", 100);
+
+$output = "";
+for($i=0; $i&lt;STRLENGTH; $i++){
+    $output.="A";
+}
+echo $output;
+?&gt;</pre>
+
+
+<p>メモリの制限を無制限にし、定数で文字数を定義しておいて、その数だけ&#8221;A&#8221;を返す、だけです。</p>
+
+<p>上記２ファイルをローカルに構築したWEBサーバに置いて、GoogleChromeからアクセスして、ajaxで文字を取得します。</p>
+
+<p>これ、結局ちゃんと限界値を試せなかったので、結果をザクっと書いちゃいます。</p>
+
+<p>文字数を少しづつ増やしていって、最終的にindex.htmlで正常に表示されたのは僕の環境では13721351文字(=byte)でした。それ以上だとエラーは出ないし、文字数も取得できたけど、HTMLに出力されない、という状態でした。</p>
+
+<p>これはブラウザに依存するのかなー・・・？文字数は取得できるので、間違いなくajaxで受け取るところまではできているはずです。（文字数の計算はjavascript側でしているので）</p>
+
+<p>これは調査が進み次第、加筆修正します。</p>
+
+<p>最初に書いたGAE上での問題では、文字数カウントの段階で48000ちょいだったので、今回の検証とは別の状況かも・・・。まずは再現するところから、ですね・・・。中途半端ですが、記録まで。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/04/01/wordpress26/">Sublime Text2 僕がよく使いそうなショートカットキーまとめ</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-01T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>vim使ってましたが流行りに乗っかってエディタ変えてみました。</p>
+
+<p>シェアウェアのsublime text2です。vimのキーバインドが使える、ということで選びました。あれに慣れちゃうと、なかなか他のエディタに馴染めないのですが、いい感じです。</p>
+
+<p>&#8220;ignored_packages&#8221;を空にして、VintageExプラグインをインストールしたものが僕のsublime text2の基本的な構成になってます。（なので、それで実現できる機能はvimのキーバインドで実現しているので、vimのキーバインドを別途調べてください）</p>
+
+<p>使ってまだ２日目ですが、ざっくりと調べて使ってるショートカットキー</p>
+
+<h2><span style="line-height: 1.714285714; font-size: 1rem;">タブの移動c</span></h2>
+
+<ul>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">Win: ctrl + (Shift) + tab</span></li>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">MacOS: Command + alt + ← or →</span></li>
+</ul>
+
+
+<p>これ、困ったのがctrl + (shift) + tabだと順番に切り替わらないんですよね・・・。最後に使用した文章に切り替える、という動作がデフォルトなようです。こうじゃなくて、ブラウザみたいに左右に移動したいので</p>
+
+<pre class="lang:default decode:true">{ "keys": ["ctrl+tab"], "command": "next_view" },
+    { "keys": ["ctrl+shift+tab"], "command": "prev_view" },
+    { "keys": ["ctrl+pagedown"], "command": "next_view_in_stack" },
+    { "keys": ["ctrl+pageup"], "command": "prev_view_in_stack" }</pre>
+
+
+<p>キーバインドに上記を追加してます。<a href="http://shinobu.tumblr.com/post/19568315170/sublime-text2-ctrl-tab">参考URL</a></p>
+
+<p>&nbsp;</p>
+
+<h2><span style="font-size: 1rem; line-height: 1.714285714;">画面分割 </span></h2>
+
+<ul>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">Win: Alt + Shift + (1,2,3,4,5)</span></li>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">MacOS: Command + alt + (1,2,3,4)</span></li>
+</ul>
+
+
+<p>&nbsp;</p>
+
+<h2><span style="font-size: 1rem; line-height: 1.714285714;">選択行のコメントアウト </span></h2>
+
+<ul>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">Win: ctrl + /</span></li>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">MacOS: Command + /</span></li>
+</ul>
+
+
+<p>&nbsp;</p>
+
+<h2><span style="font-size: 1rem; line-height: 1.714285714;">行の選択(vimキーバインドのyyでやることが多いけど)</span></h2>
+
+<ul>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">Win: Ctrl + l</span></li>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">MacOS: Command + l</span></li>
+</ul>
+
+
+<p>&nbsp;</p>
+
+<h2><span style="font-size: 1rem; line-height: 1.714285714;">選択行のインデント</span></h2>
+
+<ul>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">Win: Ctrl + [</span></li>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">MacOS: Command + [</span></li>
+</ul>
+
+
+<p>&nbsp;</p>
+
+<h2><span style="font-size: 1rem; line-height: 1.714285714;">選択行のインデント解除</span></h2>
+
+<ul>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">Win: Ctrl + ]</span></li>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">MacOS: Command + ]</span></li>
+</ul>
+
+
+<p>&nbsp;</p>
+
+<h2><span style="font-size: 1rem; line-height: 1.714285714;">ファイルオープン</span></h2>
+
+<ul>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">Win: Ctrl + p</span></li>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">MacOS: Command + p</span></li>
+</ul>
+
+
+<p>&nbsp;</p>
+
+<h2><span style="font-size: 1rem; line-height: 1.714285714;">プロンプト呼び出し</span></h2>
+
+<ul>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">Win: Ctrl + Shift + p</span></li>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">MacOS: Command + Shift + p</span></li>
+</ul>
+
+
+<h2>メソッドやメンバー検索</h2>
+
+<p>Ctrl + fでもできるけど、よりメソッドやメンバー検索に特化（自動ジャンプ）</p>
+
+<ul>
+<li><span style="line-height: 1.714285714; font-size: 1rem;">Win Ctrl + r</span></li>
+<li><span style="line-height: 1.714285714; font-size: 1rem;">MacOS: Command + r</span></li>
+</ul>
+
+
+<p>&nbsp;</p>
+
+<h2><span style="font-size: 1rem; line-height: 1.714285714;">マルチセレクト</span></h2>
+
+<ul>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">Win: Ctrl + d</span></li>
+<li><span style="font-size: 1rem; line-height: 1.714285714;">MacOS: Command + d</span></li>
+</ul>
+
+
+<p>マルチセレクトに関しては別途詳しく書きたいなぁ。VintageEx有効になってると（というかvimでいうノーマルモードだと）なんかほかで紹介されてる通りに動かない気がするんだけど、いろいろ検証してから追記します。(とりあえずマルチセレクトしたら x で文字削除して i でインサートする、という流れで今は使ってます)</p>
+
+<p>ぐぐって出てきたものをつぎはぎしただけですが、一応設定ファイルはgithubにあがってます。<a href="https://github.com/KentaKomai/MyConfigureFIles/blob/master/Preferences.sublime-settings">設定ファイル</a></p>
+
+<p>ただ、vimとくらべてちょっと慣れないのは、カレントディレクトリの概念がないことですね。ディレクトリを縦横無尽に移動しながらファイルいろいろ開きたいときは、やっぱりvimのほうが現状使いやすいです。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/04/01/wordpress25/">Sqlite3よく使うっぽいコマンドの総復習</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-01T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近Railsで開発することがあって、その環境では</p>
+
+<p>サーバ上でpostgreSQLを、ローカルではsqliteでデータを管理しています。</p>
+
+<p>コンソールからサラっとデータやテーブル定義確認したいときなんかに、毎回ぐぐってるのちょっと効率悪いので、公式リファレンスからさらーーーーっと、よく使いそうなもんまとめておきます。</p>
+
+<p><a href="http://www.sqlite.org/lang.html">公式サイト</a></p>
+
+<p><a href="http://www.sqlite.org/sqlite.html">公式サイトのコマンドラインに関するリファレンス</a></p>
+
+<h2> １）.tables</h2>
+
+<p>存在するテーブルの一覧を出力</p>
+
+<h2>２） .schema [テーブル名]</h2>
+
+<p>指定したテーブルのテーブル定義を出力</p>
+
+<h2>３） .help</h2>
+
+<p>コマンド忘れたらこれ。コマンド一覧を出力</p>
+
+<h4>４） .mode [ &ldquo;csv&rdquo;, &ldquo;column&rdquo;, &ldquo;html&rdquo;, &ldquo;insert&rdquo;, &ldquo;line&rdquo;, &ldquo;list&rdquo;, &ldquo;tabs&rdquo;, and &ldquo;tcl&#8221; ]</h4>
+
+<p>これ初めて知りました。表示するフォーマットを表示。詳しくは公式リファレンスを参照してほしいのですが、標準だとテキストがずらーーーっと並べられて出力されますが、それらを整列させ見やすい形式で表示してくれたりします。</p>
+
+<h2>５） .separator [指定文字列]</h2>
+
+<p>表示するデータのセパレータを指定することができます。 .separator &#8220;:&#8221;とした場合は表示するデータ一つひとつの間を : でつなぎます。</p>
+
+<h2>６） .dump [テーブル名]</h2>
+
+<p>テーブルのダンプデータをまるごと出力します。</p>
+
+<p>&nbsp;</p>
+
+<p>まとめて見たら、よく使うのなんてこんなもんでした・・・。覚えておきたいですね。</p>
+
+<p>ブログを書くことを決めてから調べ始めたので、こんなに短くなると思ってなかったｗ</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/04/01/wordpress24/">Phpで多重ループを抜ける</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-01T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>いいコードか、どうかは別にして</p>
+
+<p>多重forループを簡単に抜ける方法。ぐぐったら一発で出てくるんですが、初めて使って結構感心したのでメモメモ。</p>
+
+<p>&nbsp;</p>
+
+<p>例えば</p>
+
+<pre class="lang:php decode:true">&lt;?php
+
+foreach( $articles as $article ){
+    $tags = $article["tags"];
+
+    $foreach( $tags as $tag ){
+        if( $tag == "target!" ){
+            echo "対象の記事を見つけました！";
+            $target = $article;
+        }
+  }
+}
+
+?&gt;</pre>
+
+
+<p>こんな感じで、</p>
+
+<ol>
+<li>複数の記事情報が入った$articlesがあり、記事の数だけforループする</li>
+<li>ひとつの記事には、複数のタグがついていて、タグを持っている数だけforループする</li>
+<li>タグに&#8221;target!&#8221;が含まれるものを見つけたら$targetに現在チェックしている$articleを格納する</li>
+</ol>
+
+
+<p>ここで処理を中断したい場合。（&#8221;target!&#8221;というタグをもった一番最初の記事だけを取得したい場合）</p>
+
+<pre class="lang:default decode:true">&lt;?php
+
+foreach( $articles as $article ){
+    $tags = $article["tags"];
+    $target = null;
+
+    $foreach( $tags as $tag ){
+        if( $tag == "target!" ){
+            echo "対象の記事を見つけました！";
+            $target = $article;
+            break;
+        }
+    }
+    if($target != null){
+        break;
+    }
+}
+
+?&gt;</pre>
+
+
+<p>こんな感じで、breakを２回書いて、ループ全体を抜けることがあると思います。</p>
+
+<p>ですが、phpでは多重ループを一度で抜けるbreak文があって</p>
+
+<pre class="lang:default decode:true">&lt;?php
+
+foreach( $articles as $article ){
+    $tags = $article["tags"];
+    $target = null;
+
+    $foreach( $tags as $tag ){
+        if( $tag == "target!" ){
+            echo "対象の記事を見つけました！";
+            $target = $article;
+            break 2;
+        }
+    }
+}
+
+?&gt;</pre>
+
+
+<p>breakの後に整数を与えると、ループを何回抜けるかを指定できます。上記の場合break 2なので、２回ループを抜けるように指定しています。</p>
+
+<p>簡単で便利。もちろん使いドコロを考えて、ですが。</p>
+
+<p>&nbsp;</p>
+
+<p>[2013/04/01追記]</p>
+
+<p>投稿してすぐで申し訳ないのですが、breakに関して、php5.4で変更がありました。ご指摘いただいた@kodamさん本当にありがとうございます。</p>
+
+<p><a href="http://www.php.net/manual/ja/migration54.incompatible.php">5.4における変更点</a></p>
+
+<p>一応、上記サンプルであげたbreak n(整数)は、従来通り動作するようですが</p>
+
+<p>break $fooやbreak bar()などで、動的にbreakする回数を指定するような方法は廃止になったようです。最初からこれちゃんとチェックしてから書くべきでした、申し訳ないです。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/03/13/wordpress23/">Wordpress 3.5 でマルチサイト機能をオンにしたり、親子間でのデータやり取りに関するメモ</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-13T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>同じ内容の記事は山ほどありますが、今回珍しく使ったのでメモメモ</p>
+
+<p>wordpress3.x以降からマルチサイト対応になったようで、ひとつwordpressをサーバにインストールすると、それだけで複数のブログを管理できるようになったらしいです。</p>
+
+<p>今までは、基本的にはひとつのwordpress用ディレクトリに１つのブログだったから、物理的にひとつのサーバで複数のwordpressを動かしたいときは、複数　wordpressをインストールする必要がありました。（僕のサーバも随分前に構築したので、その構成です。）</p>
+
+<p>まだ実装されたばかりの機能だけあって、ちょっと不具合やら機能不足もあるようなんですが、提供された開発環境がマルチサイト構成で、それを利用してほしい、ということだったので対応しました。（納品物自体はまだ制作途中だけどｗ）</p>
+
+<p>以下、ざっくりした要求</p>
+
+<ol>
+<li>マルチサイト含めて全部でシステム全体になるように</li>
+<li>サブディレクトリごとに投稿できる記事の種類とレイアウトを大きく変えたい</li>
+<li>サブディレクトリごとに投稿の権限を分けたい</li>
+<li>システムのトップページでサブディレクトリにあるそれぞれのブログ記事の情報を取得したい</li>
+</ol>
+
+
+<p>こんな感じ。本当はカスタム投稿タイプを利用して、全てを一つのブログで実現できるように、って最初は考えていたんですが、権限を分けたいってことと、いただいた開発環境が既にマルチサイトで構成されていた、ということで、マルチサイトで対応をすることになりました。</p>
+
+<p>そんでローカルに同じ環境を整える際の手順と、上記の要件を満たすためにやったことを簡単にまとめておきます。</p>
+
+<h2>1.wordpressのマルチサイト機能を有効にする。</h2>
+
+<p>wordpressをインストールした直下にあるwp-config.php(インストール時に生成されるファイルなので、解凍しただけではこのファイルはありません)を開いて</p>
+
+<p>任意の場所に</p>
+
+<pre class="lang:php decode:true">define('WP_ALLOW_MULTISITE', true);</pre>
+
+
+<p>を追加します（デフォルトでは、この記述はないです。）個人的には認証キーに関する記述のうえ辺りがおすすめです。（※理由はないです、参考にした他の方のブログがだいたいその辺だったからｗ）</p>
+
+<p>/* 編集が必要なのはここまでです ! WordPress でブログをお楽しみください。 */</p>
+
+<p>このコメントより下に書くのはダメらしいです。これより上ならどこでもOK（っぽい）</p>
+
+<p>&nbsp;</p>
+
+<h2>２．管理画面でネットワーク設定を追加する</h2>
+
+<p>※スクショなくてすいません・・・。</p>
+
+<p>wordpressの管理画面にログインしたら（管理者ユーザでね）左側のメニューから</p>
+
+<p>ツール＞ネットワークの設置</p>
+
+<p>をクリックします。</p>
+
+<p>表示された画面で、マルチサイトを「サブディレクトリとして運用」するか「サブドメインで運用」するかが選択できます。適宣選んでください。よく使いそうなサブディレクトリのほうが需要あるかな？選択して、インストールボタンを押します。</p>
+
+<p>それが終わって次の画面が表示されると先ほど編集したwp-config.phpと.htaccessに追記するためのコードが表示されるので、コピペしてあげましょう。自分の環境では以下のようなコードが表示されました。</p>
+
+<pre class="lang:default decode:true" title="wp-config.php">define('MULTISITE', true);
+define('SUBDOMAIN_INSTALL', false);
+define('DOMAIN_CURRENT_SITE', 'foo.bar.com');
+define('PATH_CURRENT_SITE', '/');
+define('SITE_ID_CURRENT_SITE', 1);
+define('BLOG_ID_CURRENT_SITE', 1);</pre>
+
+
+
+
+<pre class="lang:default decode:true" title=".htaccess">RewriteEngine On
+RewriteBase /
+RewriteRule ^index.php$ - [L]
+
+# add a trailing slash to /wp-admin
+RewriteRule ^([_0-9a-zA-Z-]+/)?wp-admin$ $1wp-admin/ [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^([_0-9a-zA-Z-]+/)?(wp-(content|admin|includes).*) $2 [L]
+RewriteRule ^([_0-9a-zA-Z-]+/)?(.*.php)$ $2 [L]
+RewriteRule . index.php [L]</pre>
+
+
+<p>wp-config.phpへはこれを追加。.htaccessには既に書かれているものと重複がないように追加してください。（.htaccessの編集をミスってリダイレクトループになる現象が多発しているようです。俺もなりました（笑））</p>
+
+<p>これが設定が終わったらログインし直します。</p>
+
+<h2>３.サブディレクトリにブログを作る</h2>
+
+<p>これは管理画面でボタンぽちぽちするだけでOKです。</p>
+
+<p>管理者アカウントでログインすると、管理画面のヘッダの左端に「参加サイト」というリンクが表示されるようになるので、こちらで好きなだけサイトを追加します。</p>
+
+<p>これって後でデータベースのなか見たら、ひとつのデータベースの中に</p>
+
+<p>wordpressひとつ分のテーブル x ブログ数 + 管理用テーブルがいくつか</p>
+
+<p>ってなってたんだけど、大丈夫かな・・・？（全く詳しくないけどｗ）何十人、何百人というユーザ数を想定している場合は、これで構築するとテーブル数半端じゃなくなるけど、問題ないんですかね？それは置いておきますが（笑）</p>
+
+<p>これでひとつのwordpressで複数のブログを管理することはできるようになりました。いちいち書くまでもないですが、もちろん権限などもそれぞれのブログで細かく設定できます。（勝手に他のブログの管理者が自分のブログを編集できたら大変ですもんね。）</p>
+
+<h2>4. 他のブログの情報を取得する</h2>
+
+<p>※これは権限をしっかり設定しないと、他の利用者から他のブログの情報引っ張ってこれる可能性があるので、そこはしっかり設定ができてる前提です。（管理者以外は投稿と編集、コメント以外はできないようにする、など。テーマの編集とかはシステム全体の管理者のみ）</p>
+
+<p>今回の要件のなかで、「システムのトップページでサブディレクトリにあるそれぞれのブログ記事の情報を取得したい」という条件をここで満たします。</p>
+
+<p>サブディレクトリも含めて全体なので、ヘッダーとかのリンクも共通にしたいです。</p>
+
+<p>例えばwordpressでよく使われている関数のget_bloginfo(&#8216;url&#8217;)は自分自身のドメインを返しますが、サーバのドメインがwww.blog.comで、今回マルチサイト機能で作ったブログがwww.blog.com/komai/だった場合、通常www.blog.com/komai/のブログ上でget_bloginfo(&#8216;url&#8217;)を実行するとwww.blog.comではなく、www.blog.com/komai/が返ってきます。</p>
+
+<p>これで普通の多人数が利用するようなマルチサイトなら問題ないんですが、全体でひとつのシステムにしたいので、どこからでもwww.blog.com/about/などにリンク飛ばしたいときとかあると思うんです。</p>
+
+<p>でもそのままwww.blog.com/komai/のブログでリンクを貼るとwww.blog.com/komai/about/に飛んでしまうわけです。これを解決したいんです。調べたらすぐでてきました。</p>
+
+<pre class="lang:default decode:true">&lt;?php
+/*全体は省略してあります*/
+switch_to_blog(1); //取得する情報をブログIDが１のブログに切り替える
+
+echo get_bloginfo('url');
+
+restore_current_blog(); //自分自身に戻る
+?&gt;</pre>
+
+
+<p>switch_to_blog( blogID )関数を利用することで、一時的に取得する情報をID１のものに変えて、取得したい情報を得たら、restore_current_blog()元に戻す。だけです。</p>
+
+<p>この二つの関数の間に書いた関数はID1のブログとして実行されるのでbloginfo(&#8216;url&#8217;)はwww.blog.com/komai/で実行しても、www.blog.comを返します。</p>
+
+<p>例としてbloginfo(&#8216;url&#8217;)を挙げましたが、記事情報、カテゴリ、ユーザ情報なんかも取れそうですね。ちなみにblogIDはwordpress用に作ったデータベースのwp_(接頭子)blogsのレコードで確認することができます。</p>
+
+<p>親ブログ（上記の場合はwww.blog.com）はwp-config.phpに記述した</p>
+
+<p>define(&#8216;BLOG_ID_CURRENT_SITE&#8217;, 1);</p>
+
+<p>で確認することもできるし、任意の値にすることもできます。</p>
+
+<p>カスタム投稿タイプがたくさん必要で、functions.phpいっぱいいじるのめんどくさーい、っていうときは、こんな感じにマルチサイト化して運用するのもいいかもしれません。権限がそれぞれ設定できるってのが一番でかいですね。以上です。</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/03/13/wordpress22/">Javaのアノテーション便利すぎワロタｗｗをしたいので総復習したけどワロエナイ</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-13T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>学校のカリキュラムでC#やってた頃、当時の担任の先生の勧めで始めたjavaですが、お恥ずかしながらアノテーションちゃんとやってなくて、ノリでやってました（笑）書いてあるまんま読んで、なんとなーく「こんなことしてくれてるっぽいなー」程度でした・・・こんなの知らないでやってたのか！！（怒）と思う方もいると思います、自分でも思いました(・∀・)デザインパターンとかやってる場合じゃねぇ！（笑）</p>
+
+<p>フレームワーク使ってWeb開発やってたらノリじゃ自分で書けないし、読む時も時間かかって仕方なくなってきたので、まとめます。C#でいう属性(attribute)ですかね。ざっくり調べた感じ標準で提供されているものはjavaのアノテーションより、c#の属性のほうが充実してる印象です。（どっちも中途半端なんで参考になりませんが）</p>
+
+<p>引用 wikipedia</p>
+
+<h2> 1．JavaのアノテーションとC#の属性</h2>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%82%A2%E3%83%8E%E3%83%86%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3#Java.E3.81.AB.E3.81.8A.E3.81.91.E3.82.8B.E3.82.A2.E3.83.8E.E3.83.86.E3.83.BC.E3.82.B7.E3.83.A7.E3.83.B3">Javaのアノテーションについて</a></p>
+
+<p>Java SE 5から登場。クラスやメソッド、パッケージに対してメタデータとして注釈を記入する。実態はjava.lang.Annotationインターフェースを継承したインターフェースで、自作もできる。</p>
+
+<p>アノテーションには３種類ある</p>
+
+<ol>
+<li>データが無く、名前だけのマーカー</li>
+<li>データをひとつだけ持ち、メソッド呼び出しに似た、単一アノテーション</li>
+<li>複数のデータをもつフル・アノテーション</li>
+</ol>
+
+
+<p>&nbsp;</p>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E5%B1%9E%E6%80%A7">C#の属性について</a></p>
+
+<p>クラスやメンバーに追加情報を与えるもの。コンパイラに対する指示を行ったり、クラス利用者に対する情報を残す。属性にはカスタム属性と擬似カスタム属性の２種類ある。擬似カスタム要素とはCLR(Common Language Runtime)が認識できるような属性。コードに属性を記述するとコンパイラはメタデータを生成する。</p>
+
+<p>&nbsp;</p>
+
+<h2>２．とりあえず標準で提供されているものを使ってみる</h2>
+
+<p>javaのほう</p>
+
+<p>本当にクソなサンプルコードだな、って書きながら思ったけど、もうめんどくさかった（笑）</p>
+
+<pre class="lang:java decode:true">/*
+ * Sample Class
+ * ブログ用に書いたしょーもないサンプル用のクラスです
+ * @auther KentaKomai
+ * @version 1.0
+ */
+public class Sample {
+    public static void main(String[] args){
+        SampleChildClass c = new SampleChildClass("koma", 10);
+        c.speak2();
+
+    }
+}
+
+class SampleParentClass {
+    protected String name;
+    protected int age;
+
+    private String job;
+
+    public SampleParentClass(String name, int age){
+        this.name = name;
+        this.age = age;
+    }
+
+    /**
+     * 自己紹介用メソッド
+     * @author KentaKomai
+     */
+    protected void speak(){
+        System.out.println("私は大人です！");
+    }
+
+    /**
+     * 自己紹介用メソッド2
+     * @author KentaKomai
+     * @deprecated クライアントから苦情あり、ネタで作った。でも消すとバグる
+     */
+    @Deprecated
+    protected void speak2(){
+        System.out.println("アダルトビデオを見ます！");
+    }
+
+    /**
+     * 自己紹介用メソッド３、友達に挨拶する
+     * @author KentaKomai
+     * @param friend_name 友人の名前
+     */
+    protected void speak3(String friend_name){
+        System.out.println("Hello, " + friend_name + "! How are you?");
+    }
+}
+
+class SampleChildClass extends SampleParentClass {
+
+    public SampleChildClass(String name, int age){
+        super(name, age);
+    }
+
+    @Override
+    protected void speak(){
+        System.out.println("ぼくはこどもです！");
+    }
+
+    @Override
+    protected void spaak3(String friend_name){
+        System.out.println("Hi, " + friend_name + "! How are you?");
+    }
+
+}</pre>
+
+
+<p>上記のコードはJavaが標準で提供しているもの＋javadoc用になってます。</p>
+
+<p>java書くなら以下全ての用途を全て覚えておいたほうがいい、と断言できるくらい頻出のものばかりです。俺、@overrideしか覚えてなかったｗ以下が標準で提供されているものです。</p>
+
+<ol>
+<li><span style="line-height: 14px;">@Override :そのメソッドがスーパークラスのメソッドをオーバーライドしていることを明示的にする。（スーパークラスにないメソッドにつけたりするとエラーが出るようにしてくれたり、ソースコードを読む人にとって、オーバーライドされたメソッドであることが視覚的にわかりやすくなる）</span></li>
+<li>@Deprecated :そのメソッドの仕様が非推奨であることを明示的にするアノテーション。このアノテーションがついたメソッドやクラスを利用すると警告メッセージがコンパイル時に表示されるようになる。（下位互換のために、仕方なく残しているメソッドなどにつけるといいかも）</li>
+<li>@SuppressWarning :引数にメッセージを与えると、メッセージによってコンパイル時のエラーを非表示にすることができます。（ゴリ押ししたいときに・・・ｗ）<a href="http://www.ne.jp/asahi/hishidama/home/tech/java/supwarn.html">メッセージの参考に</a></li>
+</ol>
+
+
+<p>よく使うのはこの３つ。独自アノテーションを定義するために、標準で提供されているものが、これらとは別にありメタアノテーションといいます</p>
+
+<ol>
+<li><span style="line-height: 14px;">@Target :独自に定義したアノテーションが、何を対象に利用できるものか、を宣言するためのアノテーション。例えば@Overrideアノテーションはメソッドが対象で、@SuppressWarningはだいたいのものに、つけることができます。クラスにつけるのか、変数につけるのか、みたいなのをこれで決めます。</span></li>
+<li>@Retention :これ一番ピンと来ないんですが、アノテーションの配置方法を決める、ということらしいです。コンパイル時やプログラム実行時にもアノテーションの情報を保持するかどうか、を定義できる。</li>
+</ol>
+
+
+<p>以上の５つが、標準で提供されているアノテーションみたいです。</p>
+
+<h3>３．一応標準じゃないけど、頻出アノテーション</h3>
+
+<p>これ以外にも頻繁に見かけるもの＋勉強ついでにJUnitに関するアノテーションをメモっておきます。</p>
+
+<p>Javadoc関連のアノテーション</p>
+
+<p>(Javadocとは、ソースコードに書かれている情報から、自動的にパッケージに関するドキュメントを生成してくれるプログラム。僕は自分自身がjavadocでドキュメントを確認する、ってことは少ないですが、javadoc形式で書かれたコメントなどは、IDEで参照するときに、非常に重宝しているのでjavadocを全く使わない、という方でもjavadocのアノテーションに関して理解し、それに対応したソースコードを書くことは非常に有意義、だと思います。僕が個人的によく見かけると思ってるものから順番に書きます（全部じゃないです）)</p>
+
+<ol>
+<li><span style="line-height: 14px;">@author :開発者の名前を記述</span></li>
+<li>@param:引数と引数の概要に関して記述</li>
+<li>@return: 戻り値の概要を記述</li>
+<li>@exception: メソッドが投げる例外クラスとその概要を記述(@throwsと同義)</li>
+<li>@version : クラスやメソッドのバージョンを記述（バージョン管理システムで割り当てを自動にすることも出来る）</li>
+<li>@see : 関連する他のクラスやメソッドを記述。わからないことあったら、ここも見てね！って感じ</li>
+<li>@deprecated : java標準の@Deprecatedと同様に非推奨のクラスやメソッドを明示する。</li>
+</ol>
+
+
+<p>他にももうちょいあるけど、よく見るのはこんな感じ</p>
+
+<pre class="lang:java decode:true">/**
+ * foo class
+ * javadoc用アノテーションのためのサンプルクラス
+ * @param int a 引数aの説明
+ * @param int b 引数bの説明
+ * @author k.komai
+ * @version 2.0
+ * @see bar
+*/
+public class foo extends bar{
+  /*処理色々*/
+}</pre>
+
+
+<p>こんな感じで使えます。<a href="http://docs.oracle.com/javase/jp/6/api/">javadocでつくられた公式APIリファレンスはこちら</a></p>
+
+<p>&nbsp;</p>
+
+<p>JUnit関連のアノテーション</p>
+
+<ol>
+<li><span style="line-height: 14px;">@Test :メソッドがテストメソッドであることを示す。</span></li>
+<li>@Before : @Testアノテーションがついたメソッドを実行する前に実行されるメソッドにつける</li>
+<li>@After : @Testアノテーションがついたメソッドを実行する後に実行するメソッドにつける</li>
+<li>@BeforeClass : テストクラスを呼び出す前に実行されるメソッドにつける</li>
+<li>@AfterClass : テストクラスを呼び出した後に実行されるメソッドにつける</li>
+</ol>
+
+
+<p>わかりやすくていいですね。簡単に覚えられた。</p>
+
+<p>&nbsp;</p>
+
+<h3>４．自分でアノテーションを定義する</h3>
+
+<p>ここまで長々とダラダラ書いてきましたが、結局のところ、一番よく見かけるのはフレームワークや、外部パッケージで定義された、独自のアノテーションかもしれません。フレームワークもパッケージも山ほどあるので、それらを全てここに書けるわけもなく・・・</p>
+
+<p>「よくわからないアノテーションが出てきたときに、それが何をしているか、理解したい」です、とりあえず。（リファレンスに書いてるから、そっかー！じゃなくて、処理を含めて）</p>
+
+<p>4-１．アノテーションの定義</p>
+
+<pre class="lang:java decode:true">import java.lang.annotation.Retention;
+import java.lang.annotation.Target
+import java.lang.annotation.RetentionPolicy;
+
+/*
+ * 独自アノテーションサンプル
+ * @auther K,Komai
+ * @version 1.0
+ *
+ */
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface SampleRequired{
+}</pre>
+
+
+<p>これでアノテーション自体はできあがり。マーカーアノテーションというやつで、意味を付加するだけなので、メンバーは持ちません。</p>
+
+<p>4-2.アノテーションを処理する</p>
+
+<p><a href="http://itpro.nikkeibp.co.jp/article/COLUMN/20090115/322957/">参考URL</a></p>
+
+<p>どういう処理させたらいいか、考えて、参考URLのものとまったく同じじゃつまらないし・・・ということで、任意のアノテーションを取得して、まぁその後は好きに処理させたらおっけー、ということで、一覧に出すプログラム書きました。クラスそのもの、メソッド、フィールドを例に出していますが、同じ方法で、全てのElementTypeにアクセスできます。</p>
+
+<pre class="lang:java decode:true" title="info annotation">package sample;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({
+    ElementType.TYPE,
+    ElementType.FIELD,
+    ElementType.CONSTRUCTOR,
+    ElementType.METHOD
+})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Info {
+    String value();
+
+}</pre>
+
+
+<p>&nbsp;</p>
+
+<pre class="lang:java decode:true" title="SampleClass1">package sample;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Info("SampleClass1 Info")
+public class SampleClass1 {
+
+    private List list;
+
+    public SampleClass1(){
+
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        return list.equals(obj);
+    }
+
+    @Info("hogehoge")
+    public void initList(){
+        list = new ArrayList();
+        list.add(10);
+    }
+
+}</pre>
+
+
+<p>&nbsp;</p>
+
+<pre class="lang:default decode:true" title="SampleClass2">package sample;
+
+@Info("Sample2 class")
+public class SampleClass2 {
+
+    @Info("foo field")
+    private Foo foo;
+
+    @Info("default constract")
+    public SampleClass2(){
+        foo = new Foo();
+    }
+
+    @Info("bar method")
+    public void bar() {
+        foo.bar();
+    }
+
+}</pre>
+
+
+<p>上記の２つのクラスと１つの独自アノテーションを使って処理</p>
+
+<pre class="lang:java decode:true" title="Client">package sample;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+public class Client {
+    public static void main(String[] args){
+        System.out.println("start annotation sample");
+        SampleClass1 sc1 = new SampleClass1();
+        SampleClass2 sc2 = new SampleClass2();
+
+        //指定されているアノテーションを取得する
+        Annotation annotList[] = Info.class.getAnnotations();
+        System.out.println("annotation size is [" + annotList.length + "]");
+        for(int i=0; i&lt;annotList.length; i++){
+            Annotation anno = annotList[i];
+            System.out.println("    annotation class is [" + anno.annotationType().getName() + "]");
+        }
+
+        /* ***CLASSに対するアノテーションの取得*** */
+        //SampleClass1
+        Annotation annotList1[] = SampleClass1.class.getAnnotations();
+        System.out.println("SampleClass1's annotation size is [" + annotList1.length + "]");
+        for(int i=0; i&lt;annotList1.length; i++){
+            Annotation anno1 = annotList1[i];
+            System.out.println("    annotation class is [" + anno1.annotationType().getName() + "]");
+        }
+        //SampleClass2
+        Annotation annotList2[] = SampleClass2.class.getAnnotations();
+        System.out.println("SampleClass2's annotation size is [" + annotList2.length + "]");
+        for(int i=0; i&lt;annotList2.length; i++){
+            Annotation anno2 = annotList2[i];
+            System.out.println("    annotation class is [" + anno2.annotationType().getName() + "]");
+        }
+        System.out.println();
+        System.out.println();
+
+        /* ***METHODに対するアノテーションの取得*** */
+        //SampleClass1
+        Method methodList1[] = SampleClass1.class.getMethods();
+        System.out.println("SampleClass1's method count is [" + methodList1.length + "]");
+        for(Method method : methodList1){
+            System.out.println("    method name is [" + method.getName() + "]");
+            for(Annotation annot : method.getAnnotations()){
+                System.out.println("        method annotation is [" + annot.annotationType().getName() + "]");
+            }
+        }
+        //SampleClass2
+        Method methodList2[] = SampleClass1.class.getMethods();
+        System.out.println("SampleClass2's method count is [" + methodList2.length + "]");
+        for(Method method : methodList2){
+            System.out.println("    method name is [" + method.getName() + "]");
+            for(Annotation annot : method.getAnnotations()){
+                System.out.println("        method annotation is [" + annot.annotationType().getName() + "]");
+            }
+        }
+        System.out.println();
+        System.out.println();
+
+        /* ***FIELDに対するアノテーションの取得 *** */
+        //SampleClass1
+        Field fieldList1[] = SampleClass1.class.getFields();
+        System.out.println("SampleClass1 has  [" + fieldList1.length + "] fields");
+        for(Field field : fieldList1){
+            System.out.println("     field name is [" + field.getName() +"]");
+            for(Annotation annot : field.getAnnotations()){
+                System.out.println("        field annotation is [" + annot.annotationType().getName() + "]");
+            }
+        }
+        //SampleClass1
+        Field fieldList2[] = SampleClass2.class.getDeclaredFields();//getFields();
+        System.out.println("SampleClass2 has  [" + fieldList2.length + "] fields");
+        for(Field field : fieldList2){
+            System.out.println("     field name is [" + field.getName() +"]");
+            for(Annotation annot : field.getAnnotations()){
+                System.out.println("        field annotation is [" + annot.annotationType().getName() + "]");
+            }
+        }
+        System.out.println();
+        System.out.println();
+
+        //特定のメソッドに対するアノテーション情報を取得する(リフレクション)
+        try{
+            Info annos = SampleClass1.class.getMethod("initList", new Class[0]).getAnnotation(Info.class);
+            System.out.println(annos);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+}</pre>
+
+
+<p>ごめん、正直力尽きたｗｗｗｗ</p>
+
+<p>良いサンプルを作るって大変ですな・・・とりあえず扱い方（自分で定義する方法と、それに対応した処理を実装するとこ）は把握できたので、ここまで・・・。</p>
+
+<p>より有効な使い方などは直接既存フレームワークのソースを読むことをおすすめしますｗ</p>
+
+<p>まぁこんな感じでいける、ということだけでも伝われば・・・（笑</p>
+
+<p>アノテーション便利なのはよーくわかったけど、ワロタｗｗｗｗはできませんね、今のところ・・・ｗ</p>
+
+<p>今回、アノテーションに関して調べて、副産物的に勉強になったのは</p>
+
+<ol>
+<li><span style="line-height: 1.714285714; font-size: 1rem;">クラスリテラルに関して（ClassName.class）</span></li>
+<li><span style="line-height: 1.714285714; font-size: 1rem;">Classクラスに関して (public final class Class)</span></li>
+<li><span style="line-height: 1.714285714; font-size: 1rem;">リフレクション</span></li>
+</ol>
+
+
+<p>ですね。いろいろ使えそう。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/03/09/wordpress21/">よく使うjavascriptデバッグ方法のメモとついでに検証</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-09T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>たまーに学校で後輩や友人に「javascript（やjQuery）が何故か動かないんだけど・・・」っていう相談をされたり、僕も「ちゃんと書いてるつもりなんだけどなぁ・・・・」と長い時間悩んで、結局セミコロン忘れだったり、結構ケアレスミスが多くて面倒に感じるのがjavascript初心者あるあるだと思います。</p>
+
+<p>自分もまだまだjavascript初心者の域を出ていませんが、最近お仕事でも少しだけjavascript書くことが増えて、動かない時の確認方法に関していくつか、毎度使うものがあるのでメモしておきます。（javascriptばっかり書く案件は、僕の場合そうそうないので忘れちゃいそうなので）</p>
+
+<p>現状最強なのは結局Google Developper Toolsでなんでもデバッグしちゃう方法だと個人的には思ってます。基本的にここで紹介しているものはGoogle Developper Toolsでは使えますが、他のブラウザに搭載されている開発ツールで出来るかは、検証していませんので注意してください。（多分違いはあってもほとんど同じことはできるはずですが）</p>
+
+<h3>１．alert()関数を使って、ダイアログに出力させる。</h3>
+
+<pre class="lang:js decode:true">&lt;script type="text/javascript"&gt;
+
+        var foo = 102343.12345;
+        var bar = 987421;
+        var sum = foo + bar;
+        var foo1 = NaN;
+        var bar2;
+        var bar3 = null;
+        var array1 = new Array(1,2,3);
+        var array2 = new Array("A","B","C");
+        var array3 = new Array();
+        var array4 = new Array();
+        var f = function(){
+            var a=100;
+            return a;
+        };
+        var f2 = f();
+        var obj = {
+            'x':100,
+            'y':200,
+            'z':50
+        };
+
+        array4["hoge1"] = 1;
+        array4["hoge2"] = 2;
+        array4["hoge3"] = 3;
+        var num4 = 100000000000000000000000000000000000000000000000000000000000000000;
+        alert(sum);
+        alert(foo1);
+        alert(bar2);
+        alert(bar3);
+        alert(array1);
+        alert(array2);
+        alert(array3);
+        alert(array4["hoge1"]);
+        alert(num4);
+        alert(f);
+        alert(f2);
+        alert(obj);
+　　　　　　　　　　//以降処理が続いている・・・・とする
+    &lt;/script&gt;</pre>
+
+
+<p>こんな感じに処理の途中にalert()を仕込んで、変数の中身を表示させます。NaNだったりundefinedなんかが表示されることもありますので、変数の状態が確認できると思います。この検証に意味があるか微妙ですが、ちょっと気になったので色々試してみました。当たり前のことも改めて書いてますがご了承ください。</p>
+
+<ol>
+<li>NaNは非数といい、数ではないことを表します。代入も可能。</li>
+<li>undefinedは初期化されていないと出る。undefined自体を変数に代入も可能。</li>
+<li>変数の中身がnull のときはnullと出力。</li>
+<li>通常の配列は配列名を引数に与えると、配列全てを出力。</li>
+<li>カラの配列はnullとも表示されず空白だけが出力。</li>
+<li>連想配列は、ハッシュを指定しないと、何も出力せず、ハッシュを指定するとその値を出力。</li>
+<li>極端に大きな値を渡すとよくわかんないもんが表示される。（これに関しては別途記事書く）</li>
+<li>クロージャ（無名関数）を与えるとその関数のソースを表示する</li>
+<li>オブジェクトを渡すとObjectと表示される。</li>
+<li>宣言されていない変数を与えると、エラー(alert()自体起動しない)</li>
+</ol>
+
+
+<p>こんな感じでした。クロージャを渡した時の動作は予想していませんでした。ソースが長くなってるときとか、人のコードをトレースするのが面倒なときは結構使えるかも。</p>
+
+<p>僕がよくやるのは、alert()の中に昇順に整数を入れて、どこまで動作しているかを確認したりしてます。(どこでエラーが出ていて、処理が止まっているかが特定できていないときなど)</p>
+
+<h3>2.javascriptコンソールに出力する</h3>
+
+<p>これはブラウザによって若干挙動や出力は変わります。<br/>
+処理全体は確かに動いてるんだけど、期待してる結果が返ってきていないときなんかに僕は使ってます。変数の値とかをコンソールに出力するように、確認したい箇所に突っ込んでいきます。ただ、全部正常に動くようになった後、消し忘れないように注意してます。javascriptコンソールなんてサービス利用者はもちろん、自分でも常に見ている方はほとんどいないと思います。消し忘れないように何かしら目印をつけておくことをオススメします。( //TODO: デバッグ用なので後で消す、 などのコメント入れておいたり。)</p>
+
+<pre class="lang:default decode:true">&lt;script type="text/javascript"&gt;
+    var foo = "aiueo";
+    var obj = {
+        'x': 123,
+        'y': 456,
+        'z': "901"
+    };
+    console.log(foo);
+    console.log(obj);
+        console.dir(foo);
+        console.dir(obj);
+&lt;/script&gt;</pre>
+
+
+<p>他のブラウザで確認していないのですが、google chromeのdeveropper toolsに含まれるjavascriptコンソールなら、alert()ではobjectとしか表示されなかったオブジェクトを引数に与えても、メンバまで全て確認することもできます。(phpのvar_dump()みたいな感じ)これは最初使ったとき目からウロコでした。便利！console.log(var)でもconsole.dir(var)でもどっちでもOKです。メンバがたくさんある場合はdirのほうが見やすいかもしれません。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-08-at-23.31.18.png" rel="image_group"><img class="alignnone size-large wp-image-237" alt="Screen Shot 2013-03-08 at 23.31.18" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-08-at-23.31.18.png?resize=625%2C170" data-recalc-dims="1" /></a></p>
+
+<p>こんな感じにすれば、変数の値を常に確認できますね。まぁ毎回毎回これで確認するのはすぐにめんどくさくなるんですけどｗｗｗたまに、ピンポイントで確認したいときなんかはサクッとコピペするだけでいけちゃいます。</p>
+
+<pre class="lang:default decode:true">&lt;script&gt;
+    var num = 100;
+    console.write(num);
+    var num += num;
+    console.write(num);
+    var num += num;
+    console.write(num);
+    var num += num;
+    console.write(num);
+&lt;/script&gt;</pre>
+
+
+<p>&nbsp;</p>
+
+<h3>3.デバッグ用領域を用意して、そこに情報を常に表示しておく</h3>
+
+<p>以下のように、ページ内にデバッグ用領域を確保しておいて、そこにデバッグ情報を出力しておくのもたまにやります。</p>
+
+<pre class="lang:default decode:true">&lt;!DOCTYPE HTML&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;sample3&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;pre id='debug_space'&gt;
+    &lt;/pre&gt;
+    &lt;script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript"&gt;
+        var a = 100;
+        var b = 200;
+        var c = a + b;
+        $("#debug_space").text(c);
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+
+<p>ただ、レイアウトも含めたデバッグをしているときなんかは表示領域に注意してあげないと、レイアウト全体が崩れてしまうことがあります。</p>
+
+<p>onClickのイベントなどに紐付けたり、値が変わる度にリアルタイムで値や状態が表示されるようにしておくとページのリロードも必要なくなるので便利です。 あと、イベントに紐付けずに、ロードしてすぐにデバッグ情報を表示するようにしたい場合は、プログラムを書く場所に気をつけてください。上記の例だと<title>タグのすぐ下に書くとid=&#8221;debug_space&#8221;の<pre>タグ内にはなにも表示されません。</p>
+
+<p>&nbsp;</p>
+
+<h3>4.Ajaxのリクエストが正しく送られているか、帰ってきているかを確認する</h3>
+
+<p>これは別にjavascriptのデバッグとは違うかもしれませんが、結構よくやります。最初はwiresharkでチェックしようかなーって起動してみたんですが、自分自身同士の通信はキャプチャできないんですね、そのとき知りました・・・・orz</p>
+
+<p>そこで次に使い始めたのがburp suite。これCTFとかでは頻繁に使ってたんですが、まさかweb開発で使うとは思ってませんでした。でも、慣れると結構いい感じです。ちゃんとリクエスト自体が走っているのか、URLは正しいか、GETやPOSTで渡しているデータのnameと値は正しいフォーマットになっているか。burp suite上でデータを色々な形式に弄っても正常に処理（エラー表示を含めて）されているか、なんかをチェックしてます。</p>
+
+<p>渡すデータの形式チェックとかをしないで、とりあえずリクエストがどうなっているか、レスポンスには何が返ってきているか、だけをチェックしたい場合はproxyをいちいち設定するのも面倒です。さくっと確認したければ、Google Developper toolsでチェックできます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-12.20.03.png" rel="image_group"><img class="alignnone size-large wp-image-238" alt="Screen Shot 2013-03-09 at 12.20.03" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-12.20.03.png?resize=625%2C202" data-recalc-dims="1" /></a></p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-12.21.39.png" rel="image_group"><img class="alignnone size-large wp-image-239" alt="Screen Shot 2013-03-09 at 12.21.39" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-12.21.39.png?resize=625%2C321" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>リクエストをクリックして、headerタブをクリックすればリクエストヘッダが確認できます。</p>
+
+<p>&nbsp;</p>
+
+<h3>5.ブレイクポイントを設定して、任意の場所で処理を中断する。</h3>
+
+<p>サーバサイドのプログラムを書いてるときなんかは当たり前のようにIDEに搭載されている機能ですね。ブレイクポイントを設定して、そこで処理が止まると、そこまでのオブジェクトの状態などを確認したりできます。</p>
+
+<p>使い方は簡単です。Google Developper Toolsを起動して(MacならCommand + option + iで起動です。)メニュバー辺りの&#8221; Source &#8220;をクリックすればブレイクポイントを設定できるウィンドウに切り替わります。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-13.11.56.png" rel="image_group"><img class="alignnone size-large wp-image-242" alt="Screen Shot 2013-03-09 at 13.11.56" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-13.11.56.png?resize=625%2C303" data-recalc-dims="1" /></a>ウィンドウが切り替わったら、デバッグしたいソースをクリックしてから、ブレイクポイントを設定したい行をクリックします。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-13.14.45.png" rel="image_group"><img class="alignnone size-full wp-image-243" alt="Screen Shot 2013-03-09 at 13.14.45" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-13.14.45.png?resize=816%2C290" data-recalc-dims="1" /></a></p>
+
+<p>ブレイクポイントが設定されると、その行数に青色のポインタのようなものが表示されるようになります。上記の画像には写っていませんが、右側のサイドメニューにも、ブレイクポイント一覧があるので、ブレイクポイントの場所が多くなったらそこで探すのもいいと思います。</p>
+
+<p>ここまで準備ができたら、あとはプログラムを実行するだけです。ページをリロードして、ブレイクポイントの場所が実行されるようにします。</p>
+
+<p>ブレイクポイントで処理が止まった状態が以下になります</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-13.18.01.png" rel="image_group"><img class="alignnone size-large wp-image-244" alt="Screen Shot 2013-03-09 at 13.18.01" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-09-at-13.18.01.png?resize=625%2C242" data-recalc-dims="1" /></a>右側にグローバル変数の状態やら色々なオブジェクトの状態が見れるようになっていて、左側では処理が止まっているブレイクポイントが赤い矢印で見えるようになっています。</p>
+
+<p>その状態で変数にオンマウスしたりすると、変数の値などを確認することができます。</p>
+
+<p>こんな感じで、まぁ普通のサーバサイドのようにデバッグできます。ksnctfのうーにゃーのjavascript難読問題もひたすら、これでデバッグしてたら、いつのまにかできました。</p>
+
+<p>&nbsp;</p>
+
+<p>僕がよく使ってるjavascriptでのデバッグ方法はこんな感じです。他にも良いデバッグ方法あったら教えてください！javascriptはMVCが出たり、サーバサイドが出たり、ゲームエンジンができたり、３Dもできたり、まさかのOSができちゃったりで、きっともっともっと使われることになると思いますね。</p>
+
+<p><a href="https://github.com/KentaKomai/warehouse/tree/master/how_javascript_debug">今回のコード</a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/03/03/wordpress20/">Nullcon 2013 Battle Underground Programming 3 Writeup</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-03T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前回に引き続き、nullcon 2013 Battle Underground の自分が担当した問題のwriteup書いていきます。</p>
+
+<p>Programming3です。</p>
+
+<p>以下問題文</p>
+
+<blockquote><p>Mr. X is fond of prime numbers. Recently, Mr. X learnt of some special numbers called Smarandache-Wellin numbers. The n&#8217;th Smarandache-Wellin number is obtained by concatenating the first n primes. For example, 2, 23, 235, 2357, 235711 are the first 6 decimal Smarandache-Wellin numbers. Mr. X is interested in binary Smarandache-Wellin numbers. Furthermore, Mr. X is only interested in those numbers which are prime. He found the first 3 such numbers 2, 11 and 751 and now needs your help in finding the next 2 numbers. Enter the next 2 binary Smarandache-Wellin primes. The flag is the MD5 hash of the next 2 binary Smarandache-Wellin primes separated by _ (underscore). For eg. if the numbers are 23 and 235, the flag would have been MD5SUM(&#8220;23_235&#8243;)</p></blockquote>
+
+<p>ざっくり意訳（これも何度も意味を履き違えて、なかなか解答にたどり着かなかった・・）</p>
+
+<blockquote><p>Xさんは素数が好きです。 最近、XさんはSmarandache-Wellin numbers呼ばれる数について学びました。n番目のSmarandache-Wellin numberはn番目までの素数を連結させることによって得ることができます。Xさんは2進数のSmarandache-Wellin numberのうち、素数だけに興味があります。彼は2, 11, 751という最初の3つの２進数Smarandache-Wellin numberを見つけました。その次の２つの数字を見つけてください。次の２つのSmarandache-Wellin numberを_(アンダースコア)で連結したものの、MD5チェックサムがこの問題のフラグです。</p></blockquote>
+
+<p><a href="http://en.wikipedia.org/wiki/Smarandache%E2%80%93Wellin_number">http://en.wikipedia.org/wiki/Smarandache%E2%80%93Wellin_number</a></p>
+
+<p>問題文にも書いてありますが、簡単に言うと、素数は2, 3, 5, 7, 11&#8230;.とあり、Smarandache-Wellin numberとは2, 23, 235, 2357, 235711&#8230;.というのがそれに当たります。</p>
+
+<p>Xさんはそれを2進数でやりたくて、しかもそのうちの素数だけを抜き出したい。</p>
+
+<p>2, 11, 751までは見つけたので、あと２つ見つけてくれ、という問題です。</p>
+
+<p>2は2進数で 10</p>
+
+<p>11は2進数で 1011</p>
+
+<p>751は2進数で101110111</p>
+
+<p>後ろに素数を2進数にしたものをくっつけて、2進数全体が素数かどうかを判定します。それで751の次に当てはまるものを得るスクリプトを書いていきます。</p>
+
+<pre class="lang:default decode:true">import random
+
+def is_prime(q,k=50):
+    q = abs(q)
+    if q == 2: return True
+    if q &lt; 2 or q&1 == 0: return False
+
+    d = (q-1)&gt;&gt;1
+    while d&1 == 0:
+        d &gt;&gt;= 1
+
+    for i in xrange(k):
+        a = random.randint(1,q-1)
+        t = d
+        y = pow(a,t,q)
+        while t != q-1 and y != 1 and y != q-1: 
+            y = pow(y,2,q)
+            t &lt;&lt;= 1
+        if y != q-1 and t&1 == 0:
+            return False
+    return True
+
+root = 2
+ans = ""
+while True:
+    if is_prime(root):
+        print "root is : ",str(root)
+        ans += str(format(root, 'b'))
+        print "check ans: ", ans
+        if is_prime(int(ans, 2)):
+            print "-------------------"
+            print int(ans, 2)
+            print ans
+            h = raw_input()
+            if h == 'end':
+                exit()
+        else:
+            print int(ans,2),"/",ans," is not prime..."
+
+    root += 1</pre>
+
+
+<p>最初、問題に着手したばかりのときは、2, 11, 751までのプロセスも明確ではなかったので、そこから計算して出力するようにしています。</p>
+
+<p>751以降は桁数が莫大になっていくので、デバッグ用の出力はうっとおしいだけですが、規則性にちゃんと気がつけたのでよかったです。</p>
+
+<p>以下は2,11,751までの出力をキャプチャしたものです。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-17.07.03.png" rel="image_group"><img class="alignnone size-full wp-image-227" alt="Screen Shot 2013-03-03 at 17.07.03" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-17.07.03.png?resize=514%2C708" data-recalc-dims="1" /></a></p>
+
+<ol>
+<li>最初に2が素数で、それを2進数にしたものが10</li>
+<li>10に、次の素数である3を2進数したもの(11)をくっつけて 1011（10進数の11）</li>
+<li>ここからがキモで、1011に次の素数である5(2進数で101)をくっつけて1011101(10進数で93)を得るが、これ自体は素数じゃないので次の処理へ</li>
+<li>次の素数である7(2進数で11)を前回の結果1011101にくっつけて101110111(10進数で751)を得る。751は素数なので、これで３つ。</li>
+</ol>
+
+
+<p>Xさんがどういうプロセスで３つ目までを見つけたかは知りませんが、今回求めるべき数列の規則性はこれだということがわかりました。</p>
+
+<p>そのまま処理を続けていけば、次の二つも見つかります。</p>
+
+<p>13499925319356478420482627384338205627134397423032950243093776977656290637381356029088437508765876860004145536363528373584239891642207051418759823661775098400822064249224107957394151475347641577607291008219620857887840743942302339494275640240389954171415859751242018684702291309687871788001082502981179843710955968305626219107882381173932042111051037558216690866104363093437124046556014178911539242991232498163764379843984059581618991857509603695132829301769</p>
+
+<p>と</p>
+
+<p>4178024520048464687377630333781717879404075971768776245420063857617925088891489606176607287044369960037018902011849289176641296067768886109727422734188064023638022562254733564342171478053064724114411765870377775349657496322378512525142999031090251164168452641800241733625987554996534416882012963991102408146223868356497622554970987902356644145730512464281093744854608796407077859318984359976335400473918261877085825298647843735060014896081070785205019798426736815795971430257132698691</p>
+
+<p>ですね。もうこの数字をなんて呼べばいいかもわからないくらいの大きい数です（笑）751の次がこんなにでかくなるなんて、思ってもいませんでしたｗ</p>
+
+<p>あとは問題文通り、この二つを_(アンダースコア)でつなげてMD5ハッシュ値を得れば正解。答えは以下の通りです。</p>
+
+<p>554ec7e8fa6830da4ed6b265f1a08fe0</p>
+
+<p>この問題、解法には割と早く近づいたのですが、その時動かしていた素数判定のアルゴリズムに不良があって、最初何度も正確な数字を得ることができずに苦しみました・・・・。そこに関しては改めて別の記事で比較検証したいと思います。ネットって探すとなんでも落ちてますね・・・ｗ</p>
+
+<p>今回、Programming1,2,3を解いて一番の反省点は「英語読むのが遅いし、正確じゃない！」ということですね。恥ずかしい・・・。writeupを読みながら改めて問題文を読むと、「普通に書いてあることだったじゃん・・・」って思うこともしばしば・・・。</p>
+
+<p>あとは、Programming以外の問題がまるで駄目でした・・・。REとCryptは問題を見てもいないのがほとんどですが、Exploitationは１つくらい解きたかった・・・。</p>
+
+<p>でも楽しかった！！３位嬉しい！！！</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/03/03/wordpress19/">Nullcon 2013 Battle Underground Programming 2 Writeup</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-03T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>引き続きnullcon 2013 Battle Undergroundの自分の担当した問題のwriteupを書いて行きたいと思います。</p>
+
+<p>以下問題文</p>
+
+<blockquote><p>Connect to nullcon-e1.no-ip.org:2000</p></blockquote>
+
+<p>意訳するまでもないですね。すぐに対象アドレスにブラウザでアクセスしてみます。（大会終了と同時に対象アドレスは無効になってます。）</p>
+
+<p>ごめんなさい、スクリーンショットを撮っていなかったので、完全に覚えているわけではないのですが、大体こんな感じだった（オリジナルは英語です）</p>
+
+<blockquote><p>マトリックスへようこそ</p>
+
+<p>===================</p>
+
+<p>認証のため、100に質問に答えてください。</p>
+
+<p>Q 001/100 三乗して最後が888になる数の、３番目の数字はなんでしょう？</p>
+
+<p>認証失敗です</p></blockquote>
+
+<p>アクセスしたと同時に、これがブラウザに表示されます。意味がわかりませんでした（笑）とりあえず計算します。最初に書いたスクリプトがこれ。</p>
+
+<pre class="lang:default decode:true">n = 2;
+cnt = 0
+while True:
+    ans = n*n*n
+    ansStr = str(ans)
+    if ansStr[-3:] == "888":
+        cnt+=1
+    if cnt == 3:
+        break
+    n+=1
+
+print n</pre>
+
+
+<p>これで出力されるのが692</p>
+
+<p>三乗すると、331373888で確かに末尾が888になってます！おっしゃ！これラクショーじゃん！</p>
+
+<p>そう思ってた時期が私にもありました。</p>
+
+<p>ブラウザに表示されたものには特に解答するフォームもないし、これでフラグゲット！！意気揚々とシステムのフラグ解答欄に入力し、コミット！！</p>
+
+<p>しかし、無論不正解・・・・orz</p>
+
+<p>そりゃそうですよね・・・こんな簡単なのにProgramming1より高得点とかありえないですよね・・・。</p>
+
+<p>しかもブラウザにアクセスする度に最後の3桁&#8221;888&#8243;と&#8221;３番目&#8221;っていうところはランダムで変わって、&#8221;777&#8243;とか&#8221;999&#8243;になったり、8番目とか5番目になったり、じゃーこの問題どうやって解くんじゃーーーーーーーー！！！！</p>
+
+<p>「この問題意味わかんなすぎワロタｗｗｗｗｗ」ってなってたところにリーダからアドバイス</p>
+
+<p>「connectしてrecvするだけ」</p>
+
+<p>その発想はなかった・・・・・orz</p>
+
+<p>ていうかむしろブラウザで表示すること以外に頭になかった自分に絶望した（笑）</p>
+
+<p>というわけで、その方向でスクリプト書くことに。</p>
+
+<p>それが以下です。</p>
+
+<pre class="lang:python decode:true">#! /usr/bin/python
+# -*- coding:utf-8 -*-
+import socket
+
+def func(text, cnt):
+    rows = text.splitlines()
+    word = rows[-1].split(' ');
+    num = word[5].replace('th', '').replace('st', '').replace('nd', '').replace('rd', '')
+    dig = word[-2].replace('?', '')
+    n = 2;
+    cnt = 0
+    while True:
+        ans = n*n*n
+        ansStr = str(ans)
+        if ansStr[-3:] == dig:
+            cnt+=1
+        if cnt == int(num):
+            break
+        n+=1
+    return n
+
+host = 'nullcon-e1.no-ip.org'
+port = 2000
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((host,port))
+
+rec = client.recv(4096)
+print rec
+cnt = 1
+while True:
+    if cnt == 1 :
+        rec = client.recv(4096)
+    else:
+        rec = client.recv(4096)
+        rec += client.recv(4096)
+    print rec
+
+    ans = func(str(rec), cnt)
+    client.send(str(ans)+"n")
+    cnt+=1
+
+client.close()</pre>
+
+
+<p>socket通信でコネクションを確立して、問題をrecvして、さきほどのプログラムを関数化したものに渡す。関数内では、問題文中のランダムで変わる箇所を抽出して、整数へ変換、それを計算処理内に当てはめて、あとは算出されたものを、sendする。</p>
+
+<p>仮に問題100問連続正解した後に、どんな出力が来るかはわからなかったので、とりあえず無限ループで様子を見ることに。</p>
+
+<p>良し！これでいける！！と思って実行。</p>
+
+<p>おぉーーーーーーーーー！！順番に問題を解いてる解いてる！！！</p>
+
+<p>次々と問題が出され、それを解答していく！しかし、8問目が出題されるたところで</p>
+
+<p>問題文</p>
+
+<blockquote><p>三乗すると最後が&#8221;888&#8243;になる250万番の数字はなんでしょう？（オリジナルは英語です）</p></blockquote>
+
+<p>ちょｗｗｗｗｗｗｗ桁数半端じゃなくなってるｗｗｗｗｗｗｗ</p>
+
+<p>ここで先ほどのスクリプトが沈黙。あまりの数字のでかさに、計算にとてつもなく時間がかかってる模様・・・・。おぉおおお・・・・・。まじかよ・・・・。8問目でこれだと100問目どうなっちゃうの・・・・。</p>
+
+<p>様子見で放置していましたが、30分くらい放置しても進展なし（笑）こりゃ、大会中に100問解答は無理そうですね。</p>
+
+<p>何かしら効率のいいアルゴリズムがあるはず・・・。ということで模索。一番最初のスクリプトをちょこっと改造して規則性を探します。</p>
+
+<pre class="lang:default decode:true">last = ["777","888","999"]
+for i in range(len(last)):
+    n = 2;
+    cnt = 0
+    print last[i]
+    print '----------------'
+    print ''
+    while cnt != 10:    
+        ans = n*n*n
+        ansStr = str(ans)
+        if ansStr[-3:] == last[i]:
+            print n
+            cnt+=1
+        n+=1</pre>
+
+
+<p>これで三乗したら末尾が&#8221;777&#8243;,&#8221;888&#8243;,&#8221;999&#8243;になる数字をそれぞれ10個出してみます。</p>
+
+<p>以下が結果。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-16.00.16.png" rel="image_group"><img class="alignnone size-large wp-image-217" alt="Screen Shot 2013-03-03 at 16.00.16" src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/03/Screen-Shot-2013-03-03-at-16.00.16.png?resize=260%2C1024" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>それぞれ規則性がありますね。</p>
+
+<p>&#8220;777&#8243;は (繰り返し回数-1) + 753</p>
+
+<p>&#8220;888&#8243;は(繰り返し回数%4 -1) + (&#8220;192&#8243;, &#8220;442&#8243;, &#8220;692&#8243;, &#8220;942&#8243;を繰り返し)</p>
+
+<p>&#8220;999&#8243;は(繰り返し回数-1) + 999</p>
+
+<p>この規則性を利用して、計算せずに文字列の組み合せのみで計算結果を得ることができます。これなら桁数が莫大になっても、計算回数は一回で済みます。</p>
+
+<p>スクリプトを書いて実行したのですが、実はランダムで出る数字に&#8221;999&#8243;, &#8220;333&#8243;, &#8220;111&#8243;も登場することが判明したので、それも追加して改めて実行したのが、こちら</p>
+
+<pre class="lang:default decode:true">#! /usr/bin/python
+# -*- coding:utf-8 -*-
+import socket
+
+def func(text, cnt):
+    rows = text.splitlines()
+    word = rows[-1].split(' ');
+    num = word[5].replace('th', '').replace('st', '').replace('nd', '').replace('rd', '')
+    dig = word[-2].replace('?', '')
+    count = int(num)
+
+    if dig == "777":
+        return int(str(count-1) + "753")
+
+    elif dig == "888":
+        seven = [192, 442, 692, 942]
+        no1 = ( count % 4 ) - 1
+        no2 = ( count-1 ) / 4
+        return int(str(no2) + str(seven[no1]))
+
+    elif dig == "999":
+        return int(str(count-1) + "999")
+    elif dig == "333":
+        return int(str(count-1) + "477")
+    elif dig == "111":
+        return int(str(count-1) + "471")
+
+host = 'nullcon-e1.no-ip.org'
+port = 2000
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((host,port))
+
+rec = client.recv(4096)
+print rec
+cnt = 1
+while True:
+    if cnt == 1 :
+        rec = client.recv(4096)
+    else:
+        rec = client.recv(4096)
+        rec += client.recv(4096)
+    print rec
+
+    ans = func(str(rec), cnt)
+    print ans
+    client.send(str(ans)+"n")
+    cnt+=1
+
+client.close()</pre>
+
+
+<p>これを実行したところ、サクサクと100問目まで自動的に正解していきました、やったね！！！100問目まで正解したところ出力されたのがこちら</p>
+
+<pre class="lang:default decode:true">The Flag is the 265613988875874769338781322035779626829233452653394495974574961739092490901302182994384699044001th positive integer whose cube ends with the digits 888</pre>
+
+
+<p>ここで、今までrecvしていた問題文と、形式が変わってしまったのでエラー。</p>
+
+<p>最後この文字列に関数を合わせて</p>
+
+<pre class="lang:default decode:true">def func(text, cnt):
+    rows = text.splitlines()
+    word = rows[-1].split(' ');
+    num = word[4].replace('th', '').replace('st', '').replace('nd', '').replace('rd', '')
+    dig = word[-1].replace('?', '')
+    count = int(num)
+
+    if dig == "777":
+        return int(str(count-1) + "753")
+
+    elif dig == "888":
+        seven = [192, 442, 692, 942]
+        no1 = ( count % 4 ) - 1
+        no2 = ( count-1 ) / 4
+        return int(str(no2) + str(seven[no1]))
+
+    elif dig == "999":
+        return int(str(count-1) + "999")
+    elif dig == "333":
+        return int(str(count-1) + "477")
+    elif dig == "111":
+        return int(str(count-1) + "471")
+
+print func("The Flag is the 265613988875874769338781322035779626829233452653394495974574961739092490901302182994384699044001th positive integer whose cube ends with the digits 888", 0)
+exit()</pre>
+
+
+<p>出力されたのがこちら</p>
+
+<p>66403497218968692334695330508944906707308363163348623993643740434773122725325545748596174761000192</p>
+
+<p>これで正解でした！規則性に早く気をつけてれば、もっともっと早かったかなあ・・・。あとはsocket通信で問題を解くところに直感的に気がつくべきでした・・・頭が固いですね・・・・でもこの問題最高に気持ちよかったｗｗ</p>
+
+<p>&nbsp;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/03/03/wordpress18/">Nullcon 2013 Battle Underground Programming 1 Writeup</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-03T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>3月2日に開催されたnullcon2013 Battle Undergroundにyokaromonのみんなで出場しました。</p>
+
+<p>各自担当とかは決めていませんでしたが、僕はなんとなくProgrammingの問題ばっかりやってました。CTFでこの手の問題出るのって珍しい気がします。</p>
+
+<p>まずは問題文</p>
+
+<blockquote><p>This is a very easy problem. You just need to find the number of primes which can be generated using the polynomial n<sup>2-n+41 and is lesser than 1 trillion (1,000,000,000,000). Flag is the MD5 sum of the answer.</sup></p></blockquote>
+
+<p>で、英語が読めなすぎて今回チームでネタにされました・・・・。最終的にこんな感じっぽい意訳</p>
+
+<blockquote><p>非常に簡単な問題です。多項式n<sup>2</sup>-n+41を使って生成される1,00,000,000,000以下の素数の数を答えるだけです。フラグは答えのMD5チェックサムです。</p></blockquote>
+
+<p>今更ですが、改めて読むと、普通にこう読めますね・・・。最初&#8221; Flag is the MD5 sum of the answer &#8220;を答えの合計のMD5と勘違いしてしまって、ずっと一兆以下の整数の合計のMD５ハッシュ値を答えとして提出していました・・・。お恥ずかしい・・・。</p>
+
+<p>というわけで以下が書いたスクリプトです。勘違いして書いた合計を算出する処理も残ってますが、まぁいいでしょう・・・。</p>
+
+<pre class="lang:python decode:true">#! usr/bin/python
+# -*- coding:utf-8 -*-
+
+import md5
+def is_prime(q):
+    q = abs(q)
+    if q == 2: return True
+    if q &lt; 2 or q&1 == 0: return False
+    return pow(2, q-1, q) == 1
+
+maxNum = 1000000000000
+n = 1
+ans = 0
+ret = 0
+prime = 0
+while ans &lt;= maxNum:
+    ans = n*n-n+41
+    n += 1
+    if is_prime(ans) and ans &lt;= maxNum:
+        prime += 1
+        ret += ans
+
+print ret
+print prime</pre>
+
+
+<p>&nbsp;</p>
+
+<p>忘れないように書くと、&#8221; n<sup>2</sup>-n+41 &#8221; という多項式は、数学者オイラーさんが発見した素数生成式で、1から39までの整数をnとすると、求められるのは全て整数です！ただ、完璧な素数生成式というのは現代では導かれておらず、40以上は、素数でない数も導かれることがあります。</p>
+
+<p>処理の内容としては、1から順番に前検索して、求められた整数が素数かどうかを判定する、これの繰り返しを1,00,000,000,000まで行います。</p>
+
+<p>最初は、それぞれの答えをretに足して最終的に出力していましたが、答えの合計ではなく、導かれる素数の数なので、primeを素数判定がTrueのときにインクリメントして、最後に出力です。</p>
+
+<p>これで導かれる数字が、&#8221; 261081 &#8221;</p>
+
+<p>それのMD5したもの&#8221; e1d9e8bf5c39c6778f8ceed19bfad0a3 &#8221;</p>
+
+<p>これで正解でした。問題さえ読めれば（笑）すぐに解ける問題ですね・・・。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/7/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/5/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

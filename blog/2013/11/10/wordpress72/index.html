@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>シェルでコマンド実行するときに使う記号の用法まとめ - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="めっちゃくちゃ基礎的な内容。 xv6のソースコード読み進めているうちに、 自分がちゃんと理解して使えていない箇所があったので 軽く覚書しておきます。 1.コマンドラインのキー操作 いきなりブログの本題から少し離れちゃいますが、長いコマンド 打つの面倒で、履歴から探すんだけど、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/11/10/wordpress72">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">シェルでコマンド実行するときに使う記号の用法まとめ</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-10T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>めっちゃくちゃ基礎的な内容。</p>
+
+<p>xv6のソースコード読み進めているうちに、 自分がちゃんと理解して使えていない箇所があったので 軽く覚書しておきます。</p>
+
+<h2>1.コマンドラインのキー操作</h2>
+
+<p>いきなりブログの本題から少し離れちゃいますが、長いコマンド 打つの面倒で、履歴から探すんだけど、末尾だけ文字を変える必要がある、 なんてことよくありますよね。</p>
+
+<p>そういうときに便利なカーソル移動なんかを付随的に見つけたので 書いておきます。</p>
+
+<ol>
+<li>Ctrl + F(カーソルを一文字右へ)</li>
+<li>Ctrl + B(カーソルを一文字左へ)</li>
+<li>Ctrl + D(カーソルの文字を削除)</li>
+<li>Ctrl + A(カーソルを行頭へ)</li>
+<li>Ctrl + E(カーソルを行末へ)</li>
+<li>Ctrl + K(カーソル位置から行末までを削除)</li>
+<li>Alt + F(カーソルから１単語あとに移動)</li>
+<li>Alt + B(カーソルから１単語前に移動)</li>
+<li>Alt + D(カーソルから１単語を削除)</li>
+</ol>
+
+
+<p>vimキーバインドと動作もコマンドも似てるけど、若干ニュアンス違う・・・。 hjklで動けたらいいねぇ。</p>
+
+<p>と思ったらできました。<a href="http://builder.japan.zdnet.com/os-admin/20372652/">参考リンク</a></p>
+
+<p>ただ、僕の現状の設定だとインサートモードかどうかの判別が カーソルでできないから、正直不便かも・・・というわけでもどしました・・・。</p>
+
+<h2>2.リダイレクション</h2>
+
+<p>標準入力、標準出力、標準エラー出力をそれぞれ任意のファイル等に指定してあげる 方法。慣例的に標準入力は0、標準出力は1,標準エラー出力は2という数字が割り当てられて いる、と知らない場合は覚えておくと便利かもしれません。</p>
+
+<pre>>   標準出力をファイルに設定する（上書き）
+>>  標準出力をファイルに設定する（ファイルの最後に追記）
+&lt; 標準入力をファイルに設定する
+2>  標準エラー出力をファイルに設定する（上書き）
+2>> 標準エラー出力をファイルに設定する（追記）
+&#038;>  標準出力と標準エラー出力を同じファイルに設定する
+</pre>
+
+
+<h2>3.パイプ</h2>
+
+<p>あるコマンドの標準出力と、他のコマンドの標準入力を接続してくれる機能。 あるコマンドの結果を、更に別のコマンドに渡したいときなんかに便利です。</p>
+
+<p>ex) $ dmesg | head</p>
+
+<p>これでブート時のメッセージの最初の10行だけを出力してくれます。 コマンドラインからバイナリを簡単に確認したいときに</p>
+
+<p>$ hexdump -C a.out | less</p>
+
+<p>とかよくやりますね。</p>
+
+<p>標準入力からデータを受け取って、整形して標準出力に出してくれる フィルタコマンドの代表的なものを挙げます。これをパイプの間で利用すれば、 さらに柔軟に出力を整形できるかもしれません。</p>
+
+<pre>tr  文字列置換
+uniq    重複行の排除
+wc      文字数や行数のカウント
+head    ファイルの先頭部分の表示
+tail    ファイルの末尾部分の表示
+cut     各行から選択した範囲を抜き出して出力
+sort    ソートする
+od      ファイルの内容を８進数や１６進数で表示
+cat     ファイルの内容をそのまま表示
+</pre>
+
+
+<p>コマンドとしてどう記述すると使えるか、ということを覚えるだけでも とても便利なんですが、動作に関してはxv6に関するブログで 紹介できればと思います。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-10T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/11/10/wordpress72/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/11/10/wordpress72/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/10/28/wordpress71/" title="Previous Post: xv6のソースコードとテキストを読んでみる 0">&laquo; xv6のソースコードとテキストを読んでみる 0</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/11/10/wordpress73/" title="Next Post: xv6のソースコードとテキストを読んでみる1_chapter0_1">xv6のソースコードとテキストを読んでみる1_chapter0_1 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

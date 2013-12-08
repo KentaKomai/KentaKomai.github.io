@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>OpenCVの練習で笑い男っぽいやつを作ってみた - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="学校の制作でOpenCVを利用する必要があったので 誰でも思いつきそうな、笑い男のまね事が出来るものを作ってみました。 OpenCVはおろか、画像処理のいろはも知らない状態だったので、 ぐぐってぐぐって、様々な方のソースコードを参考にしたり、つぎはぎしたりで、 僕が書いたというよりは、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/10/11/wordpress69">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">OpenCVの練習で笑い男っぽいやつを作ってみた</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-11T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>学校の制作でOpenCVを利用する必要があったので 誰でも思いつきそうな、笑い男のまね事が出来るものを作ってみました。</p>
+
+<p>OpenCVはおろか、画像処理のいろはも知らない状態だったので、 ぐぐってぐぐって、様々な方のソースコードを参考にしたり、つぎはぎしたりで、 僕が書いたというよりは、ほとんどパッチワーク状態です（笑）</p>
+
+<p>ですので、技術的な解説がほしい、という方は 期待に添えないと思います。あくまでネタとして こういうのやりたかった！！って人の手間が少しでもなくなれば、程度の内容です。</p>
+
+<p>それでもとりあえず動いて嬉しかった。 windowsのフォームアプリの勉強にもなったし、結構満足しました。</p>
+
+<h3>動作の概要</h3>
+
+<ol>
+<li>アプリケーションが起動する</li>
+<li>USBカメラから一枚画像を取得</li>
+<li>取得した一枚画像に顔と認識される領域が存在するかチェック</li>
+<li>顔と認識された領域に、１ピクセルずつ笑い男の画像を上書き</li>
+<li>windowに出力</li>
+<li>2-5の繰り返し</li>
+</ol>
+
+
+<p>これだけです。笑い男の画像を差し替えれば ネタとしては汎用性が非常に高いプログラムだと思います（笑）</p>
+
+<h3>僕の動作環境</h3>
+
+<ul>
+<li>OpenCV 2.4.5</li>
+<li>OpenCVSharp (OpenCV2.4.5用)</li>
+<li>.NET framework 4.0</li>
+<li>USBカメラ 1つ(僕はMacbookProのディスプレイに最初からついてるやつ)</li>
+<li>ネットから拾った適当な笑い男のpng画像</li>
+</ul>
+
+
+<h3>実行したときの画像</h3>
+
+<p><a href="http://i2.wp.com/komaken.me/blog/wp-content/uploads/2013/10/photo.jpeg" rel="image_group"><img src="http://i2.wp.com/komaken.me/blog/wp-content/uploads/2013/10/photo.jpeg?fit=639%2C480" alt="photo" class="alignnone size-full wp-image-900" data-recalc-dims="1" /></a></p>
+
+<p>複数人でも一応認識するけど精度は微妙 横顔とかだと認識しない。</p>
+
+<p>ソースコード内でインポートしているXMLファイルをいじったり増やしたり しないとダメかもしれません。</p>
+
+<h3>課題</h3>
+
+<p>png画像だから簡単に透過できるのかなー、と思いきや、なぜかうまく動作しなかったのと、 背景真っ黒にして、黒(#000000)を描画しないように変更したら、 すげー簡単だったので、妥協しました（笑）</p>
+
+<p>複雑な画像だと、こうはいかないので注意です。</p>
+
+<p>あと、攻殻機動隊に登場する笑い男は画像回転してた気がする（文字のところだけ） それ作るには多分、画像から作りなおさないとだめかも。</p>
+
+<h3>ソースコード（笑</h3>
+
+<pre>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
+using OpenCvSharp;
+
+namespace facematch_sample
+{
+    static class Program
+    {
+        static IplImage FaceDe(IplImage srcImg)
+        {
+            CvColor[] colors = new CvColor[]{
+                new CvColor(0,0,255),
+                new CvColor(0,128,255),
+                new CvColor(0,255,255),
+                new CvColor(0,255,0),
+                new CvColor(255,128,0),
+                new CvColor(255,255,0),
+                new CvColor(255,0,0),
+                new CvColor(255,0,255),
+            };
+            const double Scale = 1.04;
+            const double ScaleFactor = 1.139;
+            const int MinNeighbors = 2;
+            //CvArr waraiotoko = Cv.LoadImage("j");
+            IplImage warai = Cv.LoadImage("画像のパスをここに");
+
+            using (IplImage smallImg = new IplImage(new CvSize(Cv.Round(srcImg.Width / Scale), Cv.Round(srcImg.Height / Scale)), BitDepth.U8, 1))
+            {
+                using (IplImage gray = new IplImage(srcImg.Size, BitDepth.U8, 1))
+                {
+                    Cv.CvtColor(srcImg, gray, ColorConversion.BgrToGray);
+                    Cv.Resize(gray, smallImg, Interpolation.Linear);
+                    Cv.EqualizeHist(smallImg, smallImg);
+                }
+
+                using (CvHaarClassifierCascade cascade = CvHaarClassifierCascade.FromFile("顔認証用のXMLファイルのパスをここに"))
+                using (CvMemStorage storage = new CvMemStorage())
+                {
+                    storage.Clear();
+
+                    // 顔の検出
+                    CvSeq&lt;cvavgcomp> faces = Cv.HaarDetectObjects(smallImg, cascade, storage, ScaleFactor, MinNeighbors, 0, new CvSize(30, 30));
+
+                    for (int d = 0; d &lt; faces.Total; d++)
+                    {
+                        CvRect r = faces[d].Value.Rect;
+                        CvSize size = new CvSize(r.Width + 30, r.Height + 30);
+                        using (IplImage img_laugh_resized = new IplImage(size, warai.Depth, warai.NChannels))
+                        {
+                            Cv.Resize(warai, img_laugh_resized, Interpolation.NearestNeighbor);
+
+                            int i_max = (((r.X + img_laugh_resized.Width) > srcImg.Width) ? srcImg.Width - r.X : img_laugh_resized.Width);
+                            int j_max = (((r.Y + img_laugh_resized.Height) > srcImg.Height) ? srcImg.Height - r.Y : img_laugh_resized.Height);
+
+                            for (int j = 0; j &lt; img_laugh_resized.Width; ++j)
+                            {
+                                for (int i = 0; i &lt; img_laugh_resized.Height; ++i)
+                                {
+                                    CvColor color = img_laugh_resized[i, j];
+                                    if (img_laugh_resized[i, j].Val1 != 0) srcImg[r.Y + i, r.X + j] = color;//img_laugh_resized[i, j];
+                                }
+                            }
+                        }
+                    }
+                    return srcImg;
+                }
+            }
+        }
+
+        [STAThread]
+        static void Main()
+        {
+            using (CvCapture cap = CvCapture.FromCamera(0)) // device type + camera index
+            using (CvWindow w = new CvWindow("sample"))
+            {
+                cap.Fps = 60;
+                while (CvWindow.WaitKey(5) &lt; 0)
+                {
+                    IplImage img = new IplImage();
+                    img = cap.QueryFrame();
+                    w.Image = FaceDe(img);
+                }
+            }
+        }
+    }
+}
+</pre>
+
+
+<p>上記にあるとおり、ほとんどつぎはぎです。後述の参考リンクを 見たほうが勉強になると思います。</p>
+
+<h3>参考リンク</h3>
+
+<ul>
+<li><a href="http://moyashiki.hateblo.jp/entry/20101105/1288944541">OpenCVSharpを使ってカメラから顔認識モザイク (大部分がこちらの方のコードの流用です。)</a></li>
+<li><a href="http://ledmyway.seesaa.net/article/181382754.html">笑い男パーツ</a></li>
+<li><a href="http://vad.seesaa.net/article/213952129.html">似てるようなのたくさん</a></li>
+<li><a href="http://opencv.org/">OpenCV公式</a></li>
+<li><a href="http://code.google.com/p/opencvsharp/">OpenCvSharp公式</a></li>
+<li><a href="http://schima.hatenablog.com/entries/2009/06/16">OpenCvSharp 開発者の方のブログ</a></li>
+</ul>
+
+
+<h3>最後に</h3>
+
+<p>秋葉原電気街で、どこかのPCパーツ屋さんが、同じような サンプルをデモで動かしていて、自分の顔が海物語のマリンちゃんに なってたなー、っていうのをどうでもいいけど思い出しました。 </cvavgcomp></pre></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-11T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/10/11/wordpress69/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/10/11/wordpress69/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/10/10/wordpress68/" title="Previous Post: Google Chrome Developer Toolsの見た目を変える。">&laquo; Google Chrome Developer Toolsの見た目を変える。</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/10/17/wordpress70/" title="Next Post: C#のLINQでJSONを編集してみる">C#のLINQでJSONを編集してみる &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

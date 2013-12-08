@@ -1,0 +1,416 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>UPXによるパックとアンパックとか - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="バイナリやリバースエンジニアリングの入門書には 必ずといっていいほど取り上げられているパッカーUPXに関しての 使い方やアンパックの方法なんかをまとめてみます。 1.参考リンク UPX 公式
+UPX -wikipedia-
+UPX(1) Linux man page 2.概要( &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/10/02/wordpress67">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">UPXによるパックとアンパックとか</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-02T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>バイナリやリバースエンジニアリングの入門書には 必ずといっていいほど取り上げられているパッカーUPXに関しての 使い方やアンパックの方法なんかをまとめてみます。</p>
+
+<h3>1.参考リンク</h3>
+
+<ul>
+<li><a href="http://upx.sourceforge.net/">UPX 公式</a></li>
+<li><a href="http://ja.wikipedia.org/wiki/UPX">UPX -wikipedia-</a></li>
+<li><a href="http://linux.die.net/man/1/upx">UPX(1) Linux man page</a></li>
+</ul>
+
+
+<h3>2.概要(wikipediaより引用)</h3>
+
+<p>※より詳しい内容はwikipediaを参照してください</p>
+
+<blockquote><p>UPX (ultimate packer for executables)は様々なOSのファイル形式に対応した FLOSSの実行ファイル圧縮ソフトウェアである。</p></blockquote>
+
+<ul>
+<li>圧縮にはUCLと呼ばれるデータ圧縮アルゴリズムを用いてる</li>
+<li>UCLは解凍用のコードがわずか数百バイトで実装できるようなシンプルな設計となっている。UCLは解凍のための追加のメモリ割り当てを要求しない。このことはUPXで圧縮された実行ファイルが余計なメモリを要求しないことを意味し、明確な優位点となっている。</li>
+<li>UPX(2.90 beta以上)では多くのプラットフォームでLZMAが利用可能になっている。</li>
+</ul>
+
+
+<h4>サポートされているフォーマット</h4>
+
+<ul>
+<li>ARM/PE</li>
+<li>Atari/tos</li>
+<li>*BSD/i386</li>
+<li>djgpp2/COFF</li>
+<li>dos/com</li>
+<li>dos/exe</li>
+<li>dos/sys</li>
+<li>Linux/i386 a.out</li>
+<li>i386、x86-64、ARM、PowerPC上のLinux/ELF</li>
+<li>i386、x86-64、ARM上のLinux/kernel</li>
+<li>Mach-O/ppc32、Mach-O/i386 (Google Goを用いて生成されたものを除く)</li>
+<li>rtm32/PE</li>
+<li>tmt/adam</li>
+<li>PlayStation1/exe</li>
+<li>Watcom/le</li>
+<li>Win32/PE (.NET Frameworkを用いて作られたファイルを除く)</li>
+</ul>
+
+
+<p>プレステの実行ファイルもかよ！！！</p>
+
+<h4>※補足リンク</h4>
+
+<ul>
+<li><a href="http://ja.wikipedia.org/wiki/%E3%83%87%E3%83%BC%E3%82%BF%E5%9C%A7%E7%B8%AE">データ圧縮 -wikipedia-</a></li>
+<li><a href="http://ja.wikipedia.org/wiki/LZMA">LZMA -wikipedia-</a></li>
+</ul>
+
+
+<h3>3.実行ファイルをパックしてみる</h3>
+
+<p><a href="http://linux.die.net/man/1/upx">UPX(1) Linux man page</a>より引用</p>
+
+<blockquote><p>Compress: This is the default operation, eg. upx yourfile.exe will compress the file specified on the command line.</p></blockquote>
+
+<p>簡単ですね</p>
+
+<pre>$ upx [filepath]
+</pre>
+
+
+<p>upxコマンド(winならupx.exe)の引数に圧縮したいファイルパスを指定して実行するだけ</p>
+
+<p>サンプルコードはこちら。めっちゃ単純。</p>
+
+<p>&lt;</p>
+
+<p>pre></p>
+
+<h1>include &lt;stdio.h></h1>
+
+<p>int main(int argc, char *argv[]){</p>
+
+<pre><code>int i = 0;
+int a = 1;
+
+for(i=0; i&lt;30; i++){
+    printf("index:%d\n", i);
+}
+
+if(a){
+    printf("true");
+}else{
+    printf("false");
+}
+</code></pre>
+
+<p>} </pre></p>
+
+<p>これを普通にコンパイルして、ファイルサイズを見てみます。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/compile_before_pack.png" rel="image_group"><img src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/compile_before_pack.png?resize=639%2C186" alt="compile_before_pack" class="alignnone size-full wp-image-884" data-recalc-dims="1" /></a></p>
+
+<p>約48KBです。 ollydbgでアセンブリコードも見てみます。(実行ファイル全体じゃなくて、 ソースコードに対応する箇所だけ)</p>
+
+<p>ソースコードにそのまんま対応しているのがわかると思います。</p>
+
+<pre>0040138C  /$ 55             PUSH EBP
+0040138D  |. 89E5           MOV EBP,ESP
+0040138F  |. 83E4 F0        AND ESP,FFFFFFF0
+00401392  |. 83EC 20        SUB ESP,20
+00401395  |. E8 7A050000    CALL upx_samp.00401914
+0040139A  |. C74424 1C 0000>MOV DWORD PTR SS:[ESP+1C],0
+004013A2  |. C74424 18 0100>MOV DWORD PTR SS:[ESP+18],1
+004013AA  |. C74424 1C 0000>MOV DWORD PTR SS:[ESP+1C],0
+004013B2  |. EB 18          JMP SHORT upx_samp.004013CC
+004013B4  |> 8B4424 1C      /MOV EAX,DWORD PTR SS:[ESP+1C]           ; |
+004013B8  |. 894424 04      |MOV DWORD PTR SS:[ESP+4],EAX            ; |
+004013BC  |. C70424 6430400>|MOV DWORD PTR SS:[ESP],upx_samp.0040306>; |ASCII "index:%d"
+004013C3  |. E8 84070000    |CALL &lt;JMP.&#038;msvcrt.printf>               ; \printf
+004013C8  |. FF4424 1C      |INC DWORD PTR SS:[ESP+1C]
+004013CC  |> 837C24 1C 1D    CMP DWORD PTR SS:[ESP+1C],1D            ; |
+004013D1  |.^7E E1          \JLE SHORT upx_samp.004013B4             ; |
+004013D3  |. 837C24 18 00   CMP DWORD PTR SS:[ESP+18],0              ; |
+004013D8  |. 74 0E          JE SHORT upx_samp.004013E8               ; |
+004013DA  |. C70424 6E30400>MOV DWORD PTR SS:[ESP],upx_samp.0040306E ; |ASCII "true"
+004013E1  |. E8 66070000    CALL &lt;JMP.&#038;msvcrt.printf>                ; \printf
+004013E6  |. EB 0C          JMP SHORT upx_samp.004013F4
+004013E8  |> C70424 7330400>MOV DWORD PTR SS:[ESP],upx_samp.00403073 ; |ASCII "false"
+004013EF  |. E8 58070000    CALL &lt;JMP.&#038;msvcrt.printf>                ; \printf
+004013F4  |> C9             LEAVE
+004013F5  \. C3             RETN
+</pre>
+
+
+<p>IDAで実行ファイルを解析してみた図がこちら。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/before_pack_ida.png" rel="image_group"><img src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/before_pack_ida.png?resize=955%2C698" alt="before_pack_ida" class="alignnone size-large wp-image-885" data-recalc-dims="1" /></a></p>
+
+<p>こちらもパッと見でちゃんとソースコードが対応しているのがわかります。 問題なさそうなので、こちらをパックしてみます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/pack_exe.png" rel="image_group"><img src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/pack_exe.png?resize=644%2C211" alt="pack_exe" class="alignnone size-full wp-image-886" data-recalc-dims="1" /></a></p>
+
+<p>ファイルサイズが48kBから約29kBまで圧縮されました。わお。</p>
+
+<p>まずはollydbgで見てみます、が。 さっきのような関数呼び出しや、文字列が見当たらない・・・・。</p>
+
+<p>IDAで見てみると、パック前とくらべて半端じゃなく複雑になったことが わかると思います。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/packed_exe.png" rel="image_group"><img src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/packed_exe.png?resize=955%2C706" alt="packed_exe" class="alignnone size-large wp-image-887" data-recalc-dims="1" /></a></p>
+
+<p>UPXはupx.exe自体でアンパックもサポートしている上に、アルゴリズムも 単純で手動アンパックも比較的容易ですが、アセンブリコードやバイナリだけを 見れば、圧縮・そして難読化されていることが確認できると思います。</p>
+
+<h3>4.実行ファイルをアンパックしてみる</h3>
+
+<p><a href="http://linux.die.net/man/1/upx">UPX(1) Linux man page</a>より引用</p>
+
+<blockquote><p>Decompress: All UPX supported file formats can be unpacked using the -d switch, eg. upx -d yourfile.exe will uncompress the file you&rsquo;ve just compressed.</p></blockquote>
+
+<p>こちらも簡単。-dオプションをつけて、UPXでパックされてるファイルの パスを渡すだけ。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/unpacke_exe.png" rel="image_group"><img src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/unpacke_exe.png?resize=644%2C208" alt="unpacke_exe" class="alignnone size-full wp-image-888" data-recalc-dims="1" /></a></p>
+
+<p>ファイルサイズが元通りになってますね。 スクリーンショット撮り忘れちゃいましたが、バイナリもIDAやollydbgで ちゃんと読めるようになってます。</p>
+
+<h3>5.upx.exeなしで手動アンパックしてみる</h3>
+
+<p>手順としては以下の通りです。詳細を書こうとおもったんだけど 参考にしてた本、何冊かに載ってた通りにしても再現できなかったので、ざっくり手順だけ</p>
+
+<ol>
+<li>パックされた実行ファイルをollydbgにアタッチする</li>
+<li>PUSHAD命令に対応するPOPAD命令を見つけてそこにブレークポイント仕掛ける</li>
+<li>POPAD命令でブレークしたら、そこからステップ実行を進めて、CALL命令見つける。</li>
+<li>CALL命令で移動した先で、プログラムを一時停止</li>
+<li>ollydump（Method2:Search DLL &amp; API name string in dumped file）でダンプ</li>
+</ol>
+
+
+<p>これだけ。4のCALL命令は僕の環境だといくつかあって、CALL命令のジャンプ先で ollydumpすれば、どれかしら正解で普通に実行できます。</p>
+
+<p>ちゃーんと読めば、ピンポイントでダンプできると思うんですが、環境によって違うので うまく書けない・・・。</p>
+
+<p>説明できることがあれば、改めてまとめたいと思います。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-02T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/10/02/wordpress67/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/10/02/wordpress67/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/10/01/wordpress66/" title="Previous Post: たのしいバイナリの歩き方、読みました">&laquo; たのしいバイナリの歩き方、読みました</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/10/10/wordpress68/" title="Next Post: Google Chrome Developer Toolsの見た目を変える。">Google Chrome Developer Toolsの見た目を変える。 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

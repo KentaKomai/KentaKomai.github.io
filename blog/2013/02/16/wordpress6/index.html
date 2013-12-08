@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>CodeGate2012 Forensics400を解いてみる - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="前回に引き続きCodeGate2012の復習とか ※注意 他の方のwriteupを参考に解いています。（許可とってないのでリンクは貼りませんが、ぐぐってすぐ出てくる海外の方のブログを色々参考にさせていただいています。）
+できれば全問触りたいのでwriteupを見ることを前提で解き初めてます。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/02/16/wordpress6">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">CodeGate2012 Forensics400を解いてみる</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-16T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>前回に引き続きCodeGate2012の復習とか</p>
+
+<p>※注意</p>
+
+<ul>
+<li>他の方のwriteupを参考に解いています。（許可とってないのでリンクは貼りませんが、ぐぐってすぐ出てくる海外の方のブログを色々参考にさせていただいています。）</li>
+<li>できれば全問触りたいのでwriteupを見ることを前提で解き初めてます。</li>
+</ul>
+
+
+<p>問題文</p>
+
+<blockquote><p>In Energy corporate X which is located in Seoul, APT(Advanced Persistent Threat) was occurred.<br/>
+For 6 months, Attacker A has stolen critical information with an elaborate attack.<br/>
+Attacker A exerted great effort to remove his all traces such as malicious file, prefetch, registry and event logs for the period of attacking, so it was hard for Energy Corporate X to find an attacking path. However IU who is Forensic expert can find the traces of the malicious files Attacker A used by analyzing MFT(Master File Table).<br/>
+What time malicious file was created? The time is based on Korea Standard Time(UTC +09:00)<br/>
+Answer: YYYY-MM-DDThh:mm:ss.sTZD<br/>
+(TZD : +hh:mm or -hh:mm). Calculate down to seven decimal points.</p></blockquote>
+
+<p>ざっくり意訳（今回難しいな・・・）</p>
+
+<blockquote><p>ソウルにある企業Xに、重大な脅威が発生しました。６ヶ月もの間、攻撃者Aは高度な手法を用いて重要な情報を盗みました。攻撃者Aは攻撃が終わるまでの悪意のあるファイル、レコード、イベントログなどの痕跡を消すため努力しました。ですので、企業Xが攻撃の情報を見つけるのは大変困難でした。しかしフォレンジックのエキスパートであるIUはMFT（MasterFileTable）を分析することによって、攻撃者Aの悪意のあるファイルの痕跡を発見することができました。その悪意のあるファイルはいつ作成されたでしょうか？時間は韓国標準時間(UTC +09:00)でYYYY-MM-DDThh:mm:ss.sTZDの形式で答えてください。小数点以下は７桁まで計算してください。</p></blockquote>
+
+<p>こんな感じですかね・・・違和感バリバリですが、まぁ意味はギリギリわかります・・・（笑）</p>
+
+<p>問題ファイルはいつもどおり7zipで圧縮されており、解答すると$MFTというファイルひとつが出てきます。(問題ファイルはリネームしました)</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.21.44.png" rel="image_group"><img class="alignnone size-full wp-image-75" alt="Screen Shot 2013-02-16 at 14.21.44" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.21.44.png?resize=802%2C136" data-recalc-dims="1" /></a></p>
+
+<p>fileコマンドしても、dataとしか出ませんね。まぁ問題文にもMFT(Master File Table)とあるので、それでググってみます。それと一緒に参考になりそうなwikipediaのページも一緒に載せておきます。</p>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%83%9E%E3%82%B9%E3%82%BF%E3%83%BC_%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB_%E3%83%86%E3%83%BC%E3%83%96%E3%83%AB">MFT マスターファイルテーブル　-wikipedia-</a></p>
+
+<p><a href="http://ja.wikipedia.org/wiki/NT_File_System">NT File System -wikipedia-</a></p>
+
+<p><a href="http://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0">ファイルシステム -wikipedis-</a></p>
+
+<p>要するに、もらったファイルはwindowsのNTFSのMFTで、そこにシステム内のファイルが全部書いてあるーみたいな感じですかね。</p>
+
+<p>それでそのファイル開いてみたんですが、もちろんテキスト形式では意味不明です。これ中身を見る方法なんかないかなー、ってググってたらとても良いツール見つけました。参考にさせていただいたwriteupには「そういうツールがいくつかあるので、好きなもの使ってね」って感じで、具体的なツールは紹介されていなかったのですが、利用させていただいたので、紹介します。<a href="https://github.com/dkovar/analyzeMFT">Github analyzeMTF</a></p>
+
+<p>pythonで書かれたMTF解析して　csvで出力してくれるスクリプトですね。今度ちゃんと中身読んでみたいな。探すとなんでもありますね・・・ネットには。 writeupでも同じ形式で出力してるサンプルが載せられていたので、同じものを使ったのかも。(追記：韓国の参加者の方のブログでは同じものが紹介されていましたが、これを使わずに解答にたどり着いたようです。他にはR-studioっていうソフトで中身をチェックしている方もいました。）</p>
+
+<p>これを利用して、中身を見やすいCSVファイルにしてもらいます。</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.48.34.png" rel="image_group"><img class="alignnone size-full wp-image-76" alt="Screen Shot 2013-02-16 at 14.48.34" src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.48.34.png?resize=782%2C50" data-recalc-dims="1" /></a></p>
+
+<p>&nbsp;</p>
+
+<p>使い方は-fオプションで対象ファイル、-oで出力ファイル、簡単です！</p>
+
+<p>さっそく中身を見てみます。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.52.10.png" rel="image_group"><img class="alignnone size-large wp-image-77" alt="Screen Shot 2013-02-16 at 14.52.10" src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/02/Screen-Shot-2013-02-16-at-14.52.10.png?resize=625%2C684" data-recalc-dims="1" /></a></p>
+
+<p>わちゃーーーーーーーー！おおよそ1500ファイルくらいのレコードが記録されていました。さてさて、この中から答えはどこにあるのでしょう・・・。文字列としては読みやすくなりましたが、それぞれがなんの値なのか・・・・。と思ったらちゃんと一番最初の行に書いてありますね。ExcelかNumbersで見たほうが見やすいかな。まぁここから先は全くわかりませんでした・・・。</p>
+
+<p>writeup見ればすぐにわかることなんで、ザックリ答えから書いちゃうと、1047コ目のレコードである/$Recycle.Bin/r32.exeがそのファイルなんですが、どうやってここにたどり着いたかサッパリ・・・他の方のwriteupには、対象ファイルは.exeで、ヒットする中で怪しいのはこれだけ、ということ。もうひとつ、隠しフォルダ$Recycle.Bin/のなかに入っているから、これが答え、ということでした。まぁ言われればそうなんですけど、.binファイルも含まれているのに、なぜ.exeに断定できたのか・・・Recycle.Binってゴミ箱ですよね・・・？削除した、ってゴミ箱にかよ・・・って思っちゃったんだけど、なんか見落としてるかな・・・英語ならゆっくり読めばなんとなくわかるんだけど、韓国語は全くわからん・・・。まず文字打てないし・・・ｗぐぬぬ・・・。</p>
+
+<p>答えはこのファイルが作成された時間ですね。これも含まれてます。上記のファイルが含まれるレコード内に2012-02-22 17:39:18.897461とあります。これが作成された時間。</p>
+
+<p>ただ、これは<a href="http://ja.wikipedia.org/wiki/%E5%8D%94%E5%AE%9A%E4%B8%96%E7%95%8C%E6%99%82">UTC時刻</a>なので、韓国・ソウルの時間に合わせて形式も解答の形に整形してあげます。小数点以下７桁で解答するように求められているので、小数点の最後にゼロをつけます</p>
+
+<p>2012-02-22 17:39:18.897461　->　2012-02-23T02:39:18.8974610+09:00</p>
+
+<p>これが解答。難しすぎるよー・・・・100~400まで順番にやって、ちゃんと難易度あがってるように僕は思います・・・よくできてるなぁ・・・</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-16T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/02/16/wordpress6/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/02/16/wordpress6/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/02/15/wordpress5/" title="Previous Post: [python]pytzモジュールでのタイムゾーン一覧">&laquo; [python]pytzモジュールでのタイムゾーン一覧</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/02/16/wordpress7/" title="Next Post: CodeGate2012 Forensics400を解いてみる">CodeGate2012 Forensics400を解いてみる &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

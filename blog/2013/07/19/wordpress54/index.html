@@ -1,0 +1,741 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>最近vimいっぱいいじったので、設定おぼえがきと、text-objectに関してまとめ - KentaKomai's BLOG</title>
+  <meta name="author" content="Kenta Komai">
+
+  
+  <meta name="description" content="vim大好き、といいつつ特別プラグイン導入してたわけでもないし、自分でvim-script書いたり するわけでもなかったのですが 脱・vim初心者になりたいなー・・・と思って、設定とか色々見直しました。 自分でプラグイン書いたりとか、そういうのは全然できないですが（というより現状必要 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/07/19/wordpress54">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner">
+	<div class="header-title"><a href="/">KentaKomai's BLOG</a></div>
+
+
+	<br><div class="header-subtitle">自分用備忘録の延長</div>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:KentaKomai.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+  
+    
+      <h1 class="entry-title">最近vimいっぱいいじったので、設定おぼえがきと、text-objectに関してまとめ</h1>
+    
+  
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-19T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>vim大好き、といいつつ特別プラグイン導入してたわけでもないし、自分でvim-script書いたり するわけでもなかったのですが</p>
+
+<p>脱・vim初心者になりたいなー・・・と思って、設定とか色々見直しました。</p>
+
+<p>自分でプラグイン書いたりとか、そういうのは全然できないですが（というより現状必要 だと感じもしませんが）様々なvimmerの方の設定やら、プラグインやらを拝借して、 なんだかんだで、以前と比べ物にならないくらい便利になったので紹介します。</p>
+
+<p>自分でも一気にいじりすぎて、それぞれの機能を全然使いこなせてないし、覚書ついでに書きます。</p>
+
+<h3>とりあえずvimrc公開</h3>
+
+<pre>filetype indent plugin on
+syntax on
+set wildmenu " ナビゲーションバー有効
+set autoindent " 自動インデントの有効
+set smartindent " 更に賢いらしいインデントの有効
+set number " 行番号の表示
+set tabstop=4 " インデントのスペース指定
+set tw=0 " 自動改行オフ
+set shiftwidth=4 " 自動インデントのスペース指定
+set whichwrap=b,s,h,l,&lt;,>,[,] " カーソルを行頭、行末で止まらないようにする
+set showmatch " 括弧が閉じられたときに対応する括弧をハイライトする
+set incsearch " インクリメンタルサーチをON
+set wrapscan " 循環検索ON
+set list " TAB, 行末の半角スペースを可視化
+set listchars=tab:>\ ,trail:~,eol:$
+set cursorline " カレント行のハイライト
+"set cursorcolumn "カレント列のハイライト
+set termencoding=utf-8 "vimのコマンド入力などに利用される文字コード
+set encoding=utf-8 " デフォルトのエンコード
+set fileencoding=utf-8 " ファイルのデフォルトのエンコード
+" set nowrap "自動折り返しを無効
+set wrap "自動折り返しを有効
+set backup " バックアップを有効にする
+set backupdir=~/Documents/vim_backups/ "バックアップファイル保存場所の指定
+set directory=~/Documents/vim_backups/ "スワップファイルの保存場所の指定
+set autoread " ファイル変更があった場合に自動再読み込み
+set diffopt=vertical " diffを常に縦分割
+
+" setting markdown filetype
+autocmd BufNewFile,BufRead *.md set filetype=markdown
+" Enable omni completion.
+autocmd FileType eruby,html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType php setlocal omnifunc=phpcomplete#Complete
+autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+autocmd FileType ruby setlocal expandtab tabstop=2 shiftwidth=2 softtabstop=2 omnifunc=rubycomplete#Complete
+
+" End insert mode by typing ;;
+inoremap &lt;silent> ;; &lt;ESC>
+
+" NOTE: -------------PLUGIN SETTINGS------------------ """
+" for vim-powerline plugin
+let g:Powerline_symbols='fancy'
+set guifont=Source\ Code\ Pro\ Black\ for\ Powerline:h11
+
+" for vimshell plugin
+let g:vimproc_dll_path = $HOME. '/.vim/autoload/vimproc_mac.so'
+
+" for open-browser plugin
+let g:netrw_nogx = 1 " disable netrw's gx mapping.
+nmap gx &lt;Plug>(openbrowser-smart-search)
+vmap gx &lt;Plug>(openbrowser-smart-search)
+
+" for  ### unite.vim ###
+let g:unite_enable_start_insert=1
+let g:unite_enable_split_vertically = 1 "縦分割で開く
+let g:unite_winwidth = 25
+"
+" The unite vim prefix key.
+nnoremap    [unite]   &lt;Nop>
+nmap    &lt;Leader>f [unite]
+ 
+" unite.vim keymap
+autocmd FileType unite inoremap &lt;silent> &lt;buffer> &lt;ESC>&lt;ESC> &lt;ESC>q
+autocmd FileType unite inoremap &lt;silent> &lt;buffer> &lt;ESC>&lt;ESC> &lt;ESC>q
+
+nnoremap [unite]u  :&lt;C-u>Unite -no-split&lt;Space>
+nnoremap &lt;silent> [unite]f :&lt;C-u>Unite&lt;Space>buffer&lt;CR>
+nnoremap &lt;silent> [unite]b :&lt;C-u>Unite&lt;Space>bookmark&lt;CR>
+nnoremap &lt;silent> [unite]m :&lt;C-u>Unite&lt;Space>file_mru&lt;CR>
+nnoremap &lt;silent> [unite]o :&lt;C-u>Unite&lt;Space>outline&lt;CR>
+nnoremap &lt;silent> [unite]c :&lt;C-u>Unite&lt;Space>-auto-preview&lt;Space>colorscheme&lt;CR>
+nnoremap &lt;silent> [unite]r :&lt;C-u>UniteWithBufferDir file&lt;CR>
+nnoremap &lt;silent> ,vr :UniteResume&lt;CR>
+ 
+" unite.vim grep -> ag command
+let g:unite_source_grep_command = 'ag'
+let g:unite_source_grep_default_opts = '--nocolor --nogroup'
+let g:unite_source_grep_recursive_opt = ''
+let g:unite_source_grep_max_candidates = 200
+
+" vinarise
+let g:vinarise_enable_auto_detect = 1
+
+" for gist-vim
+let g:github_user='github user name'
+let g:github_token='github access token'
+
+" easy-motionのprefixキーバインドを &lt;SPACE>eにする。
+let g:EasyMotion_leader_key = '&lt;SPACE>e'
+
+" for Vundle plugin
+" install Vundle.vim
+" % git clone http://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+set nocompatible               " be iMproved
+filetype off                   " required!
+set rtp+=~/.vim/bundle/vundle/
+call vundle#rc()
+" let Vundle manage Vundle
+" required!
+Bundle 'gmarik/vundle'
+" ---- My Bundles here -----:
+Bundle 'The-NERD-tree'
+Bundle 'open-browser.vim'
+Bundle 'Lokaltog/vim-powerline'
+Bundle 'kannokanno/previm'
+Bundle 'gregsexton/gitv'
+Bundle 'Shougo/vimshell.vim'
+Bundle 'Shougo/unite.vim'
+Bundle 'Shougo/unite-outline'
+Bundle 'soh335/unite-qflist'
+Bundle 'Shougo/unite-ssh'
+Bundle 'Shougo/neosnippet'
+Bundle 'ujihisa/unite-colorscheme'
+Bundle 'ujihisa/quicklearn'
+Bundle 'tsukkee/unite-tag'
+Bundle 'guns/xterm-color-table.vim'
+Bundle 'thinca/vim-quickrun'
+Bundle 'thinca/vim-ref'
+Bundle 'errormarker.vim'
+Bundle 'Gist.vim'
+Bundle 'cakephp.vim'
+Bundle 'rails.vim'
+Bundle 'Python-Syntax'
+Bundle 'vim-scripts/Align'
+Bundle 'rizzatti/funcoo.vim'
+Bundle 'rizzatti/dash.vim'
+Bundle 'Lokaltog/vim-easymotion'
+Bundle 'elzr/vim-json'
+
+" ---- colorschemes -----:
+Bundle 'nanotech/jellybeans.vim'
+Bundle 'w0ng/vim-hybrid'
+Bundle 'vim-scripts/twilight'
+Bundle 'jonathanfilip/vim-lucius'
+Bundle 'jpo/vim-railscasts-theme'
+Bundle 'altercation/vim-colors-solarized'
+Bundle 'vim-scripts/Wombat'
+Bundle 'tomasr/molokai'
+Bundle 'vim-scripts/rdark'
+
+" original repos on github
+Bundle 'tpope/vim-fugitive'
+Bundle 'Lokaltog/vim-easymotion'
+Bundle 'rstacruz/sparkup', {'rtp': 'vim/'}
+Bundle 'tpope/vim-rails.git'
+" vim-scripts repos
+Bundle 'L9'
+Bundle 'FuzzyFinder'
+" non github repos
+Bundle 'git://git.wincent.com/command-t.git'
+" ...
+filetype plugin indent on     " required!
+filetype on
+</pre>
+
+
+<p>なんか便利そうだからとりあえず入れた、っていうプラグインもあるけど 使ってないまま放置してます。(おい)</p>
+
+<h3>vim本体の設定</h3>
+
+<p>「set *****&#8230;」というタイプの設定は、大体コメント書いてあるので割愛。</p>
+
+<p>僕はこのブログをmarkdownで記述していて、vimでそれを書いているのですが 拡張子がmdのファイルはデフォルトだとmodula2のfiletypeが設定されてしまうので そこをmarkdownに変更しています。</p>
+
+<pre>autocmd BufNewFile,BufRead *.md set filetype=markdown
+</pre>
+
+
+<p>以降は、オートコンプリートの設定です。 autocmd Filetype hogehoge xxxxxx これでFiletypeがhogehogeのときxxxxを実行、という感じです。</p>
+
+<pre>autocmd FileType eruby,html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType php setlocal omnifunc=phpcomplete#Complete
+autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+autocmd FileType ruby setlocal expandtab tabstop=2 shiftwidth=2 softtabstop=2 omnifunc=rubycomplete#Complete
+</pre>
+
+
+<p>インサートモードから抜けるときにEscキーが遠いなーと思ったので</p>
+
+<pre>inoremap &lt;silent> ;; &lt;ESC>
+</pre>
+
+
+<p>これでセミコロン２回でEscキーを押したことにしてます。</p>
+
+<hr />
+
+<p>以降はプラグインのための設定</p>
+
+<h3>vim-powerlineのための設定</h3>
+
+<pre>" for vim-powerline plugin
+let g:Powerline_symbols='fancy'
+set guifont=Source\ Code\ Pro\ Black\ for\ Powerline:h11
+</pre>
+
+
+<p>個人的にはデフォルトでも十分にかっこいいし、使えるのですがpowerline導入してる人は だいたい、この設定してるのでやってみました。</p>
+
+<p>fontforgeというソフトを使って、専用のフォントを作成しないとこの設定は使えません。</p>
+
+<p>ちょっと面倒だったけど、確かにかっこよくなっし、行番号、列番号やモードの表示は 使ってみると、本当に便利です。</p>
+
+<p>こんな感じになります。</p>
+
+<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/07/Screen-Shot-2013-07-18-at-22.59.21.png" rel="image_group"><img src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/07/Screen-Shot-2013-07-18-at-22.59.21.png?resize=955%2C64" alt="Screen Shot 2013-07-18 at 22.59.21" class="alignnone size-large wp-image-667" data-recalc-dims="1" /></a></p>
+
+<h3>opwn-browserの設定</h3>
+
+<p>このプラグインは編集しているソースコードやテキスト内のURLをコマンドで開いてくれたり、 キーワードをgoogle検索してくれたりします。</p>
+
+<pre>" for open-browser plugin
+let g:netrw_nogx = 1 " disable netrw's gx mapping.
+nmap gx &lt;Plug>(openbrowser-smart-search)
+vmap gx &lt;Plug>(openbrowser-smart-search)
+</pre>
+
+
+<p>テキストを選択してgxを押すと、デフォルトのブラウザで選択されたテキストがURLなら 直接URLへアクセス、URLでなければgoogle検索してくれます。</p>
+
+<h3>Unite.vimの設定</h3>
+
+<p>長いので、コメントに書き足します。よく使うやつだけ</p>
+
+<pre>" for  ### unite.vim ###
+let g:unite_enable_start_insert=1
+let g:unite_enable_split_vertically = 1 "縦分割で開く
+let g:unite_winwidth = 25 "uniteのウィンドウサイズ
+"
+" The unite vim prefix key.
+nnoremap    [unite]   &lt;Nop>
+nmap    &lt;Leader>f [unite] " \ + f を [unite]というコマンドとして定義
+ 
+" unite.vim keymap
+autocmd FileType unite inoremap &lt;silent> &lt;buffer> &lt;ESC>&lt;ESC> &lt;ESC>q
+autocmd FileType unite inoremap &lt;silent> &lt;buffer> &lt;ESC>&lt;ESC> &lt;ESC>q
+
+""" [unite] + キー　でそれぞれのsourceを展開
+nnoremap [unite]u  :&lt;C-u>Unite -no-split&lt;Space>
+nnoremap &lt;silent> [unite]f :&lt;C-u>Unite&lt;Space>buffer&lt;CR> " [unite] + u で バッファを表示
+nnoremap &lt;silent> [unite]b :&lt;C-u>Unite&lt;Space>bookmark&lt;CR>
+nnoremap &lt;silent> [unite]m :&lt;C-u>Unite&lt;Space>file_mru&lt;CR> "[unite] + m で 最近開いたファイル
+nnoremap &lt;silent> [unite]o :&lt;C-u>Unite&lt;Space>outline&lt;CR>  "[unite] + o で アウトラインを表示
+nnoremap &lt;silent> [unite]c :&lt;C-u>Unite&lt;Space>-auto-preview&lt;Space>colorscheme&lt;CR> "[unite] + c で カラースキーマのオートプレビュー
+nnoremap &lt;silent> [unite]r :&lt;C-u>UniteWithBufferDir file&lt;CR>
+nnoremap &lt;silent> ,vr :UniteResume&lt;CR>
+
+""" Unite grepではagコマンドを使う、という設定(grepの代わりがackで、それを更に高速化したのがag)
+" unite.vim grep -> ag command
+let g:unite_source_grep_command = 'ag'
+let g:unite_source_grep_default_opts = '--nocolor --nogroup'
+let g:unite_source_grep_recursive_opt = ''
+let g:unite_source_grep_max_candidates = 200
+</pre>
+
+
+<p>Unite grepでは外部grepを使うので、vimgrepより高速です。僕が設定していないだけなんだろうけど vimgrep+Quickfixのほうが見やすい、という事も多いので、</p>
+
+<ul>
+<li>大量のソースコードから検索したいときはUnite grep(ag)</li>
+<li>ちょっとしたモジュール、プロジェクト内ならvimgrep</li>
+</ul>
+
+
+<p>という感じで使い分けてます。</p>
+
+<h3>easy-motionの設定</h3>
+
+<pre>" easy-motionのprefixキーバインドを &lt;SPACE>eにする。
+let g:EasyMotion_leader_key = '&lt;SPACE>e'
+</pre>
+
+
+<p>ここは書いてある通り。 space + e押してから k か j 押すと、各行がインデックスされ 一発でジャンプできるようになります。これは使うまでナメてた。本当に便利。</p>
+
+<p><a href="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/07/Screen-Shot-2013-07-19-at-12.31.51.png" rel="image_group"><img src="http://i1.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/07/Screen-Shot-2013-07-19-at-12.31.51.png?resize=716%2C756" alt="Screen Shot 2013-07-19 at 12.31.51" class="alignnone size-full wp-image-668" data-recalc-dims="1" /></a></p>
+
+<h3>Vundleで管理してるプラグインいろいろ</h3>
+
+<p>使ってないのも結構まじってるけど・・・colorschemeは省略してます</p>
+
+<pre>Bundle 'The-NERD-tree'
+Bundle 'open-browser.vim'
+Bundle 'Lokaltog/vim-powerline'
+Bundle 'kannokanno/previm'
+Bundle 'gregsexton/gitv'
+Bundle 'Shougo/vimshell.vim'
+Bundle 'Shougo/unite.vim'
+Bundle 'Shougo/unite-outline'
+Bundle 'soh335/unite-qflist'
+Bundle 'Shougo/unite-ssh'
+Bundle 'Shougo/neosnippet'
+Bundle 'ujihisa/unite-colorscheme'
+Bundle 'ujihisa/quicklearn'
+Bundle 'tsukkee/unite-tag'
+Bundle 'guns/xterm-color-table.vim'
+Bundle 'thinca/vim-quickrun'
+Bundle 'thinca/vim-ref'
+Bundle 'errormarker.vim'
+Bundle 'Gist.vim'
+Bundle 'cakephp.vim'
+Bundle 'rails.vim'
+Bundle 'Python-Syntax'
+Bundle 'vim-scripts/Align'
+Bundle 'rizzatti/funcoo.vim'
+Bundle 'rizzatti/dash.vim'
+Bundle 'Lokaltog/vim-easymotion'
+Bundle 'elzr/vim-json'
+</pre>
+
+
+<p>上記で挙げてないもので、特別便利なやつだけちょっと紹介</p>
+
+<h5>●NERD-tree</h5>
+
+<p>ファイラーといえばいいんですかね。指定したディレクトリのファイル構造を開いて クリックとかEnterとかで開けるようにしてくれる</p>
+
+<p>こんな感じ</p>
+
+<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/07/Screen-Shot-2013-07-19-at-12.32.56.png" rel="image_group"><img src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/07/Screen-Shot-2013-07-19-at-12.32.56.png?resize=437%2C1024" alt="Screen Shot 2013-07-19 at 12.32.56" class="alignnone size-large wp-image-669" data-recalc-dims="1" /></a></p>
+
+<h5>●vimshell.vim</h5>
+
+<p>vimからシェルを叩けるコマンド。僕は主にログ監視とかしたいときにはじっこで起動して使ってます。</p>
+
+<h5>●Gitv</h5>
+
+<p>これ便利すぎてびびる。vimからgitのpush,pullしたり、diffやログの確認などなど。 git周りはなんでもこれで完結</p>
+
+<h5>●vim-quickrun</h5>
+
+<p>ド定番プラグイン。書いてるプログラムを:QuickRunコマンドだけで実行してくれる。 ただc++書いてたときはSegmentation Errorが表示されなくて、ちょっとだけ困った。 色々な言語に対応してるし、サクっと確認したいときにはすごく便利です。</p>
+
+<h5>●Gist.vim</h5>
+
+<p>vimで開いているファイルを、ダイレクトにgistに投稿するプラグイン。 使うかなー、と思って入れたけど、実際いれたらちょっとしたメモはすぐにgistにアップロードするようになった</p>
+
+<h5>●dash.vim</h5>
+
+<p>MacOSXで動作する、オフラインでも様々なリファレンスを参照できるDashというアプリケーションに対して vimのコマンドから関数などを検索できて、一発表示できるプラグイン。Dash使ってるvimmerは必見</p>
+
+<h5>●previm</h5>
+
+<p>僕はmarkdownをリアルタイムにブラウザで確認するために使ってますが、javascriptで色々拡張できるらしい。</p>
+
+<h5>●vim-json</h5>
+
+<p>jsonを扱うときに、色分けしたり、結構見やすくしてくれる。jsonをよくいじる人は入れたほうがいいかも。</p>
+
+<hr />
+
+<h3>割と最近になって使うようになったコマンド(pluginのコマンド以外で)</h3>
+
+<h5>●カーソル移動に w e b _</h5>
+
+<p>基本的にhjklばかりでしたが、だんだん遅くてイライラしてきたので、なんとなくこっちの頻度が増えました。 easy-motionと組み合わせると、あっという間に目的地に辿り着ける</p>
+
+<h5>●数字押してからインサートモードに入って、なにか入力して、ESC</h5>
+
+<p>例えば30と入力してからiとかuでインサートモードに入って、「-」をタイピングして、ESCを押します。 すると、「-」が30個挿入されます。 コメントアウトで、いい感じに線を引きたいときとか、ブロッキングしたいときなんかに使ってます。</p>
+
+<h5>●最後に編集した場所に戻る g;</h5>
+
+<p>色々ソースコード見渡した後で、前にいじってたところに戻りたい、なんてときに使います。</p>
+
+<h5>●タグジャンプのための Ctrl+t　Ctrl+]</h5>
+
+<p>ctagsコマンドと併用しないと、利用できないのでIDEに比べると手間ですが、あると便利です。(カレントディレクトリの.ctagsを作成 するだけなら:!ctags -RでOK)※変数や関数の定義元にジャンプしたりするあれです。 <a href="http://qiita.com/soramugi/items/7014c866b705e2cd0b95">http://qiita.com/soramugi/items/7014c866b705e2cd0b95</a>がとても 参考になりました。 よく使うプロジェクトやディレクトリは.ctagファイルを作成しておいて損はないと思います。</p>
+
+<h5>●ヘルプの参照に :help [コマンド]</h5>
+
+<p>そのまんまです。プラグイン入れたときとか、コマンドの詳細をど忘れしたときなんかに。 基本的にコマンド自体を覚えてる前提なので、用途別に逆引きとかもあったらいいですけどね。</p>
+
+<p>これ以外だとvimgrepとargsが慣れてきたかなー、という感じです。</p>
+
+<hr />
+
+<h3>text-objectに関して</h3>
+
+<p>ずっと見て見ないフリをしてきたんですが、便利そうなのでこれを期にまとめてみましたー。</p>
+
+<p>とりあえず:help text-object@jaすると、日本語のtext-objectに関するヘルプが読めます。 読めばすぐ使えるようになるかなー、とか思ってたら結構充実してて、覚えるの大変そうでした・・・。</p>
+
+<p>ざっくり概要</p>
+
+<ol>
+<li>viにはない機能</li>
+<li>(動作) + (a or i) + (対象箇所) というコマンド構成が基本</li>
+</ol>
+
+
+<h5>●(a or i)について</h5>
+
+<ul>
+<li>[a]は[a 対象箇所] &ndash;>対象箇所全体を (動作)　する</li>
+<li>[i]は[inner 対象箇所] &ndash;>対象箇所の中身を　（動作）する</li>
+</ul>
+
+
+<h5>●対象箇所について</h5>
+
+<ul>
+<li>w : word</li>
+<li>W : WORD</li>
+<li>s : sentence</li>
+<li>p : paragraph</li>
+<li>t : tag</li>
+<li>[ or ]: []block</li>
+<li>{ or } : {}block</li>
+<li>( or ) or b : ()block ()</li>
+<li>&lt; or > : &lt;>block</li>
+<li>&#8216; or &#8221; : &#8220;&#8221; or &#8221; block</li>
+</ul>
+
+
+<p>ちゃんと読んだら、結構シンプルですね。</p>
+
+<h5>●使い方サンプル</h5>
+
+<p>公式ヘルプにあったサンプル</p>
+
+<pre>"dl"    1文字削除 ("x" と同じです)       |dl|
+"diw"   inner word を削除          *diw*
+"daw"   a word を削除              *daw*
+"diW"   inner WORD を削除 (参照: |WORD|) *diW*
+"daW"   a WORD を削除 (参照: |WORD|)     *daW*
+"dgn"   次に検索パターンにマッチするものを削除  *dgn*
+"dd"    1行削除                    |dd|
+"dis"   inner sentence を削除          *dis*
+"das"   a sentence を削除          *das*
+"dib"   inner '(' ')' block を削除     *dib*
+"dab"   a '(' ')' block を削除         *dab*
+"dip"   inner paragraph を削除         *dip*
+"dap"   a paragraph を削除         *dap*
+"diB"   inner '{' '}' Block を削除     *diB*
+"daB"   a '{' '}' Block を削除         *daB*
+</pre>
+
+
+<p>あと簡単なやつ</p>
+
+<pre>vi" : ""の内部だけを選択
+viw : 1単語を選択
+vit : tag内を選択(のhogeだけを選択)
+vat : tag内を選択(の全体を選択)
+cit : tag内を削除(のhogeだけを削除)
+</pre>
+
+
+<hr />
+
+<p>こんな感じですね。我ながら結構一気にvim力あがった感あります・・・ｗ 脱初心者できたかな・・・？でも中級者はまだまだ・・・って感じです。</p>
+
+<hr />
+
+<h3>初心者ながらアドバイス</h3>
+
+<p>とりあえずvim触ってみたいって人が、いろんなvimmerの方が入れてるプラグインを片っ端からいれて 使いこなせずにvim使わなくなっちゃう、っていうパターンが僕の周りでは多いです。</p>
+
+<p>僕の場合、今思えばラッキーで</p>
+
+<ol>
+<li>強制的にvimを使わないといけない環境になる</li>
+<li>とりあえずサーバ管理するときには使うようになる(mode切り替えが違和感なく行える)</li>
+<li>コーディングとかでも不自由なく使えるようになってくる(テキスト編集が効率的に行えるようになってくる)</li>
+<li>ここでようやくプラグインに関心を持つ</li>
+<li>長ったらしいコマンドはキーバインド設定すればいいかな、って思うようになる</li>
+</ol>
+
+
+<p>という流れでのめり込んでいきました。</p>
+
+<p>プラグインを導入したほうが便利なのは間違いないのですが、まずは基本的なキーバインドに 慣れて、vim独特のテキスト編集に慣れることをおすすめしたいです （ここまで来て、vimが自分に合うかどうか判断できると思う）</p>
+
+<p>更に便利にしたい場合はプラグイン入れるといいかなー、と。</p>
+
+<p>結局は全ての操作がコマンドなので、プラグイン入れれば入れるほど 覚えることは増えていきます。</p>
+
+<hr />
+
+<h3>課題</h3>
+
+<ol>
+<li>NeoBundleへの以降</li>
+<li>Unite.vimのカスタマイズ</li>
+<li>オリジナルカラースキーマの作成</li>
+<li>キーバインドを増やす＆見直す</li>
+</ol>
+
+
+<p>上記の課題のいずれかがクリアできたら、また記事書きたいです。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-19T00:00:00+09:00" pubdate data-updated="true"></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/07/19/wordpress54/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/07/19/wordpress54/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/07/17/wordpress53/" title="Previous Post: RegexCrosswordという正規表現パスルで遊んでみました。">&laquo; RegexCrosswordという正規表現パスルで遊んでみました。</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/07/25/wordpress55/" title="Next Post: [AngularJS]独自module + directiveを試してみる(夏休み企画１)">[AngularJS]独自module + directiveを試してみる(夏休み企画１) &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/25/wordpress76/">xv6のソースコードとテキストを読んでみる1_chapter0_2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/wordpress75/">[CSCamp CTF]解けなかった問題forensics1のwriteupを読んでみた</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 -  Kenta Komai <br/>
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> + <a href="https://github.com/ioveracker/mnml">mnml</a>.
+	  
+  </span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
