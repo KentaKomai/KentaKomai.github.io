@@ -4,7 +4,7 @@
   <title><![CDATA[KentaKomai's BLOG]]></title>
   <link href="http://KentaKomai.github.io/atom.xml" rel="self"/>
   <link href="http://KentaKomai.github.io/"/>
-  <updated>2013-12-08T20:23:02+09:00</updated>
+  <updated>2013-12-08T21:04:55+09:00</updated>
   <id>http://KentaKomai.github.io/</id>
   <author>
     <name><![CDATA[Kenta Komai]]></name>
@@ -49,40 +49,72 @@
 
 <p>本来であれば、Thread.Sleep()ではなくTimerコントロールとか使うといいかもしれません</p>
 
-<pre>using System.Diagnostics;
-using System.Threading;
-
-public void main(){
-    while (true)
-    {
-        bool flg = false;
-        Process[] processList = Process.GetProcesses();
-        foreach (Process p in processList){
-            if(p.ProcessName == "notepad"){
-                flg = true;
-                if (p.Responding){
-                    Console.WriteLine("OK");
-                    break;
-                }else{
-                    p.CloseMainWindow();
-                    RunApp();
-                }
-            }
-        }
-        if (!flg){
-            RunApp();
-        }
-        System.Threading.Thread.Sleep(5000);
-    }
-}
-
-private void RunApp(){
-    Process myProcess = new Process();
-    myProcess.StartInfo.FileName = "Notepad";
-    myProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
-    myProcess.Start();
-}
-</pre>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>using System.Diagnostics;
+</span><span class='line'>using System.Threading;
+</span><span class='line'>
+</span><span class='line'>public void main(){
+</span><span class='line'>    while (true)
+</span><span class='line'>    {
+</span><span class='line'>        bool flg = false;
+</span><span class='line'>        Process[] processList = Process.GetProcesses();
+</span><span class='line'>        foreach (Process p in processList){
+</span><span class='line'>            if(p.ProcessName == "notepad"){
+</span><span class='line'>                flg = true;
+</span><span class='line'>                if (p.Responding){
+</span><span class='line'>                    Console.WriteLine("OK");
+</span><span class='line'>                    break;
+</span><span class='line'>                }else{
+</span><span class='line'>                    p.CloseMainWindow();
+</span><span class='line'>                    RunApp();
+</span><span class='line'>                }
+</span><span class='line'>            }
+</span><span class='line'>        }
+</span><span class='line'>        if (!flg){
+</span><span class='line'>            RunApp();
+</span><span class='line'>        }
+</span><span class='line'>        System.Threading.Thread.Sleep(5000);
+</span><span class='line'>    }
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>private void RunApp(){
+</span><span class='line'>    Process myProcess = new Process();
+</span><span class='line'>    myProcess.StartInfo.FileName = "Notepad";
+</span><span class='line'>    myProcess.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+</span><span class='line'>    myProcess.Start();
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <h3>最後に</h3>
