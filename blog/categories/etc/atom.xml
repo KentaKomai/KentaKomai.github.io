@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
-  <link href="http://KentaKomai.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: etc | My Octopress Blog]]></title>
+  <link href="http://KentaKomai.github.io/blog/categories/etc/atom.xml" rel="self"/>
   <link href="http://KentaKomai.github.io/"/>
   <updated>2013-12-08T17:47:01+09:00</updated>
   <id>http://KentaKomai.github.io/</id>
@@ -20,8 +20,7 @@
     <id>http://KentaKomai.github.io/blog/2013/06/15/tywin-lannister-quote</id>
     <content type="html"><![CDATA[<p>A nice quote by Tywin Lannister taken from <em>A Storm of Sword</em> book.</p>
 
-<blockquote><p>The greatest fools are ofttimes more clever then the men who laugh at them.</p><footer><strong>Tywin Lannister</strong> <cite>A Storm of Swords</cite></footer></blockquote>
-
+<p><blockquote><p>The greatest fools are ofttimes more clever then the men who laugh at them.</p><footer><strong>Tywin Lannister</strong> <cite>A Storm of Swords</cite></footer></blockquote></p>
 ]]></content>
   </entry>
   

@@ -1,15 +1,27 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
+        <loc>http://KentaKomai.github.io/blog/2013/06/15/tywin-lannister-quote/</loc>
+        <lastmod>2013-12-08T17:46:13+09:00</lastmod>
+    </url>
+    <url>
+        <loc>http://KentaKomai.github.io/404.html</loc>
+        <lastmod>2013-12-08T17:46:13+09:00</lastmod>
+    </url>
+    <url>
         <loc>http://KentaKomai.github.io/blog/archives/</loc>
-        <lastmod>2013-12-08T17:17:09+09:00</lastmod>
+        <lastmod>2013-12-08T17:46:13+09:00</lastmod>
+    </url>
+    <url>
+        <loc>http://KentaKomai.github.io/blog/</loc>
+        <lastmod>2013-12-08T17:46:13+09:00</lastmod>
     </url>
     <url>
         <loc>http://KentaKomai.github.io/</loc>
-        <lastmod>2013-12-08T17:17:09+09:00</lastmod>
+        <lastmod>2013-12-08T17:46:13+09:00</lastmod>
     </url>
     <url>
         <loc>http://KentaKomai.github.io/robots.txt</loc>
-        <lastmod>2013-12-08T17:17:09+09:00</lastmod>
+        <lastmod>2013-12-08T17:46:13+09:00</lastmod>
     </url>
 </urlset>
