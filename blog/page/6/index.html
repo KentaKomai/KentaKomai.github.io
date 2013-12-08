@@ -9,7 +9,7 @@
   <meta name="author" content="Kenta Komai">
 
   
-  <meta name="description" content="Google App Engine上で動作しているアプリケーションからAPIを利用して、jsonデータ引っ張ってきたんですが、なんか48000ちょいしか取得できてなくて、途中でデータぶった切れちゃってる・・・ 原因が全然わからなくて困ってたら、同じような現象で困ってる人いました。 なにやら、 &hellip;">
+  <meta name="description" content="を目標に記事にしてみます。 RDBMSをインストールすると、おおよそ最初から作成されているデータベースがいくつかありますよね。 information_schemaもそのひとつで、MySQLやSQLServerにおいて、データベースに関する情報が、そこに格納されているようです。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,6 +76,100 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/04/04/wordpress28/">MySQL Information_schemaデータベースに関してメモ</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-04T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>を目標に記事にしてみます。</p>
+
+<p>RDBMSをインストールすると、おおよそ最初から作成されているデータベースがいくつかありますよね。</p>
+
+<p>information_schemaもそのひとつで、MySQLやSQLServerにおいて、データベースに関する情報が、そこに格納されているようです。SQLインジェクションなどの攻撃でよく標的にされるデータベースですよね。機会があったので、少し調べてメモしておきます。（参照すると便利そうなやつだけ）</p>
+
+<p><a href="http://dev.mysql.com/doc/refman/5.1/ja/information-schema.html">参考URL</a></p>
+
+<p>まぁ記事書かなくても、直接データベースやテーブルの中身見れば一目瞭然なんですが、せっかく調べたのでブログに。</p>
+
+<p>MySQL INFORMATION_SCHEMAデータベース</p>
+
+<h2>１．SCHEMATAテーブル</h2>
+
+<p>データベースの情報が格納。データベース名、文字コードが格納されている</p>
+
+<h2>２．TABLESテーブル</h2>
+
+<p>テーブルの一覧が格納されている。TABLE_SCHEMAにデータベース名が入ってるのでwhereで対応するデータベースのテーブル一覧のみを抽出したりできますね。</p>
+
+<p>テーブル名、文字コード、作成日、更新日、テーブルに対するコメントなどなど</p>
+
+<h2>３．COLUMNテーブル</h2>
+
+<p>カラムの一覧が格納されている、TABLE_SCHEMAにデータベース名、TABLE_NAMEにテーブル名があるので、TABLEテーブルと同じように抽出してやることができます。</p>
+
+<p>カラム名、デフォルト値、NULL許容、データ型などなど。</p>
+
+<h2>４．VIEWSテーブル</h2>
+
+<p>ビュー一覧が格納されている。TABLE_SCHEMAで抽出すれば、対象データベースのビュー一覧を取得できる。VIEW_DEFINITIONでは、そのビューがどのようなSQL文で構成されているかを見れる。ビューの名前はこのテーブルにTABLE_NAMEとして格納されています。</p>
+
+<h2>５．USERS_PRIVILEGESテーブル</h2>
+
+<p>ユーザの権限一覧が取得できる。mysqlデータベースのuserテーブルとは違います。</p>
+
+<p>GRANTEEには&#8221;ユーザ名@ホスト名&#8221;が、PRIVILEGE_TYPEに権限タイプが格納されています。</p>
+
+<p>ユーザ一覧が取得したければ、GRANTEEでGROUP BYとかすれば良いでしょう。</p>
+
+<h2>６．GROBAL_STATUS, GROBAL_VARIABLESテーブル</h2>
+
+<p>データベース内共通の変数とステータス変数を定義。</p>
+
+<p>&nbsp;</p>
+
+<p>まだまだテーブルありますが、覚えておくと便利そうかも、と思ったものを抜粋しました。</p>
+
+<p>手元にSQLServer環境が今ないので、SQLServerに関してはリンクだけ貼っておきます</p>
+
+<p><a href="http://msdn.microsoft.com/ja-jp/library/ms186778.aspx">SQLServer情報スキーマビュー</a></p>
+
+<p>SQLite ならsqlite_masterというテーブルが自動生成されて、そこにテーブルがCREATE TABLEされた際のSQL文が格納されているようです。</p>
+
+<p><a href="http://www.sqlite.org/fileformat2.html#sqlite_master">SQLite sqlite_masterテーブル</a></p>
+
+<p>短いけど、まとめ。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1860,98 +1954,6 @@ exit()</pre>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-  
-    
-      <h1 class="entry-title"><a href="/blog/2013/03/03/wordpress18/">Nullcon 2013 Battle Underground Programming 1 Writeup</a></h1>
-      
-      
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-03-03T00:00:00+09:00" pubdate data-updated="true"></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>3月2日に開催されたnullcon2013 Battle Undergroundにyokaromonのみんなで出場しました。</p>
-
-<p>各自担当とかは決めていませんでしたが、僕はなんとなくProgrammingの問題ばっかりやってました。CTFでこの手の問題出るのって珍しい気がします。</p>
-
-<p>まずは問題文</p>
-
-<blockquote><p>This is a very easy problem. You just need to find the number of primes which can be generated using the polynomial n<sup>2-n+41 and is lesser than 1 trillion (1,000,000,000,000). Flag is the MD5 sum of the answer.</sup></p></blockquote>
-
-<p>で、英語が読めなすぎて今回チームでネタにされました・・・・。最終的にこんな感じっぽい意訳</p>
-
-<blockquote><p>非常に簡単な問題です。多項式n<sup>2</sup>-n+41を使って生成される1,00,000,000,000以下の素数の数を答えるだけです。フラグは答えのMD5チェックサムです。</p></blockquote>
-
-<p>今更ですが、改めて読むと、普通にこう読めますね・・・。最初&#8221; Flag is the MD5 sum of the answer &#8220;を答えの合計のMD5と勘違いしてしまって、ずっと一兆以下の整数の合計のMD５ハッシュ値を答えとして提出していました・・・。お恥ずかしい・・・。</p>
-
-<p>というわけで以下が書いたスクリプトです。勘違いして書いた合計を算出する処理も残ってますが、まぁいいでしょう・・・。</p>
-
-<pre class="lang:python decode:true">#! usr/bin/python
-# -*- coding:utf-8 -*-
-
-import md5
-def is_prime(q):
-    q = abs(q)
-    if q == 2: return True
-    if q &lt; 2 or q&1 == 0: return False
-    return pow(2, q-1, q) == 1
-
-maxNum = 1000000000000
-n = 1
-ans = 0
-ret = 0
-prime = 0
-while ans &lt;= maxNum:
-    ans = n*n-n+41
-    n += 1
-    if is_prime(ans) and ans &lt;= maxNum:
-        prime += 1
-        ret += ans
-
-print ret
-print prime</pre>
-
-
-<p>&nbsp;</p>
-
-<p>忘れないように書くと、&#8221; n<sup>2</sup>-n+41 &#8221; という多項式は、数学者オイラーさんが発見した素数生成式で、1から39までの整数をnとすると、求められるのは全て整数です！ただ、完璧な素数生成式というのは現代では導かれておらず、40以上は、素数でない数も導かれることがあります。</p>
-
-<p>処理の内容としては、1から順番に前検索して、求められた整数が素数かどうかを判定する、これの繰り返しを1,00,000,000,000まで行います。</p>
-
-<p>最初は、それぞれの答えをretに足して最終的に出力していましたが、答えの合計ではなく、導かれる素数の数なので、primeを素数判定がTrueのときにインクリメントして、最後に出力です。</p>
-
-<p>これで導かれる数字が、&#8221; 261081 &#8221;</p>
-
-<p>それのMD5したもの&#8221; e1d9e8bf5c39c6778f8ceed19bfad0a3 &#8221;</p>
-
-<p>これで正解でした。問題さえ読めれば（笑）すぐに解ける問題ですね・・・。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/7/">&larr; Older</a>
@@ -1969,6 +1971,10 @@ print prime</pre>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/12/08/octopressniyi-xing-sitemimasita/">Octopressに移行してみました</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
       </li>
     
@@ -1982,10 +1988,6 @@ print prime</pre>
     
       <li class="post">
         <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
       </li>
     
   </ul>

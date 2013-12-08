@@ -9,8 +9,9 @@
   <meta name="author" content="Kenta Komai">
 
   
-  <meta name="description" content="わざわざブログ記事にまとめるほど内容があるわけではないんですが、 調べてみたら、すんごく簡単にできて便利だったので書き残しておきます。 プロセス死活監視というのもおこがましいかもしれない（笑） やりたいこと 特定のプログラムが動作しているかをチェック
-特定のプログラムが動作していて、 &hellip;">
+  <meta name="description" content="今までは僕の個人ブログは自宅サーバ + wordpress で運用していたんですが 自宅鯖を気軽に止めたい、再起動したい
+何かしら問題があってもブログサービスを安定して動作させたい という理由があって、代替サービスを探していました。
+一応僕が考えている条件として Markdownで記述できる &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -77,6 +78,106 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/12/08/octopressniyi-xing-sitemimasita/">Octopressに移行してみました</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-12-08T21:47:30+09:00" pubdate data-updated="true">Dec 8<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>今までは僕の個人ブログは自宅サーバ + wordpress で運用していたんですが</p>
+
+<ul>
+<li>自宅鯖を気軽に止めたい、再起動したい</li>
+<li>何かしら問題があってもブログサービスを安定して動作させたい</li>
+</ul>
+
+
+<p>という理由があって、代替サービスを探していました。
+一応僕が考えている条件として</p>
+
+<ol>
+<li>Markdownで記述できる</li>
+<li>独自ドメインを利用できる</li>
+<li>ソースコードの記述がいい感じにしやすい</li>
+</ol>
+
+
+<p>この３つを満たすものを探していました。</p>
+
+<p>周りの方も多く利用している、はてなブログが最初に候補として最有力でしたが、
+独自ドメインが有料版限定であることと、個人的には管理画面の動作が重く、
+旧ブログから記事を移植しただけで、馴染めませんでした・・・。</p>
+
+<p>そこで、最近流行りのOctopressを導入してみました。</p>
+
+<p>一応Octopressのメリット</p>
+
+<ol>
+<li>もちろんMarkdownで記述可能</li>
+<li>GithubPageで運用可能</li>
+<li>(GithubPageで運用可能なため)独自ドメインで利用可能</li>
+<li>標準でインストールされているプラグインを利用してシンタックスハイライトも可能</li>
+<li>静的ページをアップロードするだけなので、動作早い</li>
+<li>管理画面は存在せず、コマンドと、テキスト編集で記事の作成・アップロードが可能(後述しますがデメリットとも言える)</li>
+<li>rake previewでローカルで動作確認が可能</li>
+</ol>
+
+
+<p>こんな感じで、ひととおり僕の希望は満たしてくれています。
+インストール手順は、他の記事や公式サイトでたっぷり紹介されているので割愛します。</p>
+
+<p>唯一、手間取った点が、wordpressから記事をエクスポートしたんですが、
+日本語タイトルの記事が全部、ダメ（404エラーになってしまう）</p>
+
+<p>今のところ日本語タイトルには対応していないようなので、仕方なく手作業で、
+半角英数字でリネームしました。面倒臭かったけど、それで問題なく動作しました。</p>
+
+<p>ただ、運用してすぐに、いくつかデメリットも感じたので、書いておきます。</p>
+
+<ol>
+<li>全て静的ページなので記事検索はGoogleSearch経由で行われる</li>
+<li>テーマは2013.12現在ではまだかなり少ない。</li>
+<li>アクセス解析は別サービスを利用する必要がある(wordpressnときはjetpack使ってた)</li>
+<li>エンジニア以外で運用するには敷居が高い(インストール、テーマ変更、記事作成全てコマンド)</li>
+</ol>
+
+
+<p>こんな感じです。まだ勝手もなにもわかってないので、逐次追加修正していきたいと思います。</p>
+
+<p>ローカルで記事作成して、確認して、いつでも鯖にアップロード、っていうだけでも便利です。</p>
+
+<p>とりあえずテーマは少しづつでも自分好みに変えていきたいです。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1760,75 +1861,6 @@ namespace facematch_sample
 
     </article>
   
-  
-    <article>
-      
-  <header>
-  
-    
-      <h1 class="entry-title"><a href="/blog/2013/10/10/wordpress68/">Google Chrome Developer Toolsの見た目を変える。</a></h1>
-      
-      
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-10-10T00:00:00+09:00" pubdate data-updated="true"></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>今更だけどタイトルとおりです。</p>
-
-<p>MacでもWindowsxでもLinuxでもできます。</p>
-
-<p>僕もそうですが、Firefox + firebugから移行した開発者の方も多いんじゃないかと 思います。</p>
-
-<p>デフォルトだとこんな感じ</p>
-
-<p><a href="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/Screen-Shot-2013-10-10-at-15.48.43.png" rel="image_group"><img src="http://i2.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/Screen-Shot-2013-10-10-at-15.48.43.png?resize=955%2C892" alt="Screen Shot 2013-10-10 at 15.48.43" class="alignnone size-large wp-image-896" data-recalc-dims="1" /></a></p>
-
-<p>いじくるとこんな感じ</p>
-
-<p><a href="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/Screen-Shot-2013-10-10-at-16.03.06.png" rel="image_group"><img src="http://i0.wp.com/tamago.servehttp.com/blog/wp-content/uploads/2013/10/Screen-Shot-2013-10-10-at-16.03.06.png?resize=937%2C1024" alt="Screen Shot 2013-10-10 at 16.03.06" class="alignnone size-large wp-image-897" data-recalc-dims="1" /></a></p>
-
-<p>変更は簡単です。</p>
-
-<p>Chrome Developer Toolsの見た目もスタイルシートで定義が可能です。 それぞれの環境で以下のパスが対象ファイルになります。 おそらくデフォルトでは中身はからっぽ。</p>
-
-<ul>
-<li>windows: C:/Users/YourUsername/AppData/Local/Google/Chrome/User Data/Default/User StyleSheets/Custom.css</li>
-<li>Mac: ~/Library/Application Support/Google/Chrome/Default/User StyleSheets/Custom.css</li>
-<li>ubuntu: ~/.config/chromium/Default/User StyleSheets/Custom.css</li>
-</ul>
-
-
-<p>※ちなみに僕はchromium,ironを利用しているので、そういった方は パスの&#8221;Google/Chrome&#8221;の部分は&#8221;chromium&#8221;を置換えれば同じようにスタイルの変更ができます。</p>
-
-<p>Githubにはいろんな人が作ったテーマが公開されています。 これらを使えば簡単にかっこよくできます。</p>
-
-<p><a href="https://github.com/search?p=2&amp;q=Chrome+developer+tools+Custom.css+extension%3Acss&amp;ref=searchresults&amp;type=Code">Github search(関係ないファイルもいっぱい検索ひっかっかってますが・・・)</a></p>
-
-<p>Chrome Develper Toolsを多用するかたは是非。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1844,6 +1876,10 @@ namespace facematch_sample
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/12/08/octopressniyi-xing-sitemimasita/">Octopressに移行してみました</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
       </li>
     
@@ -1857,10 +1893,6 @@ namespace facematch_sample
     
       <li class="post">
         <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
       </li>
     
   </ul>

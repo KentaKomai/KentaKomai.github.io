@@ -9,7 +9,7 @@
   <meta name="author" content="Kenta Komai">
 
   
-  <meta name="description" content="ブログの投稿のフォーマットをMarkdownn + pretty syntax highloghterに変更しました。Githubやtracのドキュメントに利用されている、軽量マークアップ言語です。今まで必要に迫られたときに限ってGoogle検索しながら、ちまちまと書いていましたが、 &hellip;">
+  <meta name="description" content="vimの魅力はたくさんあって、マルチプラットフォーム、豊富なプラグイン、 軽量な動作（そうとは言えないときもあるけど）などなど人それぞれあると思いますが、 僕が何よりも気に入っているのは、やはり独特なキーバインド。 マウス操作に慣れている人にとっては、それがvimへのハードルを上げ、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,6 +76,238 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+  
+    
+      <h1 class="entry-title"><a href="/blog/2013/06/26/wordpress48/">使ってるだいたいの環境でvimキーバインドを使う</a></h1>
+      
+      
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-26T00:00:00+09:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>vimの魅力はたくさんあって、マルチプラットフォーム、豊富なプラグイン、 軽量な動作（そうとは言えないときもあるけど）などなど人それぞれあると思いますが、 僕が何よりも気に入っているのは、やはり独特な<strong>キーバインド</strong>。</p>
+
+<p>マウス操作に慣れている人にとっては、それがvimへのハードルを上げ、なかなか馴染めない人も いるようですが、一度馴染んでしまうと本当にやめられない。</p>
+
+<p>（controlやescを多用することもあるけど）ホームポジションからあまり手が離れず 普通のテキストエディタよりずっと高速にタイピングできます（と僕は信じています（笑））</p>
+
+<p>よく使うキーバインドは、他の記事で紹介しましたので割愛します。 <a href="%22URL%22">以前の記事</a></p>
+
+<p>今回はvim以外の環境で、簡単にvimのキーバインドを活用する、ということです。</p>
+
+<p>僕はコーディングには、主にvimかsublimetext2を用いてますが 開発環境や、技術調査のためのブラウザでも、できればvimキーバインドを使いたいなーと思ってました。</p>
+
+<p>vim好きの人の信仰っぷりは凄まじいですね・・・ｗ探せばだいたいのツールに対して vimキーバインドを使えるようにするプラグインが存在しました。今回ボクが利用しているものを 紹介します。</p>
+
+<ol>
+<li>Google Chromeでvimキーバインド</li>
+<li>Eclipseでvimキーバインド</li>
+<li>Visual Stduio(2010)でvimキーバインド</li>
+<li>Sublimetext2でvimキーバインド</li>
+</ol>
+
+
+<p>以上の４つに関して紹介したいです。 たぶんvim好きな人は、既にほとんど知ってると思います。 むしろおすすめしたいのは<strong>これからvimを勉強したい！慣れたい！</strong>という人です。 これらを全て導入して、無理矢理キーバインドを体に馴染むようにすると<strong>一ヶ月もしないで</strong> 慣れます！（僕は違う環境だったけど、vimを使わないといけない状況で勝手に覚えた、<strong>辛かった</strong>）</p>
+
+<h3>Google Chromeでvimキーバインド</h3>
+
+<hr />
+
+<p>GoogleChromeにvimキーバインドを追加してくれるプラグインはいくつかありますが 僕が使ってるのはvichromeです。 <a href="https://chrome.google.com/webstore/detail/vichrome/gghkfhpblkcmlkmpcpgaajbbiikbhpdi">vichrome -chrome web store-</a></p>
+
+<p>ページ送りがhjklで可能です。検索も / で可能になります。以下にコマンドを挙げておきます。</p>
+
+<pre>Normal Mode Mapping (nmap)
+j : ScrollDown
+k : ScrollUp
+h : ScrollLeft
+l : ScrollRight
+&lt;C-f> : PageDown
+&lt;C-b> : PageUp
+&lt;C-d> : PageHalfDown
+&lt;C-u> : PageHalfUp
+gg : GoTop
+G : GoBottom
+t : TabOpenNew
+x : TabCloseCurrent
+X : TabCloseCurrent --focusprev
+n : NextSearch
+N : PrevSearch
+gt : TabFocusNext
+gT : TabFocusPrev
+&lt;C-l> : TabFocusNext
+&lt;C-h> : TabFocusPrev
+r : TabReload
+H : BackHist
+L : ForwardHist
+: : GoCommandMode
+/ : GoSearchModeForward
+? : GoSearchModeBackward
+a : GoLinkTextSearchMode
+f : GoFMode
+F : GoFMode --newtab
+; : GoExtFMode
+i : FocusOnFirstInput
+u : RestoreTab
+gp : WinOpenNew --pop
+gs : TabOpenNew --next view-source:%url
+yy : copyurl
+p : Open %clipboard
+P : TabOpenNew %clipboard
+o : Open -i
+O : TabOpenNew -i
+s : Open -i g
+S : TabOpenNew -i g
+b : Open -b
+B : TabOpenNew -b
+'' : BackToPageMark
+&lt;C-^> : TabSwitchLast
+&lt;C-ESC> : GoEmergencyMode
+&lt;ESC> : Escape
+&lt;C-[> : Escape
+,z : ToggleImageSize
+&lt;SPACE>tw : TabOpenNew http://www.twitter.com
+&lt;SPACE>gr : TabOpenNew http://www.google.com/reader
+&lt;SPACE>m : TabOpenNew https://mail.google.com/mail/#inbox
+Insert Mode Mapping (imap)
+&lt;ESC> : Escape
+&lt;C-[> : Escape
+
+Search/Command Mode Mapping (cmap)
+&lt;TAB> : FocusNextCandidate
+&lt;S-TAB> : FocusPrevCandidate
+&lt;DOWN> : FocusNextCandidate
+&lt;UP> : FocusPrevCandidate
+&lt;ESC> : Escape
+&lt;C-[> : Escape
+
+Emergency Mode Mapping (emap)
+&lt;ESC> : Escape
+
+Command Aliases (alias)
+o : Open
+ot : TabOpenNew
+opt : OpenOptionPage
+help : TabOpenNew http://github.com/k2nr/ViChrome/wiki/Vichrome-User-Manual
+map : NMap
+tabe : TabOpenNew
+tabnew : TabOpenNew
+tabn : TabFocusNext
+tabp : TabFocusPrev
+tabN : TabFocusPrev
+tabr : TabFocusFirst
+tabl : TabFocusLast
+tabc : TabCloseCurrent
+tabo : TabCloseAll --only
+tabs : TabList
+q : TabCloseAll
+copyurl : Copy %url
+copytitle : Copy %title
+viewsource : TabOpenNew --next view-source:%url
+OpenNewTab : TabOpenNew
+MoveToNextTab : TabFocusNext
+MoveToPrevTab : TabFocusPrev
+MoveToFirstTab : TabFocusFirst
+MoveToLastTab : TabFocusLast
+CloseCurTab : TabCloseCurrent
+CloseAllTabs : TabCloseAll
+ShowTabList : TabList
+ReloadTab : TabReload
+OpenNewWindow : WinOpenNew
+ext : TabOpenNew chrome://extensions/
+option : TabOpenNew chrome://settings/browser
+downloads : TabOpenNew chrome://downloads
+history : TabOpenNew chrome://history
+
+※C -> Ctrlの意味
+</pre>
+
+
+<p>よく使うvimキーバインドがchromeの機能に置き換わってるのがわかると思います。 ※ちなみに左がコマンドで右がその動作ね。</p>
+
+<p>僕が不便に感じた点は Ctrl + l のキーバインドです。 Chromeの場合、Ctrl + l はアドレスバーにフォーカスするショートカットキーですが、それが このプラグインで上書きされてしまいます・・・。（タブ移動のエイリアスになってる） gtとgTでタブ移動できるんだから変なエイリアス追加しないで欲しかった、というのが正直なきもちです。</p>
+
+<p>一応、chromeのショートカットを変更することも、vichromeのキーバインドやエイリアスを変更することも 可能ではあるらしいのですが、僕がやってないので、紹介はしません。</p>
+
+<h3>Eclipseでvimキーバインド</h3>
+
+<hr />
+
+<p>僕はデバッグはIDEを使い、コーディングにはvimまたはsublimetextを使う、というのが一番 慣れているんですが、sastrutsかplayを使ったお仕事のときにEclipseで構築したtomcatサーバで、 Eclipse以外で編集されたコードがあってもHot-deployが動作しない、ということがありました。 （ごめんないさい、原因も解決策もないですし、もしかしたら何か別の問題かも。ただvimで編集しても Hot-deployが動作しなかったことだけは確か）</p>
+
+<p>仕方なくEclipseで作業することにしたんですが、マウス操作やカーソル移動が煩わしくプラグインを探しました <a href="http://vrapper.sourceforge.net/update-site/stable/">vrapper</a></p>
+
+<p>こちらのプラグインはvichromeほど多機能ではありませんが、カーソル移動やウィンドウ制御に 関しては、vimと同様のものを提供しています。</p>
+
+<p>ただ、煩わしいのはディレクトの移動ですね。これはvim以外の大多数のエディタに言えることですが 複数ファイルをサイドバーから選ぶ、なんていうときは大体マウス操作が必要になります。</p>
+
+<p>いろんなファイルを開いておいてタブ移動、ならgt gTで問題ないんですが、急に関連のないファイルを 見たいときなんかは不便です。関連のあるクラスやファイルなんかは、僕はEclipseのショートカットである F3を利用しています。（定義に移動するショートカット）</p>
+
+<h3>VisualStudio (2010)でvimキーバインド</h3>
+
+<hr />
+
+<p>こちらも理由としてはほとんどEclipseと一緒。最近のお仕事や個人の制作では利用することが少なく なったんですが、学校の課題でwindowsアプリケーションがあったので最近導入しました。</p>
+
+<p>Eclipseがプラグインだらけで最近ものすっごくもっさりしてきたので、久しぶりに使ったら VisualStudioすごい快適に感じました。（バージョンは2010です）</p>
+
+<p>導入しているプラグインはVsVim <a href="http://visualstudiogallery.msdn.microsoft.com/59ca71b3-a4a3-46ca-8fe1-0e90e3f79329/">VsVim</a></p>
+
+<p>ついでなんですけど、VisualStudioもEclipseもテーマを配布していて、エディタの外観を自由に変更 できます。VisualStudioに対応したものを配布しているサイトを貼っておきます。 <a href="http://studiostyl.es/">studio style</a></p>
+
+<h3>Sublimetext2でvimキーバインド</h3>
+
+<hr />
+
+<p>これはSublimetextを使ってて、vimに対応させた、というよりはvimキーバインドが標準で使えるから sublimetextを使ってみた、というのが僕の場合正しいです。</p>
+
+<p>sublimetextには標準でvimキーバインドを有効にする設定が用意されています。 <a href="http://www.sublimetext.com/docs/2/vintage.html">sublimetext公式Document -vintage mode-</a></p>
+
+<p>&#8220;ignored_packages&#8221;: [&ldquo;Vintage&rdquo;]を空にして、&#8221;vintage_start_in_command_mode&#8221;: true にするだけですね。</p>
+
+<p>僕は加えてBlock Cursor Everywhere と vintageEX をvim系操作の強化として導入しています。</p>
+
+<hr />
+
+<p>なんかあんまり中身ない、ただプラグインの紹介で終わった気もするけど。こうやって見ると『だいたいの環境で』とかいいつつ、自分ブラウザとエディタとIDEくらいしか使ってないのかなー（笑）</p>
+
+<p>無理矢理にでもvimの操作になれたい人は是非！Macの開発者向けアプリのdashも最近vimキーバインドをサポートしました。</p>
+
+<p><a href="https://itunes.apple.com/jp/app/dash-docs-snippets/id458034879?mt=12">Dash -app store-</a></p>
+
+<p>vimrcとgvimrcも特別な設定はしていませんが、公開しています。vimrcのほうには、よくつかうけど忘れるコマンドのメモとかも書いちゃってますｗ</p>
+
+<p>これは別ファイルにしたほうがいいかもなー。<br/>
+<a href="https://github.com/KentaKomai/MyConfigureFIles/blob/master/vimrc">vimrc -github-</a><br/>
+<a href="https://github.com/KentaKomai/MyConfigureFIles/blob/master/gvimrc">gvimrc -github-</a></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1849,98 +2081,6 @@ if __name__ == "__main__":
 
     </article>
   
-  
-    <article>
-      
-  <header>
-  
-    
-      <h1 class="entry-title"><a href="/blog/2013/05/16/wordpress38/">python2.x系でfor文でrange()を使う際に気をつけたいこと</a></h1>
-      
-      
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-05-16T00:00:00+09:00" pubdate data-updated="true"></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>おそらく日常的にpythonを書いてる人からしたら当然の内容なんだと思いますが、たまに簡単なスクリプトを書く程度に利用していた僕は今日初めてしりました。</p>
-
-<p>&nbsp;</p>
-
-<p>とあるスクリプトを書いているときに</p>
-
-<pre class="lang:python decode:true">for i in range(1, 4294967295):
-    print("%x" %i)</pre>
-
-
-<p>としてループを実行させました。</p>
-
-<p>すると、16GB載せているメモリが残り20MBとかくらいになっちゃって、まったく処理が進まない・・・。</p>
-
-<p>あぁーさすがに数が大きかったか・・・。と、この処理を別の手段で書く方法を探すことにしました。</p>
-
-<p>&nbsp;</p>
-
-<p>公式リファレンスを確認すれば、すぐにわかりますがrange()関数は第一引数から第二匹数までの数を列挙したリストを返します。<a href="http://docs.python.org/2/library/functions.html?highlight=range#range">range()関数公式リファレンス</a></p>
-
-<p>上記サンプルのようにかけば</p>
-
-<p>[1, 2, 3, 4, 5, 6, 7, 8, 9, … , 429496967295]</p>
-
-<p>というリストが生成されます。これによって、1から429496967295までの全ての整数が、メモリ上に確保されることになり、あっという間にメモリを食いつぶします。</p>
-
-<p>というわけで、こういう時（非常に大きい回数繰り返しを行いたいとき）は、xrange()関数を利用します。</p>
-
-<p>上記サンプルを書き直すと</p>
-
-<pre class="lang:python decode:true">for i in xrange(1, 4294967295):
-    print("%x" %i)</pre>
-
-
-<p>xrange()関数を利用することによって、リストを生成するのではなく、xrange()オブジェクトを生成し、指定した範囲をリストでメモリに確保せずに、都度数字を生成して返します。</p>
-
-<p>&nbsp;</p>
-
-<p>ちなみに、python3.x系ではxrange()関数は廃止され、range()関数がxrange()関数と同じようにリストを生成するのではなく、rangeオブジェクトを返します。</p>
-
-<p>リストが欲しいときは</p>
-
-<pre class="lang:default decode:true">x = range(1.10)
-y = list(x)</pre>
-
-
-<p>とすればOKみたいです。</p>
-
-<p>python3.x系ではxrange()は廃止されているので、2系を3系に移行する場合は注意が必要です。</p>
-
-<p>※個人的には互換残すために、そのままxrange()を残してもよかったんじゃないかなぁ・・・とも少しだけ思いますが、printが関数になったり、より良く変えていくには、切り捨ても必要なのかもしれません。</p>
-
-<p>&nbsp;</p>
-
-<p>&nbsp;</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -1958,6 +2098,10 @@ y = list(x)</pre>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/12/08/octopressniyi-xing-sitemimasita/">Octopressに移行してみました</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/11/28/wordpress77/">簡易プロセス死活監視プログラムをc#で</a>
       </li>
     
@@ -1971,10 +2115,6 @@ y = list(x)</pre>
     
       <li class="post">
         <a href="/blog/2013/11/18/wordpress74/">Vagrant + Chef solo + Berkshelfを試してみたのでまとめ</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/11/10/wordpress73/">xv6のソースコードとテキストを読んでみる1_chapter0_1</a>
       </li>
     
   </ul>

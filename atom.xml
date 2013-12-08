@@ -4,7 +4,7 @@
   <title><![CDATA[KentaKomai's BLOG]]></title>
   <link href="http://KentaKomai.github.io/atom.xml" rel="self"/>
   <link href="http://KentaKomai.github.io/"/>
-  <updated>2013-12-08T21:04:55+09:00</updated>
+  <updated>2013-12-08T22:34:46+09:00</updated>
   <id>http://KentaKomai.github.io/</id>
   <author>
     <name><![CDATA[Kenta Komai]]></name>
@@ -12,6 +12,81 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    
+    <title type="html"><![CDATA[Octopressに移行してみました]]></title>
+    <link href="http://KentaKomai.github.io/blog/2013/12/08/octopressniyi-xing-sitemimasita/"/>
+    
+    <updated>2013-12-08T21:47:30+09:00</updated>
+    <id>http://KentaKomai.github.io/blog/2013/12/08/octopressniyi-xing-sitemimasita</id>
+    
+    <content type="html"><![CDATA[<p>今までは僕の個人ブログは自宅サーバ + wordpress で運用していたんですが</p>
+
+<ul>
+<li>自宅鯖を気軽に止めたい、再起動したい</li>
+<li>何かしら問題があってもブログサービスを安定して動作させたい</li>
+</ul>
+
+
+<p>という理由があって、代替サービスを探していました。
+一応僕が考えている条件として</p>
+
+<ol>
+<li>Markdownで記述できる</li>
+<li>独自ドメインを利用できる</li>
+<li>ソースコードの記述がいい感じにしやすい</li>
+</ol>
+
+
+<p>この３つを満たすものを探していました。</p>
+
+<p>周りの方も多く利用している、はてなブログが最初に候補として最有力でしたが、
+独自ドメインが有料版限定であることと、個人的には管理画面の動作が重く、
+旧ブログから記事を移植しただけで、馴染めませんでした・・・。</p>
+
+<p>そこで、最近流行りのOctopressを導入してみました。</p>
+
+<p>一応Octopressのメリット</p>
+
+<ol>
+<li>もちろんMarkdownで記述可能</li>
+<li>GithubPageで運用可能</li>
+<li>(GithubPageで運用可能なため)独自ドメインで利用可能</li>
+<li>標準でインストールされているプラグインを利用してシンタックスハイライトも可能</li>
+<li>静的ページをアップロードするだけなので、動作早い</li>
+<li>管理画面は存在せず、コマンドと、テキスト編集で記事の作成・アップロードが可能(後述しますがデメリットとも言える)</li>
+<li>rake previewでローカルで動作確認が可能</li>
+</ol>
+
+
+<p>こんな感じで、ひととおり僕の希望は満たしてくれています。
+インストール手順は、他の記事や公式サイトでたっぷり紹介されているので割愛します。</p>
+
+<p>唯一、手間取った点が、wordpressから記事をエクスポートしたんですが、
+日本語タイトルの記事が全部、ダメ（404エラーになってしまう）</p>
+
+<p>今のところ日本語タイトルには対応していないようなので、仕方なく手作業で、
+半角英数字でリネームしました。面倒臭かったけど、それで問題なく動作しました。</p>
+
+<p>ただ、運用してすぐに、いくつかデメリットも感じたので、書いておきます。</p>
+
+<ol>
+<li>全て静的ページなので記事検索はGoogleSearch経由で行われる</li>
+<li>テーマは2013.12現在ではまだかなり少ない。</li>
+<li>アクセス解析は別サービスを利用する必要がある(wordpressnときはjetpack使ってた)</li>
+<li>エンジニア以外で運用するには敷居が高い(インストール、テーマ変更、記事作成全てコマンド)</li>
+</ol>
+
+
+<p>こんな感じです。まだ勝手もなにもわかってないので、逐次追加修正していきたいと思います。</p>
+
+<p>ローカルで記事作成して、確認して、いつでも鯖にアップロード、っていうだけでも便利です。</p>
+
+<p>とりあえずテーマは少しづつでも自分好みに変えていきたいです。</p>
+]]></content>
+    
+  </entry>
   
   <entry>
     
@@ -3539,800 +3614,6 @@ if __name__ == "__main__":
 <p>消化ターン数のランキングとかあったら、もっと良かったなぁ、と思いましたが、Gistを検索すると、様々な方のコードを見ることができるので、勉強になると思います。（※ちなみにゲーム内にランダム要素はありません。同じアルゴリズムでは、必ず同じ動作・結果になります。）</p>
 
 <p>僕がクリアできたくらいなので、プログラミング初心者・Ruby初心者でも解ける問題だと思います。 お時間あれば、是非挑戦してみてください。面白かったです。</p>
-]]></content>
-    
-  </entry>
-  
-  <entry>
-    
-    <title type="html"><![CDATA[[AugularJS]todomvcのソースコードで基本的な使い方を確認・復習(夏休み企画3)]]></title>
-    <link href="http://KentaKomai.github.io/blog/2013/07/29/wordpress58/"/>
-    
-    <updated>2013-07-29T00:00:00+09:00</updated>
-    <id>http://KentaKomai.github.io/blog/2013/07/29/wordpress58</id>
-    
-    <content type="html"><![CDATA[<p>前回に引き続き、AnguarJSに関しての自習</p>
-
-<p>前回・前々回で、基本的なmoduleAPIとdirectiveに関してある程度調べたので、 次は実際にプロジェクトで記述されているレベルのものを、読みといていこうと思います。</p>
-
-<p>本当はserviceに関して($http, $rocate, $routeProviderなど)に関して書こうと 思ってたんですが、ググってたらとてもいいサンプルがあったので、読んでみました。</p>
-
-<p>公式で紹介されている、シンプルなtodoアプリを自分で機能追加したものも書いてみたんですが、 それは機会があれば。</p>
-
-<p><a href="https://github.com/tastejs/todomvc/tree/gh-pages/architecture-examples/angularjs">tastejs/todomvc -github-</a></p>
-
-<p>様々なフレームワークを利用してTODOアプリを書いてみたものが、豊富に公開されています。 backborn.jsとかknockout.js、jqueryまでありますので、比較すると面白いかもしれません。</p>
-
-<p>実際に動いている状態のものは<a href="http://todomvc.com/architecture-examples/angularjs/#/">こちら</a></p>
-
-<p>今回は無論AngularJSのサンプルを見ていきます。</p>
-
-<h3>まずはindex.htmlで呼び出されているjsファイルを確認</h3>
-
-<pre></pre>
-
-
-<p>こんな感じ。</p>
-
-<p>公式で推奨されているように、それぞれファイルを分割していますね。</p>
-
-<p>app.jsでmouduleをグローバルで定義して、各ファイルでそのmoduleを拡張しています。</p>
-
-<p>外部moduleなどを使っていない点、チュートリアルとして、とても良いと思います。</p>
-
-<h3>AngularJS関連のファイルの構成を確認</h3>
-
-<h4>●app.js</h4>
-
-<pre>var todomvc = angular.module('todomvc', []);
-</pre>
-
-
-<p>todomvcというmoduleを定義するだけのファイル。</p>
-
-<h4>●jsディレクトリ内のサブディレクトリ</h4>
-
-<pre>todomvc.directive('todoFocus', function ($timeout) {
-    return function (scope, elem, attrs) {
-        scope.$watch(attrs.todoFocus, function (newVal) {
-            if (newVal) {
-                $timeout(function () {
-                    elem[0].focus();
-                }, 0, false);
-            }
-        });
-    };
-});
-</pre>
-
-
-<p>複数ファイルがあるうちの１つを取り上げますが、内容はだいたい同じ。</p>
-
-<p>&#8216;todoFocus&#8217;というattributreを定義しています。todoFocusというプロパティの変化に応じて、 処理を行うdirectiveのようです。 詳細は後ほど。今はザックリと構成を追っていきます。</p>
-
-<p>todomvcというapp.jsで定義されたmoduleを他のファイルで拡張している点に注目です。</p>
-
-<p>この辺は使われているプロジェクトによって、結構違いがあるんですが、こういう拡張もいいですね。 こういう形式にしたほうが、directive専用のmoduleを定義して、 app.jsでインポートするより、変更は少ないし、拡張はしやすいかもしれません。</p>
-
-<p>その代わり、他のプロジェクトに、このmoduleの一部を持ち出したいときは、ソースの変更が必要になりますが。</p>
-
-<h3>index.htmlを確認して、処理を追いかける。</h3>
-
-<h4>bodyタグすぐ下のsectionタグでコントローラーを指定</h4>
-
-<pre>&lt;section id="todoapp" ng-controller="TodoCtrl">
-</pre>
-
-
-<p>このページのほとんど全体を含んでいるタグです。 このページでは&#8217;TodoCtrl&#8217;というコントローラー１つで全ての処理を行うようです。</p>
-
-<h4>id=&#8221;header&#8221;の箇所</h4>
-
-<pre>&lt;header id="header">
-    <h1>
-  todos
-</h1>
-    
-&lt;/header>
-</pre>
-
-
-<p>簡単ですね。TodoCtrlの$scope.newTodoに、input#new-todoが対応しています。formのsubmitが行われると TodoCtrlの$scope.addTodo()が実行される、という流れ。</p>
-
-<p>それでは$scope.addTodo()の中身を確認。</p>
-
-<pre>$scope.addTodo = function () {
-    var newTodo = $scope.newTodo.trim();
-    if (!newTodo.length) {
-        return;
-    }
-
-    todos.push({
-        title: newTodo,
-        completed: false
-    });
-
-    $scope.newTodo = '';
-};
-</pre>
-
-
-<p>これも簡単ですね。$scope.newTodo（つまり、input#new-todoのvalue）から 空白文字と終端文字を削除(trim()関数)して、newTodo変数に格納。</p>
-
-<p>それから、newTodoの入力チェックして(!newTodo.length)ちゃんと入力があれば todo一覧にnewTodoの中身をpush(todos.push)して、あとは$scope.newTodoの中身をリセット($scope.newTodo = &#8221;;)</p>
-
-<p>いたってシンプルです。</p>
-
-<h4>section#mainの箇所</h4>
-
-<pre>&lt;section id="main" ng-show="todos.length" ng-cloak>
-</pre>
-
-
-<p>ng-show=&#8221;todos.length&#8221;は、todosの要素数が1以上なら、このElement内を表示、って感じです。</p>
-
-<p>ここから順番に見ていきます。</p>
-
-<pre><input id="toggle-all" type="checkbox" ng-model="allChecked" ng-click="markAll(allChecked)" />
-<label for="toggle-all">Mark all as complete</label>
-</pre>
-
-
-<p>またinputタグ。チェックボックスですね。$scope.allCheckedに対応。クリックすることで、$scope.markAll(allChecked)が 実行されます。</p>
-
-<p>大体予想がつきますが、一応、$scope.markAll()の処理を確認してみます。</p>
-
-<pre>$scope.markAll = function (completed) {
-    todos.forEach(function (todo) {
-        todo.completed = completed;
-    });
-};
-</pre>
-
-
-<p>$scope.totodsをforEachで回して、それぞれの要素をtodoとして、その中のcompletedを チェックボックス(引数にあるcompletedで、 つまりinput#toggle-all)にチェックがあれば、true、なければfalseを設定しています。</p>
-
-<p>これによって、全ての要素に対して一度にチェックしたり、外したりしていますね。</p>
-
-<p>angular.forEach(objects, function(){&#8230;})の形式は多用されるので覚えておくと便利です。</p>
-
-<p>※個人的には、引数の名前がcompletedというのはミスなのかな・・・と思ってます。 生意気ですが、isAllCheckedとかのほうがいいんじゃないかな・・・。と個人的には思います・・・。</p>
-
-<p>更に進んでいきます。</p>
-
-<pre><ul id="todo-list">
-  <li ng-repeat="todo in todos | filter:statusFilter" ng-class="{completed: todo.completed, editing: todo == editedTodo}">
-    <div class="view">
-      <input class="toggle" type="checkbox" ng-model="todo.completed" />
-                  <label ng-dblclick="editTodo(todo)"></label>
-                  <button class="destroy" ng-click="removeTodo(todo)"></button>
-              
-    </div>
-            
-        
-  </li>
-  
-</ul>
-</pre>
-
-
-<p>このアプリ最大のキモである、todo一覧を表示する箇所です。(view)</p>
-
-<p>上から順番に</p>
-
-<pre><li ng-repeat="todo in todos | filter:statusFilter" ng-class="{completed: todo.completed, editing: todo == editedTodo}">
-  </pre>
-
-
-<p>  <p></p>
-
-<pre><code>$scope.todosの要素数だけ繰り返します。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>ポイントは、filter:statusFilterの部分。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-$scope.$watch(&lsquo;location.path()&rsquo;, function (path) {</p>
-
-<pre><code>$scope.statusFilter = (path === '/active') ?
-    { completed: false } : (path === '/completed') ?
-    { completed: true } : null;
-</code></pre>
-
-<p>});
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>ここで、何をしているか、というとlocation.path()を監視して、変化があれば$scope.statusFilterを常に切り替えてます。
-具体的に言うと
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <ul></p>
-
-<pre><code>&lt;li&gt;
-  URL が****/activeならcompleted:false
-&lt;/li&gt;
-
-&lt;li&gt;
-  URL が****/completedならcompleted:true
-&lt;/li&gt;
-
-&lt;li&gt;
-  それ以外は全てnull
-&lt;/li&gt;
-</code></pre>
-
-<p>  </ul></p>
-
-<p>  <p></p>
-
-<pre><code>を設定しています。これによって、URLによって
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <ul></p>
-
-<pre><code>&lt;li&gt;
-  終了していないtodoの一覧を表示する
-&lt;/li&gt;
-
-&lt;li&gt;
-  終了したtodoの一覧を表示する
-&lt;/li&gt;
-
-&lt;li&gt;
-  全て表示する
-&lt;/li&gt;
-</code></pre>
-
-<p>  </ul></p>
-
-<p>  <p></p>
-
-<pre><code>を切り替えています。かしこいー。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>URLの切り替えは
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-&lt;footer id=&ldquo;footer&rdquo; ng-show=&ldquo;todos.length&rdquo; ng-cloak></p>
-
-<pre><code>&lt;span id="todo-count"&gt;&lt;strong&gt;&lt;/strong&gt;
-    &amp;lt;ng-pluralize count="remainingCount" when="{ one: 'item left', other: 'items left' }"&gt;&amp;lt;/ng-pluralize&gt;
-&lt;/span&gt;
-&lt;ul id="filters"&gt;
-</code></pre>
-
-<p>  <li></p>
-
-<pre><code>&lt;a ng-class="{selected: location.path() == '/'} " href="#/"&gt;All&lt;/a&gt;
-</code></pre>
-
-<p>  </li></p>
-
-<p>  <li></p>
-
-<pre><code>&lt;a ng-class="{selected: location.path() == '/active'}" href="#/active"&gt;Active&lt;/a&gt;
-</code></pre>
-
-<p>  </li></p>
-
-<p>  <li></p>
-
-<pre><code>&lt;a ng-class="{selected: location.path() == '/completed'}" href="#/completed"&gt;Completed&lt;/a&gt;
-</code></pre>
-
-<p>  </li></p>
-
-<p></ul></p>
-
-<p><button id="clear-completed" ng-click="clearCompletedTodos()" ng-show="completedCount">Clear completed ()</button>
-&lt;/footer>
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>この部分のaタグで切り替えてますね。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>つぎは、いよいよtodoそのものが表示されている部分
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre></p>
-
-<div class="view">
-  <input class="toggle" type="checkbox" ng-model="todo.completed" />
-      <label ng-dblclick="editTodo(todo)"></label>
-      <button class="destroy" ng-click="removeTodo(todo)"></button>
-  
-</div>
-
-
-<p></pre></p>
-
-<p>  <p></p>
-
-<pre><code>上から順番に。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>最初はチェックボックス、モデルは$scope.todo.completedです。このチェックボックスを切り替えることに
-よって、対象のtodoが完了か、そうでないかを判断・切替ができるようになってます。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>つぎはtodoの内容()です。ダブルクリックすると(ng-dblclick)すると$scope.editTodo(todo)
-が動作するようになっていますね。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>$scope.editTodo()を見てみます。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-$scope.editTodo = function (todo) {</p>
-
-<pre><code>$scope.editedTodo = todo;
-// Clone the original todo to restore it on demand.
-$scope.originalTodo = angular.extend({}, todo);
-</code></pre>
-
-<p>};
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>ダブルクリックされた$scope.todoを引数に受け取り、$scope.editedTodoにコピーしてますね。
-これ、ちょっと、いまは意味不明ですが、angular.extend({}, todo)で、これまた$scope.originalTodoに
-todoオブジェクトをコピーしています。これの違いは後ほど。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>最後はボタン。クリックするとremoveTodo(todo)が実行されます。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>処理内容は以下
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-$scope.removeTodo = function (todo) {</p>
-
-<pre><code>todos.splice(todos.indexOf(todo), 1);
-</code></pre>
-
-<p>};
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>これはそのまんま。todosのなかからtodoと同じものを探して、そこから１つを削除。
-つまり、todosのなかのtodoのみを削除。それだけです。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>そして最後。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre></p>
-
-<p></pre></p>
-
-<p>  <p></p>
-
-<pre><code>ここに今回、説明がめんどくさい部分が全て集結していると言っても
-過言ではない。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>まずは見慣れない、attirbuteが３つ。todo-blurとtodo-escapeとtodo-focus。
-それぞれに何かしらのイベントかなんかが、設定されています。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>これは最初のほうに説明した、独自directiveです。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>これらが何をしているか、それぞれのファイルを見てみます。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>まずはtodo-escape.js
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-todomvc.directive(&lsquo;todoBlur&rsquo;, function () {</p>
-
-<pre><code>var ESCAPE_KEY = 27;
-return function (scope, elem, attrs) {
-    elem.bind('keydown', function (event) {
-        if (event.keyCode === ESCAPE_KEY) {
-            scope.$apply(attrs.todoEscape);
-        }
-    });
-};
-</code></pre>
-
-<p>});
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>ごめんなさい、初見だと意味わかんない。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>要するに、keydownされたときのeventを監視してるんですが、押されたkeyがESCだったときに
-scope.$apply(attrs.todoEscape);を実行する、感じですね。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>じゃぁ$applyとは何か。ものすごくざっくり言うと、引数に受け取った関数を実行する、的な感じ。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>面白いな、と思ったのが、todo-escapeもtodo-blurもtodoBlurとして定義されているんですね。
-それで、ESCが押されたか、そうでないかで実行する処理を変えてます。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>上記のtodo-escape.jsでは&amp;#8217;todoBlur&amp;#8217;というattirbuteがついたDOMエレメントが、keydownでESCが押された場合は
-そのDOMエレメントのtodoEscapeというattributeの内容が関数として実行されます。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>つまり、上記の場合だとrevertEditing(todo)という処理が実行される。うまくできてるなー・・・。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-$scope.revertEditing = function (todo) {</p>
-
-<pre><code>todos[todos.indexOf(todo)] = $scope.originalTodo;
-$scope.doneEditing($scope.originalTodo);
-</code></pre>
-
-<p>};
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>ここでの処理は、todos内のtodoと同じオブジェクトに、編集前のオブジェクトを挿入しています。
-その後は$scope.doneEditing($scope.originalTodo)を実行。これは後ほど。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>うまく説明できてないと思いますが、ソースコード読んでもらえれば納得できると思います。
-todo-escape.jsというファイルでありながら、todoEscapeというdirectiveが定義されているわけではないんですね。
-あくまで、todoEscapeという属性に書かれた関数を取るため。イベントの監視自体はtodoBlurという属性で監視しています。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>次はtodo-blur.js
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-todomvc.directive(&lsquo;todoBlur&rsquo;, function () {</p>
-
-<pre><code>return function (scope, elem, attrs) {
-    elem.bind('blur', function () {
-        scope.$apply(attrs.todoBlur);
-    });
-};
-</code></pre>
-
-<p>});
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>これはシンプルですね。対象のDOMエレメントに対して、blurのイベントをbindして、
-todoBlurに設定された関数を実行する、という感じです。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>この形式は、非常に汎用性が高いので、覚えておくと便利かもしれません。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>todoBlurに設定されているイベントはdoneEditing(todo)ですね。さきほどの$scope.revertEditing()
-内でも呼び出されていました。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-$scope.doneEditing = function (todo) {</p>
-
-<pre><code>$scope.editedTodo = null;
-todo.title = todo.title.trim();
-
-if (!todo.title) {
-    $scope.removeTodo(todo);
-}
-</code></pre>
-
-<p>};
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>こちらは$scope.editedTodo（編集中のtodo）をnullにして、todo.titleから空白文字、終端文字を削除。
-最後に、todo.titleが空っぽなら、$scope.removeTodo(todo);を実行。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>最後にtodo-focus.js
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-todomvc.directive(&lsquo;todoFocus&rsquo;, function todoFocus($timeout) {</p>
-
-<pre><code>return function (scope, elem, attrs) {
-    scope.$watch(attrs.todoFocus, function (newVal) {
-        if (newVal) {
-            $timeout(function () {
-                elem[0].focus();
-            }, 0, false);
-        }
-    });
-};
-</code></pre>
-
-<p>});
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>これも、よく見かける形式です。todoFocusに設定された値（&amp;#8221;todo == editedTodo&amp;#8221;）を監視して、
-この値がtrueなら
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-$timeout(function () {</p>
-
-<pre><code>elem[0].focus();
-</code></pre>
-
-<p>}, 0, false);
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>を実行します。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>これで、先ほど後回しにした
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <pre>
-$scope.editTodo = function (todo) {</p>
-
-<pre><code>$scope.editedTodo = todo;
-// Clone the original todo to restore it on demand.
-$scope.originalTodo = angular.extend({}, todo);
-</code></pre>
-
-<p>};
-</pre></p>
-
-<p>  <p></p>
-
-<pre><code>の話が出てきます。
-要素をダブルクリックすると$scope.editTodoに、クリックしたtodoが設定されます。(変更前のものも、$scope.originalTodoにコピーしておきます)
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>これが変更されると、todoFocusというattributeによって、&amp;#8221;todo == editedTodo&amp;#8221;が評価されます。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>editedTodoはtodoがコピーされているので、対象のDOMエレメントがfocus()されます。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>これによって、ユーザがテキストボックスに入力できるようになります。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>入力が終了して、blurされるか、ESCキーがkeydownされると、前述した、それぞれの処理へ。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>こんな感じです。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>これで全部。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <h3></p>
-
-<pre><code>今回説明しなかったところをざっくりと。
-</code></pre>
-
-<p>  </h3></p>
-
-<p>  <ol></p>
-
-<pre><code>&lt;li&gt;
-  データは全てlocal strageに保存されている。
-&lt;/li&gt;
-
-&lt;li&gt;
-  データの新規作成、詳細の取得、編集、削除はfactoryのgetとputで管理している
-&lt;/li&gt;
-
-&lt;li&gt;
-  TodoCtrl内でtodos(todoの一覧)のデータを$watch(変更の監視)をすることによって、各種処理で変更があった場合は
-  factoryを通してデータを処理している
-&lt;/li&gt;
-</code></pre>
-
-<p>  </ol></p>
-
-<p>  <p></p>
-
-<pre><code>これでソースコードの全部を説明終わり。
-上記３点によって、完全にHTML/CSS/javascriptのアプリケーションになってますね。
-local strageを利用しているのでオフラインでも利用できます。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>絶対わかりづらいと思うけど、ごめんなさい。
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>このソースコードが実際に動作しているのは
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>&lt;a href="http://todomvc.com/architecture-examples/angularjs/#/"&gt;todos&lt;/a&gt;
-</code></pre>
-
-<p>  </p></p>
-
-<p>  <p></p>
-
-<pre><code>にて、確認できます。ソースコードと並べて動作を見ると本当に勉強になります。
-</code></pre>
-
-<p>  </p></p>
 ]]></content>
     
   </entry>

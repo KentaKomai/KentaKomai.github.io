@@ -5,11 +5,13 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>xv6のソースコードとテキストを読んでみる 0 - KentaKomai's BLOG</title>
+  <title>Octopressに移行してみました - KentaKomai's BLOG</title>
   <meta name="author" content="Kenta Komai">
 
   
-  <meta name="description" content="きっかけはなんとなくジャケ買いしたこちらの書籍 Unix v6のソースコード約10,000行を読み解いて、OSの基礎を学ぼう、という本です。 最初のほうは『とりあえずざっくりは知ってるけど、詳しくは知らない』程度の内容が多かったので、 「こうなってたのかー」とおもしろく読めていたのですが、 &hellip;">
+  <meta name="description" content="今までは僕の個人ブログは自宅サーバ + wordpress で運用していたんですが 自宅鯖を気軽に止めたい、再起動したい
+何かしら問題があってもブログサービスを安定して動作させたい という理由があって、代替サービスを探していました。
+一応僕が考えている条件として Markdownで記述できる &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +20,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/10/28/wordpress71">
+  <link rel="canonical" href="http://KentaKomai.github.io/blog/2013/12/08/octopressniyi-xing-sitemimasita">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="KentaKomai's BLOG" type="application/atom+xml">
@@ -80,7 +82,7 @@
   <header>
   
     
-      <h1 class="entry-title">Xv6のソースコードとテキストを読んでみる 0</h1>
+      <h1 class="entry-title">Octopressに移行してみました</h1>
     
   
     
@@ -97,47 +99,76 @@
   
 
 
-<time datetime="2013-10-28T00:00:00+09:00" pubdate data-updated="true"></time>
+<time datetime="2013-12-08T21:47:30+09:00" pubdate data-updated="true">Dec 8<span>th</span>, 2013</time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><p>きっかけはなんとなくジャケ買いした<a href="http://www.amazon.co.jp/%E3%81%AF%E3%81%98%E3%82%81%E3%81%A6%E3%81%AEOS%E3%82%B3%E3%83%BC%E3%83%89%E3%83%AA%E3%83%BC%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0-~UNIX-V6%E3%81%A7%E5%AD%A6%E3%81%B6%E3%82%AB%E3%83%BC%E3%83%8D%E3%83%AB%E3%81%AE%E3%81%97%E3%81%8F%E3%81%BF-Software-Design/dp/4774154644">こちらの書籍</a></p>
+<div class="entry-content"><p>今までは僕の個人ブログは自宅サーバ + wordpress で運用していたんですが</p>
 
-<p>Unix v6のソースコード約10,000行を読み解いて、OSの基礎を学ぼう、という本です。</p>
+<ul>
+<li>自宅鯖を気軽に止めたい、再起動したい</li>
+<li>何かしら問題があってもブログサービスを安定して動作させたい</li>
+</ul>
 
-<p>最初のほうは『とりあえずざっくりは知ってるけど、詳しくは知らない』程度の内容が多かったので、 「こうなってたのかー」とおもしろく読めていたのですが、内容が進んでいくにつれて、 ソースコードを参照しながら確認する箇所が増えていき、K＆RのCで書かれていたソースコードを読むのが辛くなってきました。</p>
 
-<p>ちょっと最後までモチベーションを保ったまま読み終えることが、僕の頭では難しそうだった為、 もうちょっと敷居の低いものがないかなー・・・と探してみたところ、Unix v6をANSI Cで書き直し、 x86で動作するように再実装したxv6というものを発見しました。</p>
-
-<p>MIT(マサチューセッツ工科大学)のオペレーティングシステムクラスの授業で利用されて いたようで、100ページほどのテキストも一緒に配布されていました。</p>
-
-<p>僕の英語力は僕を知っている方はご存知の通り、ご愁傷様としか言えませんが 継続できそうな物量と内容なので、ブログで少しづつ翻訳したりソースコード読んで、 中身を勉強していきたいと思います。</p>
-
-<p>はっきり言って現時点で冒頭に紹介した書籍より、xv6のソースコードを読み解くほうが、敷居が低いかどうかは テキストもソースコードも中身を読んでないので不明ですが、</p>
+<p>という理由があって、代替サービスを探していました。
+一応僕が考えている条件として</p>
 
 <ol>
-<li>約100ページのテキストなので、わからなくてもとりあえずは最後まで読み終える</li>
-<li>ANSI Cで書かれているので、C言語にそこまで慣れていなくても多少は読みやすい</li>
+<li>Markdownで記述できる</li>
+<li>独自ドメインを利用できる</li>
+<li>ソースコードの記述がいい感じにしやすい</li>
 </ol>
 
 
-<p>と思って選びました。これが読み終えることができたら、冒頭の本をもう一度読んでみようと思います。</p>
+<p>この３つを満たすものを探していました。</p>
 
-<p>とりあえずこの記事は、「これからやります！」って意気込みと参考リンクだけです。 英語の翻訳もC言語も全然できないので、ミスがあればご指摘いただけたらとても嬉しいです。</p>
+<p>周りの方も多く利用している、はてなブログが最初に候補として最有力でしたが、
+独自ドメインが有料版限定であることと、個人的には管理画面の動作が重く、
+旧ブログから記事を移植しただけで、馴染めませんでした・・・。</p>
 
-<h3>参考リンク</h3>
+<p>そこで、最近流行りのOctopressを導入してみました。</p>
+
+<p>一応Octopressのメリット</p>
 
 <ol>
-<li><a href="http://minnie.tuhs.org/cgi-bin/utree.pl?file=V6">Unix V6 ソースコード</a></li>
-<li><a href="http://man.cat-v.org/unix-6th/">Unix v6 Manuals</a></li>
-<li><a href="http://pdos.csail.mit.edu/6.828/2012/">6.828 Operationg System Engineering(MIT講義の記録？)</a></li>
-<li><a href="http://pdos.csail.mit.edu/6.828/2012/xv6.html">xv6 </a></li>
-<li><a href="https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=1&amp;ved=0CCoQFjAA&amp;url=http%3A%2F%2Fpdos.csail.mit.edu%2F6.828%2F2012%2Fxv6%2Fbook-rev7.pdf&amp;ei=l2ZuUvKHKsSnkQWqhIDIBA&amp;usg=AFQjCNE5EbxcMjmRRM-zcRZQ3kaXbdkQnw&amp;sig2=Y1hEh9FUVjYffH1Z311mnw&amp;bvm=bv.55123115,d.dGI">xv6 book(教科書っぽいやつ)</a></li>
+<li>もちろんMarkdownで記述可能</li>
+<li>GithubPageで運用可能</li>
+<li>(GithubPageで運用可能なため)独自ドメインで利用可能</li>
+<li>標準でインストールされているプラグインを利用してシンタックスハイライトも可能</li>
+<li>静的ページをアップロードするだけなので、動作早い</li>
+<li>管理画面は存在せず、コマンドと、テキスト編集で記事の作成・アップロードが可能(後述しますがデメリットとも言える)</li>
+<li>rake previewでローカルで動作確認が可能</li>
 </ol>
 
+
+<p>こんな感じで、ひととおり僕の希望は満たしてくれています。
+インストール手順は、他の記事や公式サイトでたっぷり紹介されているので割愛します。</p>
+
+<p>唯一、手間取った点が、wordpressから記事をエクスポートしたんですが、
+日本語タイトルの記事が全部、ダメ（404エラーになってしまう）</p>
+
+<p>今のところ日本語タイトルには対応していないようなので、仕方なく手作業で、
+半角英数字でリネームしました。面倒臭かったけど、それで問題なく動作しました。</p>
+
+<p>ただ、運用してすぐに、いくつかデメリットも感じたので、書いておきます。</p>
+
+<ol>
+<li>全て静的ページなので記事検索はGoogleSearch経由で行われる</li>
+<li>テーマは2013.12現在ではまだかなり少ない。</li>
+<li>アクセス解析は別サービスを利用する必要がある(wordpressnときはjetpack使ってた)</li>
+<li>エンジニア以外で運用するには敷居が高い(インストール、テーマ変更、記事作成全てコマンド)</li>
+</ol>
+
+
+<p>こんな感じです。まだ勝手もなにもわかってないので、逐次追加修正していきたいと思います。</p>
+
+<p>ローカルで記事作成して、確認して、いつでも鯖にアップロード、っていうだけでも便利です。</p>
+
+<p>とりあえずテーマは少しづつでも自分好みに変えていきたいです。</p>
 </div>
 
 
@@ -146,7 +177,7 @@
       
   
 
-<span class="byline author vcard">Posted by <span class="fn">k.komai</span></span>
+<span class="byline author vcard">Posted by <span class="fn">Kenta Komai</span></span>
 
       
 
@@ -160,21 +191,15 @@
   
 
 
-<time datetime="2013-10-28T00:00:00+09:00" pubdate data-updated="true"></time>
+<time datetime="2013-12-08T21:47:30+09:00" pubdate data-updated="true">Dec 8<span>th</span>, 2013</time>
       
-
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/wei-fen-lei/'>未分類</a>
-  
-</span>
 
 
     </p>
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/10/28/wordpress71/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/10/28/wordpress71/" >Tweet</a>
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://KentaKomai.github.io/blog/2013/12/08/octopressniyi-xing-sitemimasita/" data-via="TAMAGO_MAGO_2" data-counturl="http://KentaKomai.github.io/blog/2013/12/08/octopressniyi-xing-sitemimasita/" >Tweet</a>
   
   
   
@@ -185,10 +210,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2013/10/17/wordpress70/" title="Previous Post: C#のLINQでJSONを編集してみる">&laquo; C#のLINQでJSONを編集してみる</a>
+        <a class="basic-alignment left" href="/blog/2013/11/28/wordpress77/" title="Previous Post: 簡易プロセス死活監視プログラムをc#で">&laquo; 簡易プロセス死活監視プログラムをc#で</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2013/11/10/wordpress72/" title="Next Post: シェルでコマンド実行するときに使う記号の用法まとめ">シェルでコマンド実行するときに使う記号の用法まとめ &raquo;</a>
       
     </p>
   </footer>
