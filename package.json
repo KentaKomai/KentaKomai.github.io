@@ -1,0 +1,29 @@
+{
+  "name": "github.io",
+  "version": "1.0.0",
+  "description": "portforio",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KentaKomai/KentaKomai.github.io.git"
+  },
+  "author": "kkomai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KentaKomai/KentaKomai.github.io/issues"
+  },
+  "homepage": "https://github.com/KentaKomai/KentaKomai.github.io#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "babel": "^6.3.13",
+    "babel-core": "^6.3.21",
+    "babel-preset-es2015": "^6.3.13",
+    "gulp": "^3.9.0"
+  },
+  "babel": {
+    "presets": ["es2015"]
+  }
+}
