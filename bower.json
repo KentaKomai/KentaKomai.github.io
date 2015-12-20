@@ -1,0 +1,22 @@
+{
+  "name": "github.io",
+  "description": "portforio",
+  "main": "server.js",
+  "authors": [
+    "kkomai"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/KentaKomai/KentaKomai.github.io",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "normalize-css": "normalize.css#~3.0.3",
+    "react": "~0.14.3"
+  }
+}
