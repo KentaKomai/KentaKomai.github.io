@@ -1,0 +1,43 @@
+rules:
+  indent:           [2, 2]
+  quotes:           [2, 'single']
+  linebreak-style:  [2, 'unix']
+  semi:             [2, 'never']
+  no-console:       1
+  strict:           [2, 'never']
+env:
+  es6: true
+  node: true
+  browser: true
+extends: 'eslint:recommended'
+globals:
+  React: true
+  ReactDOM: true
+  ReactRouter: true
+ecmaFeatures:
+  jsx: true
+  experimentalObjectRestSpread: true
+  arrowFunctions: true
+  binaryLiterals: true
+  blockBindings: true
+  classes: true
+  defaultParams: true
+  destructuring: true
+  forOf: true
+  generators: true
+  modules: true
+  objectLiteralComputedProperties: true
+  objectLiteralDuplicateProperties: true
+  objectLiteralShorthandMethods: true
+  objectLiteralShorthandProperties: true
+  octalLiterals: true
+  regexYFlag: true
+  regexUFlag: true
+  restParams: true
+  spread: true
+  superInFunctions: true
+  templateStrings: true
+  unicodeCodePointEscapes: true
+  globalReturn: true
+plugins:
+  - react

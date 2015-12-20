@@ -1,8 +1,7 @@
 
-import gulp from 'gulp';
-import path from 'path';
+import gulp from 'gulp'
 
 gulp.task('watch', () => {
-  gulp.watch(['assets/sources/**/*.js'], ['webpack']);
-  gulp.watch(['assets/sources/**/*.styl'], ['stylus']);
-});
+  gulp.watch(['assets/sources/**/*.js'], ['lint', 'webpack'])
+  gulp.watch(['assets/sources/**/*.styl'], ['stylus'])
+})

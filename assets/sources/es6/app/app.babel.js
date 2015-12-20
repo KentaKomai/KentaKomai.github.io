@@ -5,11 +5,11 @@ var CommentBox = React.createClass({
       <div>
         Hello,  world! I am a CommentBox.
       </div>
-    );
+    )
   }
-});
+})
 
 ReactDOM.render(
   <CommentBox />
   , document.getElementById('application')
-);
+)

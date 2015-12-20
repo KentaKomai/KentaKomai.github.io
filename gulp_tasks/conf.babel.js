@@ -1,4 +1,4 @@
-import gutil from 'gulp-util';
+import gutil from 'gulp-util'
 
 var config = {
   paths : {
@@ -10,10 +10,10 @@ var config = {
   errorHandler : function(title) {
 
     return function(err) {
-      gutil.log(gutil.colors.red('[' + title + ']'), err.toString());
-      this.emit('end');
-    };
+      gutil.log(gutil.colors.red('[' + title + ']'), err.toString())
+      this.emit('end')
+    }
   }
-};
+}
 
-export default config;
+export default config
