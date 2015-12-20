@@ -42,15 +42,9 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	"use strict";
-
-	var _SampleClass = __webpack_require__(1);
-
-	var _SampleClass2 = _interopRequireDefault(_SampleClass);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	console.dir("hello webpack.");
 
@@ -59,26 +53,9 @@
 	var c = 1;
 	console.dir(a);
 	console.dir(b);
+	console.dir(b);
 	console.dir(c);
-	console.dir("sample");
-
-/***/ },
-/* 1 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var Hoge = function Hoge() {
-	  _classCallCheck(this, Hoge);
-	};
-
-	exports.default = Hoge;
+	console.dir(c);
 
 /***/ }
 /******/ ]);

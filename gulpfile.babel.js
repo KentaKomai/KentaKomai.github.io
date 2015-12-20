@@ -1,20 +1,19 @@
 import gulp from 'gulp';
 import devServer from './devServer';
-import webpack from 'gulp-webpack';
-import webpackConfig from './webpack.config.js';
+
+import './gulp_tasks/build.babel';
+import './gulp_tasks/watch.babel';
 
 // test es6 command
 gulp.task('hello', () => {
   console.log("hello gulp.");
 });
 
-gulp.task('start', () => {
+gulp.task('server', () => {
   console.log("start devServer");
   devServer.run();
-})
+});
 
-gulp.task('webpack', () => {
-  return gulp.src('')
-        .pipe(webpack(webpackConfig))
-        .pipe(gulp.dest('./assets/dist/javascript'));
-})
+gulp.task('default', ['watch'], () => {
+  gulp.start('server')
+});
