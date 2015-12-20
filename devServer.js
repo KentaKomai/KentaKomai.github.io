@@ -31,6 +31,8 @@ var server = {
         }
         else if(htmlFile.endsWith("gif")){
           res.writeHead(200, {'Content-Type': 'image/gif'});　
+        }else{
+          res.writeHead(200, {'Content-Type': 'text/plain'});　
         }
         res.write(data);
         res.end();
