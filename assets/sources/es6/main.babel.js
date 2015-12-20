@@ -1,0 +1,3 @@
+
+
+console.dir("hello webpack.");
