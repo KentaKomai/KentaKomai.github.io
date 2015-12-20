@@ -17,6 +17,7 @@
   ],
   "dependencies": {
     "normalize-css": "normalize.css#~3.0.3",
-    "react": "~0.14.3"
+    "react": "~0.14.3",
+    "gsap": "~1.18.1"
   }
 }
