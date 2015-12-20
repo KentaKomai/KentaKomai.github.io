@@ -16,7 +16,9 @@
     "url": "https://github.com/KentaKomai/KentaKomai.github.io/issues"
   },
   "homepage": "https://github.com/KentaKomai/KentaKomai.github.io#readme",
-  "dependencies": {},
+  "dependencies": {
+    "babel-preset-react": "^6.3.13"
+  },
   "devDependencies": {
     "babel": "^6.3.13",
     "babel-core": "^6.3.21",
@@ -32,7 +34,8 @@
   },
   "babel": {
     "presets": [
-      "es2015"
+      "es2015",
+      "react"
     ]
   }
 }
