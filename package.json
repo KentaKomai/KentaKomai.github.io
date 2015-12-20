@@ -16,7 +16,11 @@
     "url": "https://github.com/KentaKomai/KentaKomai.github.io/issues"
   },
   "homepage": "https://github.com/KentaKomai/KentaKomai.github.io#readme",
-  "dependencies": {},
+  "dependencies": {
+    "classnames": "^2.2.1",
+    "immutable": "^3.7.6",
+    "lodash": "^3.10.1"
+  },
   "devDependencies": {
     "babel": "^6.3.13",
     "babel-core": "^6.3.21",
