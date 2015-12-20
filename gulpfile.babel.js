@@ -8,5 +8,5 @@ gulp.task('hello', () => {
 
 gulp.task('start', () => {
   console.log("start devServer");
-  devServer.server.run();
+  devServer.run();
 })
