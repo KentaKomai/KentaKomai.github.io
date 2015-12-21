@@ -64,13 +64,12 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var history = (0, _createHashHistory2.default)();
 	var Router = ReactRouter.Router;
 	var Route = ReactRouter.Route;
 
 	ReactDOM.render(React.createElement(
 	  Router,
-	  { history: history },
+	  { history: (0, _createHashHistory2.default)({ queryKey: false }) },
 	  React.createElement(Route, { path: '/', component: _Home2.default }),
 	  React.createElement(Route, { path: '/About', component: _About2.default }),
 	  React.createElement(Route, { path: '/Gallery', component: _Gallery2.default })
