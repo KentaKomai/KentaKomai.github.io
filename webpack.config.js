@@ -1,7 +1,7 @@
 
 module.exports = {
   entry: {
-    app: './assets/sources/es6/app/app.babel.js'
+    app: './assets/sources/es6/app/app.jsx'
   },
   output: {
     path:__dirname + '/assets/sources/assets/dist/javascript',
