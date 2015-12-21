@@ -1,16 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>KentaKomai.github.io</title>
-    <link rel="stylesheet" media="screen" href="/bower_components/normalize-css/normalize.css" />
+  <meta charset="UTF-8">
+  <title>KentaKomai.github.io</title>
+  <link rel="stylesheet" media="screen" href="/bower_components/normalize-css/normalize.css" />
 </head>
 <body>
-    <div id="application"></div>
+  <header>
+    <h1>kkomai</h1>
+    <nav id="header_nav">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="http://komaken.me/blog/">Blog</a></li>
+      </ul>
+    </nav>
+    <p id="sns_links">
+      <ul>
+        <li><a href="https://twitter.com/TAMAGO_MAGO_2">Twitter</a></li>
+        <li><a href="https://www.facebook.com/kenta.komai">Facebook</a></li>
+        <li><a href="https://github.com/KentaKomai">Github</a></li>
+      </ul>
+    </p>
+  </header>
+  
+  <div id="application"></div>
 
-    <script src="/bower_components/react/react.min.js" type="application/javascript" ></script>
-    <script src="/bower_components/react/react-dom.min.js" type="application/javascript" ></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-router/1.0.0-rc3/ReactRouter.min.js" type="text/javascript"></script>
-    <script src="/assets/dist/javascript/app.bundle.js" type="application/javascript" ></script>
+  <footer>
+    <p>
+      Copyright(C) Kenta Komai All right reserved.
+    </p>
+  </footer>
+
+  <script src="/bower_components/react/react.min.js" type="application/javascript" ></script>
+  <script src="/bower_components/react/react-dom.min.js" type="application/javascript" ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-router/1.0.0-rc3/ReactRouter.min.js" type="text/javascript"></script>
+  <script src="/assets/dist/javascript/app.bundle.js" type="application/javascript" ></script>
 </body>
 </html>

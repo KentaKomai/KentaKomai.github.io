@@ -1,15 +1,7 @@
 
-var CommentBox = React.createClass({
-  render: function() {
-    return (
-      <div>
-        Hello,  world! I am a CommentBox.
-      </div>
-    )
-  }
-})
-
 ReactDOM.render(
-  <CommentBox />
+  <div>
+    Hello
+  </div>
   , document.getElementById('application')
 )
