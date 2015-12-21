@@ -1,9 +1,9 @@
 import gulp from 'gulp'
 import devServer from './devServer'
 
-import './gulp_tasks/build.babel'
-import './gulp_tasks/watch.babel'
-import './gulp_tasks/test.babel'
+import './gulp/task/build.babel'
+import './gulp/task/watch.babel'
+import './gulp/task/test.babel'
 
 // test es6 command
 gulp.task('hello', () => {

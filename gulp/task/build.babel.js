@@ -1,6 +1,6 @@
 import gulp from 'gulp'
 import webpack from 'gulp-webpack'
-import webpackConfig from '../webpack.config.js'
+import webpackConfig from '../../webpack.config.js'
 import stylus from 'stylus'
 
 gulp.task('webpack', () => {
