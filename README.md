@@ -2,6 +2,8 @@
 kentakommai.github.io
 =====================
 
+[![Build Status](https://travis-ci.org/KentaKomai/KentaKomai.github.io.svg)](https://travis-ci.org/KentaKomai/KentaKomai.github.io)
+
 [link](https://KentaKomai.github.io)
 
 Develop on local machine
