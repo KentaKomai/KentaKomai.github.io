@@ -1,5 +1,5 @@
 
-kentakommai.github.io
+kentakomai.github.io
 =====================
 
 [![Build Status](https://travis-ci.org/KentaKomai/KentaKomai.github.io.svg)](https://travis-ci.org/KentaKomai/KentaKomai.github.io)
