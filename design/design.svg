@@ -20,6 +20,13 @@
    sodipodi:docname="design.svg">
   <defs
      id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 540 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="1920 : 540 : 1"
+       inkscape:persp3d-origin="960 : 360 : 1"
+       id="perspective3417" />
     <linearGradient
        id="linearGradient4212"
        osb:paint="solid">
@@ -54,21 +61,22 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.58"
-     inkscape:cx="966.66419"
-     inkscape:cy="561.51265"
+     inkscape:zoom="0.62"
+     inkscape:cx="975.73614"
+     inkscape:cy="579.705"
      inkscape:document-units="px"
-     inkscape:current-layer="layer4"
+     inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
      width="1920px"
      inkscape:snap-grids="true"
      inkscape:snap-page="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1080"
+     inkscape:window-width="1916"
+     inkscape:window-height="1155"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="1">
+     inkscape:window-maximized="1"
+     inkscape:snap-text-baseline="true">
     <inkscape:grid
        type="xygrid"
        id="grid3344" />
@@ -81,7 +89,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -95,8 +103,45 @@
        id="rect3365"
        width="1920"
        height="1080"
-       x="1.8554703"
+       x="3.8554702"
        y="1.3692732" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#22241c;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="1064.8276"
+       y="391.93103"
+       id="text3448"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="1064.8276"
+         y="391.93103"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:87.5px;line-height:125%;font-family:'Arial Hebrew';-inkscape-font-specification:'Arial Hebrew, Bold';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#22241c"
+         id="tspan3460">TAMAGO_MAGO</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="1462"
+       y="532"
+       id="text3456"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3458"
+         x="1462"
+         y="532"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:100px;line-height:125%;font-family:'Arial Hebrew';-inkscape-font-specification:'Arial Hebrew, Bold';text-align:start;writing-mode:lr-tb;text-anchor:start"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:87.5px;line-height:125%;font-family:'Arial Hebrew';-inkscape-font-specification:'Arial Hebrew, Bold';text-align:start;writing-mode:lr-tb;text-anchor:start"
+           id="tspan3464">WORKS</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="1824"
+       y="320"
+       id="text3466"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3468"
+         x="1824"
+         y="320">2</tspan></text>
   </g>
   <g
      inkscape:label="Footer"
@@ -111,11 +156,24 @@
        height="51.315788"
        x="-1.5579897"
        y="1003.7578" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="1484.1584"
+       y="1036.5206"
+       id="text3470"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3472"
+         x="1484.1584"
+         y="1036.5206"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ffcc00">Copyright (C) Kenta Komai All right reserved.</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer4"
-     inkscape:label="Header">
+     inkscape:label="Header"
+     style="display:inline">
     <rect
        style="display:inline;fill:#454837"
        id="rect3346"
@@ -124,6 +182,11 @@
        x="0.046975762"
        y="-1.9237179" />
   </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Contents"
+     style="display:inline" />
   <g
      inkscape:groupmode="layer"
      id="layer3"
