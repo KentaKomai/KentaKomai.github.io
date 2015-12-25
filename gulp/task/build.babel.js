@@ -3,6 +3,11 @@ import webpack from 'webpack-stream'
 import webpackConfig from '../../webpack.config.js'
 import stylus from 'gulp-stylus'
 
+gulp.task('build', () => {
+  gulp.start('webpack')
+  gulp.start('stylus')
+})
+
 gulp.task('webpack', () => {
   return gulp.src('')
         .pipe(webpack(webpackConfig))
