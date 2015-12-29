@@ -1,6 +1,9 @@
 header#common_header {
-  background-color: #d46996;
+  background-color: #28271b;
+}
+div#application {
+  background-color: #f9c808;
 }
 footer#common_footer {
-  background-color: #2e5a7d;
+  background-color: #28271b;
 }
