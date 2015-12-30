@@ -1480,7 +1480,9 @@
 	      return React.createElement(
 	        "div",
 	        null,
-	        "#Home"
+	        React.createElement("img", { src: "/assets/dist/media/KENTAKOMAI.png", alt: "KENTA KOMAI" }),
+	        React.createElement("img", { src: "/assets/dist/media/TAMAGO_MAGO2.png", alt: "TAMAGO_MAGO_2" }),
+	        React.createElement("img", { src: "/assets/dist/media/Github.io.png", alt: "Github.io" })
 	      );
 	    }
 	  }]);

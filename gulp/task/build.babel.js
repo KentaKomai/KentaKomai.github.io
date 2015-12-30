@@ -6,6 +6,7 @@ import stylus from 'gulp-stylus'
 gulp.task('build', () => {
   gulp.start('webpack')
   gulp.start('stylus')
+  gulp.start('image')
 })
 
 gulp.task('webpack', () => {
@@ -18,4 +19,9 @@ gulp.task('stylus', () => {
   return gulp.src('./assets/sources/stylus/*')
       .pipe(stylus())
       .pipe(gulp.dest('./assets/dist/css/'))
+})
+
+gulp.task('image', () => {
+  return gulp.src('./assets/sources/media/*')
+      .pipe(gulp.dest('./assets/dist/media/'))
 })
