@@ -1,3 +1,7 @@
+ul {
+  padding: 0px;
+  margin: 0px;
+}
 header#common_header {
   background-color: #28271b;
 }
@@ -6,4 +10,8 @@ div#application {
 }
 footer#common_footer {
   background-color: #28271b;
+}
+section#home .home_title {
+  text-align: right;
+  padding-right: 40px;
 }

@@ -1478,11 +1478,45 @@
 	    key: "render",
 	    value: function render() {
 	      return React.createElement(
-	        "div",
-	        null,
-	        React.createElement("img", { src: "/assets/dist/media/KENTAKOMAI.png", alt: "KENTA KOMAI" }),
-	        React.createElement("img", { src: "/assets/dist/media/TAMAGO_MAGO2.png", alt: "TAMAGO_MAGO_2" }),
-	        React.createElement("img", { src: "/assets/dist/media/Github.io.png", alt: "Github.io" })
+	        "section",
+	        { id: "home" },
+	        React.createElement(
+	          "nav",
+	          null,
+	          React.createElement(
+	            "ul",
+	            null,
+	            React.createElement(
+	              "li",
+	              null,
+	              "HOME"
+	            ),
+	            React.createElement(
+	              "li",
+	              null,
+	              "ABOUT"
+	            ),
+	            React.createElement(
+	              "li",
+	              null,
+	              "GALLERY"
+	            ),
+	            React.createElement(
+	              "li",
+	              null,
+	              "BLOG"
+	            )
+	          )
+	        ),
+	        React.createElement(
+	          "div",
+	          { className: "home_title" },
+	          React.createElement("img", { src: "/assets/dist/media/KENTAKOMAI.png", alt: "KENTA KOMAI" }),
+	          React.createElement("br", null),
+	          React.createElement("img", { src: "/assets/dist/media/TAMAGO_MAGO2.png", alt: "TAMAGO_MAGO_2" }),
+	          React.createElement("br", null),
+	          React.createElement("img", { src: "/assets/dist/media/Github.io.png", alt: "Github.io" })
+	        )
 	      );
 	    }
 	  }]);
