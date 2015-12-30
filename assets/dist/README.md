@@ -1,7 +1,7 @@
 
 # Caution!
 
-Do not edit source code directly in this folder.
+Do not edit source code directly in this directory.
 
 File in this directory was automatically generated
 by `gulp` and `webpack`.
