@@ -1,4 +1,5 @@
 import gulp from 'gulp'
+import notify from 'gulp-notify'
 import devServer from './devServer'
 
 import './gulp/task/build.babel'
@@ -6,7 +7,7 @@ import './gulp/task/watch.babel'
 import './gulp/task/test.babel'
 
 gulp.task('server', () => {
-  console.log('start devServer')
+  notify('start devServer')
   devServer.run()
 })
 
