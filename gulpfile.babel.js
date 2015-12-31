@@ -11,6 +11,6 @@ gulp.task('server', () => {
   devServer.run()
 })
 
-gulp.task('default', ['watch'], () => {
+gulp.task('default', ['build', 'watch'], () => {
   gulp.start('server')
 })

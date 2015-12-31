@@ -23,7 +23,7 @@ gulp.task('webpack', () => {
 })
 
 gulp.task('stylus', () => {
-  return gulp.src('./assets/sources/stylus/*')
+  return gulp.src('./assets/sources/stylus/style.styl')
     .pipe(plumber(errorHandler))
     .pipe(stylus())
     .pipe(gulp.dest('./assets/dist/css/'))

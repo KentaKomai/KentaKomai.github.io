@@ -5,11 +5,11 @@ ul {
 header#common_header {
   background-color: #28271b;
 }
-div#application {
-  background-color: #f9c808;
-}
 footer#common_footer {
   background-color: #28271b;
+}
+div#application {
+  background-color: #f9c808;
 }
 section#home .home_title {
   text-align: right;
