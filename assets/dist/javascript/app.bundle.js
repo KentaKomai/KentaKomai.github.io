@@ -1481,34 +1481,6 @@
 	        "section",
 	        { id: "home" },
 	        React.createElement(
-	          "nav",
-	          null,
-	          React.createElement(
-	            "ul",
-	            null,
-	            React.createElement(
-	              "li",
-	              null,
-	              "HOME"
-	            ),
-	            React.createElement(
-	              "li",
-	              null,
-	              "ABOUT"
-	            ),
-	            React.createElement(
-	              "li",
-	              null,
-	              "GALLERY"
-	            ),
-	            React.createElement(
-	              "li",
-	              null,
-	              "BLOG"
-	            )
-	          )
-	        ),
-	        React.createElement(
 	          "div",
 	          { className: "home_title" },
 	          React.createElement("img", { src: "/assets/dist/media/KENTAKOMAI.png", alt: "KENTA KOMAI" }),
