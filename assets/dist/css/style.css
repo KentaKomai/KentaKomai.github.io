@@ -4,12 +4,93 @@ ul {
 }
 header#common_header {
   background-color: #28271b;
+  height: 23px;
+  padding: 12px 0px;
+  font-size: 14px;
+  position: absolute;
+  width: 100%;
+  top: 0px;
+}
+header#common_header nav#header_nav {
+  float: right;
+}
+header#common_header nav#header_nav ul li {
+  color: #937a18;
+  display: inline;
+}
+header#common_header nav#header_nav ul a {
+  margin: 0px 8px;
+  color: #937a18;
+  font-style: normal;
+  text-decoration: none;
+}
+header#common_header nav#header_nav ul a:link {
+  color: #937a18;
+  font-style: normal;
+  text-decoration: none;
+}
+header#common_header nav#header_nav ul a:visited {
+  color: #937a18;
+  text-decoration: none;
+}
+header#common_header nav#header_nav ul a:hover {
+  color: #f9c808;
+  font-style: normal;
+  text-decoration: none;
+}
+header#common_header nav#header_nav ul a:active {
+  text-decoration: none;
 }
 footer#common_footer {
   background-color: #28271b;
+  height: 23px;
+  padding: 12px 0px;
+  font-size: 14px;
+  position: absolute;
+  width: 100%;
+  bottom: 0px;
+}
+footer#common_footer ul#footer_sns_links {
+  width: 50%;
+  display: inline;
+}
+footer#common_footer ul#footer_sns_links li {
+  color: #937a16;
+  display: inline;
+}
+footer#common_footer ul#footer_sns_links a {
+  margin: 0px 10px;
+  color: #937a16;
+  font-style: normal;
+  text-decoration: none;
+}
+footer#common_footer ul#footer_sns_links a:link {
+  color: #937a16;
+  font-style: normal;
+  text-decoration: none;
+}
+footer#common_footer ul#footer_sns_links a:visited {
+  color: #937a16;
+  text-decoration: none;
+}
+footer#common_footer ul#footer_sns_links a:hover {
+  color: #f9c808;
+  font-style: normal;
+  text-decoration: none;
+}
+footer#common_footer ul#footer_sns_links a:active {
+  text-decoration: none;
+}
+footer#common_footer p.copyright {
+  margin: 0px;
+  display: inline;
+  float: right;
+  color: #937a16;
 }
 div#application {
   background-color: #f9c808;
+  padding: 47px;
+  min-height: 100%;
 }
 section#home .home_title {
   text-align: right;
