@@ -67,6 +67,34 @@
 	var Router = ReactRouter.Router;
 	var Route = ReactRouter.Route;
 
+	var getApplicationDom = function getApplicationDom() {
+	  var mainContentsElement = document.getElementById('application');
+	  return mainContentsElement;
+	};
+
+	var getWindowHeight = function getWindowHeight() {
+	  var winH = window.document.documentElement.clientHeight;
+	  return winH < 640 ? 640 : winH - 47 * 2;
+	};
+
+	var init = function init() {
+	  var mainContentsElement = getApplicationDom();
+	  mainContentsElement.setAttribute('style', 'height:' + getWindowHeight() + 'px');
+
+	  var resizeTimer;
+	  var interval = Math.floor(1000 / 60 * 10);
+
+	  window.addEventListener('resize', function () {
+	    if (resizeTimer !== false) {
+	      clearTimeout(resizeTimer);
+	    }
+	    resizeTimer = setTimeout(function () {
+	      var mainContentsElement = getApplicationDom();
+	      mainContentsElement.setAttribute('style', 'height:' + getWindowHeight() + 'px');
+	    }, interval);
+	  });
+	};
+
 	ReactDOM.render(React.createElement(
 	  Router,
 	  { history: (0, _createHashHistory2.default)({ queryKey: false }) },
@@ -74,6 +102,8 @@
 	  React.createElement(Route, { path: '/About', component: _About2.default }),
 	  React.createElement(Route, { path: '/Gallery', component: _Gallery2.default })
 	), document.getElementById('application'));
+
+	init();
 
 /***/ },
 /* 1 */
