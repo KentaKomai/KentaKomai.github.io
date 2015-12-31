@@ -96,6 +96,9 @@ section#home .home_title {
   text-align: right;
   padding-right: 40px;
 }
+section#home .home_title img {
+  margin-top: 15px;
+}
 div#application {
   background-color: #f9c808;
   padding: 47px;
