@@ -3,6 +3,7 @@ import createHashHistory from 'history/lib/createHashHistory'
 import Home from './components/Home.jsx'
 import About from './components/About.jsx'
 import Gallery from './components/Gallery.jsx'
+import '../globalAnimation.js'
 
 const Router = ReactRouter.Router
 const Route = ReactRouter.Route

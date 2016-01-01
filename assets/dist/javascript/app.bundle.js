@@ -62,6 +62,8 @@
 
 	var _Gallery2 = _interopRequireDefault(_Gallery);
 
+	__webpack_require__(23);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var Router = ReactRouter.Router;
@@ -1613,6 +1615,28 @@
 	})(React.Component);
 
 	exports.default = Gallery;
+
+/***/ },
+/* 23 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var bodyOnLoadStream = Rx.Observable.fromEvent(document.body, 'onLoad');
+	bodyOnLoadStream.subscribe(function () {
+	  console.dir('onLoad finished');
+	}, function () {
+	  console.dir('onLoad Error');
+	});
+
+	var clickStream = Rx.Observable.fromEvent(document, 'mouseup');
+	clickStream.buffer(clickStream.throttle(250)).map(function (x) {
+	  return x.length;
+	}).filter(function (n) {
+	  return n >= 2;
+	}).subscribe(function (n) {
+	  console.log(n + 'click');
+	});
 
 /***/ }
 /******/ ]);

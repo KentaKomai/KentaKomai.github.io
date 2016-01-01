@@ -14,6 +14,7 @@ globals:
   React: true
   ReactDOM: true
   ReactRouter: true
+  Rx: true
 ecmaFeatures:
   jsx: true
   experimentalObjectRestSpread: true
